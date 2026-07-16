@@ -1,0 +1,411 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<title>BODY LOG — 시안 v2.1 가시성</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Doto:wght@700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#EDEAE1;      /* 페이지 배경 */
+  --panel:#F7F5EF;      /* 콘텐츠 패널 (밝게 띄움) */
+  --dim:#E1DDD1;        /* 눌린 영역 */
+  --ink:#141310;
+  --gray:#66625614;     /* unused */
+  --mut:#6B6759;        /* 보조 텍스트 (대비 강화) */
+  --red:#DF2B1C;
+  --mono:ui-monospace,'SF Mono',Menlo,'Courier New',monospace;
+  --dot:'Doto',ui-monospace,monospace;
+  --b1:1px;             /* 내부 구분선 */
+  --b2:2px;             /* 외곽 프레임 */
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;border-radius:0!important}
+html,body{margin:0;padding:0}
+body{font-family:var(--mono);background:var(--paper);color:var(--ink);
+  -webkit-font-smoothing:antialiased;font-size:15px;line-height:1.5;
+  padding-bottom:calc(76px + env(safe-area-inset-bottom))}
+.wrap{max-width:430px;margin:0 auto;padding:0 14px}
+
+.cap{font-size:10.5px;letter-spacing:.16em;color:var(--mut);text-transform:uppercase;font-weight:700}
+.inv{background:var(--ink);color:var(--paper)}
+button{font-family:var(--mono);cursor:pointer}
+
+/* ---------- 헤더 ---------- */
+.top{display:flex;justify-content:space-between;align-items:flex-end;padding:20px 0 12px}
+.logo{font-family:var(--dot);font-weight:900;font-size:27px;letter-spacing:.05em}
+.logo .r{color:var(--red)}
+.date{font-size:11.5px;letter-spacing:.12em;text-align:right;color:var(--mut);font-weight:700}
+.date b{color:var(--ink)}
+
+/* ---------- 주기 패널 ---------- */
+.cycle{border:var(--b2) solid var(--ink);background:var(--panel)}
+.cycle .main{display:flex;align-items:stretch}
+.cycle .day{flex:1;padding:16px 18px 12px}
+.cycle .day .n{font-family:var(--dot);font-weight:900;font-size:68px;line-height:.95}
+.cycle .day .n small{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--mut);letter-spacing:.1em}
+.cycle .phase{width:122px;border-left:var(--b1) solid var(--ink);display:flex;flex-direction:column}
+.cycle .phase>div{flex:1;display:flex;flex-direction:column;justify-content:center;padding:8px 14px}
+.cycle .phase>div+div{border-top:var(--b1) solid var(--ink)}
+.cycle .phase b{font-size:15px;font-weight:800}
+.cycle .phase .hl{background:var(--ink)}
+.cycle .phase .hl .cap{color:#B9B4A5}
+.cycle .phase .hl b{color:var(--panel)}
+.cycle .foot{border-top:var(--b1) solid var(--ink);display:flex;background:var(--dim)}
+.cycle .foot>div{flex:1;padding:9px 18px;font-size:12px;letter-spacing:.06em;font-weight:700}
+.cycle .foot>div+div{border-left:var(--b1) solid var(--ink)}
+
+/* ---------- 주간 스트립 ---------- */
+.week{display:flex;border:var(--b2) solid var(--ink);border-top:none;background:var(--panel)}
+.week .d{flex:1;text-align:center;padding:9px 0 10px}
+.week .d+.d{border-left:var(--b1) solid var(--ink)}
+.week .dw{font-size:9.5px;letter-spacing:.1em;color:var(--mut);font-weight:700}
+.week .dn{font-size:18px;font-weight:800;margin-top:2px}
+.week .d.rec .dn::after{content:"";display:block;width:5px;height:5px;background:var(--ink);margin:3px auto 0}
+.week .d.pd .dn::after{background:var(--red)}
+.week .d.today{background:var(--ink);color:var(--paper)}
+.week .d.today .dw{color:#B9B4A5}
+.week .d.today .dn::after{background:var(--paper)}
+
+/* ---------- 진행률 ---------- */
+.prog{display:flex;align-items:center;gap:12px;margin:24px 0 10px}
+.prog .t{font-size:12px;letter-spacing:.18em;font-weight:800}
+.prog .bar{flex:1;height:16px;border:var(--b2) solid var(--ink);display:flex;background:var(--panel)}
+.prog .bar i{flex:1;border-right:var(--b1) solid var(--ink)}
+.prog .bar i:last-child{border-right:none}
+.prog .bar i.on{background:var(--ink)}
+.prog .n{font-family:var(--dot);font-weight:900;font-size:20px}
+
+/* ---------- 기록 섹션 ---------- */
+.sec{border:var(--b2) solid var(--ink);border-bottom:none;background:var(--panel)}
+.sec:last-of-type{border-bottom:var(--b2) solid var(--ink)}
+.sec .head{display:flex;align-items:center;gap:12px;padding:14px;cursor:pointer;user-select:none}
+.sec .idx{font-family:var(--dot);font-weight:900;font-size:16px;width:34px;height:34px;
+  display:grid;place-items:center;border:var(--b1) solid var(--ink);color:var(--mut);flex:0 0 auto}
+.sec.done .idx{background:var(--ink);color:var(--panel);border-color:var(--ink)}
+.sec .ttl{flex:1}
+.sec .ttl .en{font-size:10px;letter-spacing:.16em;color:var(--mut);font-weight:700}
+.sec .ttl .ko{font-size:16.5px;font-weight:800;margin-top:1px;display:block}
+.sec .st{font-size:13px;color:var(--mut)}
+.sec.done .st{color:var(--ink);font-weight:800}
+.sec .arrow{font-size:13px;color:var(--mut)}
+.sec .body{display:none;border-top:var(--b1) solid var(--ink);padding:18px 14px;background:var(--panel)}
+.sec.open .body{display:block}
+.sec.open .arrow{transform:rotate(180deg)}
+
+/* 01 체온 */
+.temp{display:flex;align-items:center;border:var(--b2) solid var(--ink);background:#fff}
+.temp button{width:58px;height:74px;border:none;background:var(--dim);font-size:26px;font-weight:800}
+.temp button:first-child{border-right:var(--b1) solid var(--ink)}
+.temp button:last-child{border-left:var(--b1) solid var(--ink)}
+.temp .v{flex:1;text-align:center;font-family:var(--dot);font-weight:900;font-size:46px}
+.temp .v small{font-size:15px;font-family:var(--mono);font-weight:700;color:var(--mut)}
+.trow{display:flex;gap:10px;margin-top:12px}
+.trow .f{flex:1}
+.trow label{display:block;font-size:10.5px;letter-spacing:.16em;color:var(--mut);font-weight:700;margin-bottom:5px}
+.trow input{width:100%;font-family:var(--mono);font-size:15px;font-weight:700;padding:11px 12px;
+  border:var(--b1) solid var(--ink);background:#fff;-webkit-appearance:none;color:var(--ink)}
+
+/* 02 컨디션 */
+.cond{display:flex;border:var(--b2) solid var(--ink);background:#fff}
+.cond button{flex:1;padding:15px 0;border:none;background:transparent;font-size:16px;font-weight:800;color:var(--mut)}
+.cond button+button{border-left:var(--b1) solid var(--ink)}
+.cond button.on{background:var(--ink);color:var(--paper)}
+textarea{width:100%;margin-top:12px;font-family:var(--mono);font-size:14px;padding:11px;
+  border:var(--b1) solid var(--ink);background:#fff;resize:none;color:var(--ink)}
+
+/* 칩 */
+.chips{display:flex;flex-wrap:wrap;gap:9px}
+.chip{border:var(--b1) solid var(--ink);background:#fff;padding:10px 14px;font-size:13.5px;font-weight:800;color:var(--ink)}
+.chip.on{background:var(--ink);color:var(--paper)}
+.chip.red.on{background:var(--red);border-color:var(--red);color:#fff}
+.grouplab{font-size:10.5px;letter-spacing:.16em;color:var(--mut);font-weight:700;margin:16px 0 7px}
+.grouplab:first-child{margin-top:0}
+
+/* 05 영양제 */
+.supp{border:var(--b2) solid var(--ink);background:#fff}
+.supp .row{display:flex;align-items:center;gap:13px;padding:13px 14px;cursor:pointer}
+.supp .row+.row{border-top:var(--b1) solid var(--ink)}
+.supp .bx{width:23px;height:23px;border:var(--b2) solid var(--ink);display:grid;place-items:center;flex:0 0 auto;font-size:14px;font-weight:900;color:#fff}
+.supp .row.on .bx{background:var(--ink)}
+.supp .nm{flex:1;font-size:15px;font-weight:800}
+.supp .row.on .nm{text-decoration:line-through;text-decoration-thickness:2px;color:var(--mut)}
+.supp .add{color:var(--mut);font-size:13px;font-weight:700}
+
+.save{width:100%;margin:18px 0 0;padding:18px;border:var(--b2) solid var(--ink);
+  background:var(--ink);color:var(--paper);font-size:15px;font-weight:800;letter-spacing:.22em}
+
+/* ---------- 차트 ---------- */
+.panel-t{margin-top:32px}
+.phead{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
+.phead .en{font-family:var(--dot);font-weight:900;font-size:19px}
+.seg{display:flex;border:var(--b2) solid var(--ink);background:var(--panel)}
+.seg button{flex:1;padding:11px 0;border:none;background:transparent;font-size:12.5px;letter-spacing:.06em;font-weight:800;color:var(--mut)}
+.seg button+button{border-left:var(--b1) solid var(--ink)}
+.seg button.on{background:var(--ink);color:var(--paper)}
+.chart{border:var(--b2) solid var(--ink);border-top:none;padding:16px 8px 8px;background:#fff}
+.legend{display:flex;gap:13px;flex-wrap:wrap;border:var(--b2) solid var(--ink);border-top:none;padding:11px 13px;
+  font-size:11.5px;letter-spacing:.04em;color:var(--ink);font-weight:700;background:var(--panel)}
+.legend b{display:inline-block;width:10px;height:10px;margin-right:5px;vertical-align:-1px}
+
+/* ---------- 통계 ---------- */
+.stats{border:var(--b2) solid var(--ink);margin-top:32px;background:var(--panel)}
+.stats .row{display:flex}
+.stats .row+.row{border-top:var(--b1) solid var(--ink)}
+.stats .cell{flex:1;padding:14px 16px}
+.stats .cell+.cell{border-left:var(--b1) solid var(--ink)}
+.stats .v{font-family:var(--dot);font-weight:900;font-size:30px;margin-top:5px}
+.stats .v small{font-size:12.5px;font-family:var(--mono);font-weight:700;color:var(--mut)}
+
+/* ---------- 로그 ---------- */
+.log{border:var(--b2) solid var(--ink);margin-top:10px;background:var(--panel)}
+.log .row{display:flex;gap:13px;padding:13px 15px;align-items:baseline}
+.log .row+.row{border-top:var(--b1) solid var(--ink)}
+.log .d{font-family:var(--dot);font-weight:900;font-size:17px;width:56px}
+.log .t{font-weight:800;width:64px;font-size:15px}
+.log .tags{flex:1;font-size:12px;color:var(--mut);font-weight:700}
+.log .tags .rd{color:var(--red);font-weight:800}
+
+.note{font-size:11px;color:var(--mut);text-align:center;margin:26px 0 8px;line-height:1.8;font-weight:700}
+
+/* ---------- 하단 탭 ---------- */
+.nav{position:fixed;left:0;right:0;bottom:0;background:var(--paper);border-top:var(--b2) solid var(--ink);
+  display:flex;z-index:50;padding-bottom:env(safe-area-inset-bottom)}
+.nav a{flex:1;text-align:center;padding:16px 0 14px;font-size:12px;letter-spacing:.22em;font-weight:800;color:var(--mut);cursor:pointer}
+.nav a+a{border-left:var(--b1) solid var(--ink)}
+.nav a.on{background:var(--ink);color:var(--paper)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="top">
+    <div class="logo">BODY<span class="r">.</span>LOG</div>
+    <div class="date">2026.07.16 THU<br><b>CYCLE TRACKING</b></div>
+  </div>
+
+  <div class="cycle">
+    <div class="main">
+      <div class="day">
+        <div class="cap">CYCLE DAY</div>
+        <div class="n">07<small> /28</small></div>
+      </div>
+      <div class="phase">
+        <div class="hl"><span class="cap">PHASE</span><b>저온기</b></div>
+        <div><span class="cap">O-DAY</span><b>D-5</b></div>
+        <div><span class="cap">P-DAY</span><b>D-19</b></div>
+      </div>
+    </div>
+    <div class="foot"><div>7/10 주기 시작</div><div>평균 28일</div></div>
+  </div>
+  <div class="week">
+    <div class="d rec"><div class="dw">SUN</div><div class="dn">12</div></div>
+    <div class="d rec"><div class="dw">MON</div><div class="dn">13</div></div>
+    <div class="d rec"><div class="dw">TUE</div><div class="dn">14</div></div>
+    <div class="d rec"><div class="dw">WED</div><div class="dn">15</div></div>
+    <div class="d today rec"><div class="dw">THU</div><div class="dn">16</div></div>
+    <div class="d"><div class="dw">FRI</div><div class="dn">17</div></div>
+    <div class="d"><div class="dw">SAT</div><div class="dn">18</div></div>
+  </div>
+
+  <div class="prog">
+    <div class="t">TODAY</div>
+    <div class="bar"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i><i></i></div>
+    <div class="n">3/6</div>
+  </div>
+
+  <div class="sec open done" id="s1">
+    <div class="head" onclick="tg(this)">
+      <span class="idx">01</span>
+      <span class="ttl"><span class="en">BASAL BODY TEMP</span><span class="ko">기초체온</span></span>
+      <span class="st">36.52 · 07:10</span><span class="arrow">▾</span>
+    </div>
+    <div class="body">
+      <div class="temp">
+        <button onclick="tstep(-0.01)">−</button>
+        <div class="v" id="tv">36.52<small> °C</small></div>
+        <button onclick="tstep(0.01)">+</button>
+      </div>
+      <div class="trow">
+        <div class="f"><label>DATE</label><input type="date" value="2026-07-16"></div>
+        <div class="f"><label>TIME</label><input type="time" value="07:10"></div>
+      </div>
+      <div class="chips" style="margin-top:14px">
+        <button class="chip red" onclick="this.classList.toggle('on')">생리 시작일</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec open done" id="s2">
+    <div class="head" onclick="tg(this)">
+      <span class="idx">02</span>
+      <span class="ttl"><span class="en">CONDITION</span><span class="ko">몸 상태</span></span>
+      <span class="st">4/5</span><span class="arrow">▾</span>
+    </div>
+    <div class="body">
+      <div class="cond" id="cond">
+        <button>1</button><button>2</button><button>3</button><button class="on">4</button><button>5</button>
+      </div>
+      <textarea rows="2" placeholder="메모 — 오늘 몸 상태를 자유롭게">몸이 가볍고 컨디션 좋음</textarea>
+    </div>
+  </div>
+
+  <div class="sec" id="s3">
+    <div class="head" onclick="tg(this)">
+      <span class="idx">03</span>
+      <span class="ttl"><span class="en">OVULATION TEST</span><span class="ko">배란테스트기</span></span>
+      <span class="st">미기록</span><span class="arrow">▾</span>
+    </div>
+    <div class="body">
+      <div class="grouplab">RESULT</div>
+      <div class="chips" data-one>
+        <button class="chip">음성</button><button class="chip">양성</button><button class="chip">피크</button>
+      </div>
+      <div class="grouplab">T/C 수치 (선택)</div>
+      <div class="temp" style="max-width:230px">
+        <button onclick="ostep(-0.1)" style="height:58px;width:52px">−</button>
+        <div class="v" id="ov" style="font-size:28px">0.8</div>
+        <button onclick="ostep(0.1)" style="height:58px;width:52px">+</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec" id="s4">
+    <div class="head" onclick="tg(this)">
+      <span class="idx">04</span>
+      <span class="ttl"><span class="en">PREGNANCY TEST</span><span class="ko">임신테스트기</span></span>
+      <span class="st">미기록</span><span class="arrow">▾</span>
+    </div>
+    <div class="body">
+      <div class="chips" data-one>
+        <button class="chip">한 줄 (단호박)</button>
+        <button class="chip">미세 시약선</button>
+        <button class="chip">진한 두 줄</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec done" id="s5">
+    <div class="head" onclick="tg(this)">
+      <span class="idx">05</span>
+      <span class="ttl"><span class="en">SUPPLEMENTS</span><span class="ko">영양제</span></span>
+      <span class="st">2/3</span><span class="arrow">▾</span>
+    </div>
+    <div class="body">
+      <div class="supp">
+        <div class="row on" onclick="this.classList.toggle('on')"><span class="bx">✓</span><span class="nm">엽산</span></div>
+        <div class="row on" onclick="this.classList.toggle('on')"><span class="bx">✓</span><span class="nm">비타민 D</span></div>
+        <div class="row" onclick="this.classList.toggle('on')"><span class="bx">✓</span><span class="nm">오메가 3</span></div>
+        <div class="row"><span class="bx" style="border-style:dashed">+</span><span class="nm add">영양제 추가 / 편집</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec" id="s6">
+    <div class="head" onclick="tg(this)">
+      <span class="idx">06</span>
+      <span class="ttl"><span class="en">SYMPTOMS</span><span class="ko">신체 증상</span></span>
+      <span class="st">미기록</span><span class="arrow">▾</span>
+    </div>
+    <div class="body">
+      <div class="grouplab">분비물</div>
+      <div class="chips" data-one>
+        <button class="chip">건조</button><button class="chip">끈적</button><button class="chip">크림</button><button class="chip">계란흰자</button><button class="chip">물 같음</button>
+      </div>
+      <div class="grouplab">통증</div>
+      <div class="chips">
+        <button class="chip" onclick="this.classList.toggle('on')">아랫배</button>
+        <button class="chip" onclick="this.classList.toggle('on')">허리</button>
+        <button class="chip" onclick="this.classList.toggle('on')">가슴 통증</button>
+        <button class="chip" onclick="this.classList.toggle('on')">두통</button>
+      </div>
+      <div class="grouplab">감정</div>
+      <div class="chips">
+        <button class="chip" onclick="this.classList.toggle('on')">안정</button>
+        <button class="chip" onclick="this.classList.toggle('on')">예민</button>
+        <button class="chip" onclick="this.classList.toggle('on')">불안</button>
+        <button class="chip" onclick="this.classList.toggle('on')">우울</button>
+        <button class="chip" onclick="this.classList.toggle('on')">기대감</button>
+      </div>
+    </div>
+  </div>
+
+  <button class="save">SAVE — 오늘 기록 저장</button>
+
+  <div class="panel-t">
+    <div class="phead"><span class="en">TEMP CURVE</span><span class="cap">°C</span></div>
+    <div class="seg">
+      <button class="on">이번 주기</button><button>최근 30일</button><button>전체</button>
+    </div>
+    <div class="chart"><svg id="cv" viewBox="0 0 380 210" style="width:100%;display:block;overflow:visible"></svg></div>
+    <div class="legend">
+      <span><b style="background:#fff;border:2px solid var(--ink)"></b>저온기</span>
+      <span><b style="background:var(--ink)"></b>고온기</span>
+      <span><b style="background:var(--red)"></b>생리</span>
+      <span><b style="background:#fff;border-top:2px dashed var(--ink);width:16px;height:0"></b>커버라인</span>
+      <span>▲ 배테기 양성</span>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="row">
+      <div class="cell"><span class="cap">NEXT PERIOD</span><div class="v">8/4 <small>D-19</small></div></div>
+      <div class="cell"><span class="cap">NEXT O-DAY</span><div class="v">7/21 <small>D-5</small></div></div>
+    </div>
+    <div class="row">
+      <div class="cell"><span class="cap">AVG CYCLE</span><div class="v">28 <small>일</small></div></div>
+      <div class="cell"><span class="cap">PHASE</span><div class="v" style="font-size:21px;font-family:var(--mono);font-weight:800">저온기</div></div>
+    </div>
+  </div>
+
+  <div class="panel-t">
+    <div class="phead"><span class="en">LOG</span><span class="cap">최근 기록</span></div>
+  </div>
+  <div class="log">
+    <div class="row"><span class="d">7.16</span><span class="t">36.52</span><span class="tags">컨디션4 · 영양제 2/3</span></div>
+    <div class="row"><span class="d">7.15</span><span class="t">36.41</span><span class="tags">컨디션3 · 배테기 음성 · 가슴통증</span></div>
+    <div class="row"><span class="d">7.14</span><span class="t">36.34</span><span class="tags">컨디션4 · 영양제 3/3</span></div>
+    <div class="row"><span class="d">7.10</span><span class="t">36.38</span><span class="tags"><span class="rd">생리 시작</span> · 아랫배 · 예민</span></div>
+  </div>
+
+  <div class="note">예측은 통계 기반 참고용이며 의학적 진단이 아닙니다.<br>모든 기록은 이 기기에만 저장됩니다.</div>
+</div>
+
+<div class="nav">
+  <a class="on">TODAY</a><a>CHART</a><a>LOG</a>
+</div>
+
+<script>
+function tg(h){h.parentElement.classList.toggle('open')}
+let t=36.52;
+function tstep(d){t=Math.min(37.5,Math.max(35.5,t+d));document.getElementById('tv').innerHTML=t.toFixed(2)+'<small> °C</small>'}
+let o=0.8;
+function ostep(d){o=Math.min(5,Math.max(0,o+d));document.getElementById('ov').textContent=o.toFixed(1)}
+document.querySelectorAll('.cond button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('.cond button').forEach(x=>x.classList.remove('on'));b.classList.add('on')});
+document.querySelectorAll('[data-one]').forEach(g=>g.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{
+  g.querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));c.classList.add('on')}));
+
+const temps=[[0,36.38,'pd'],[1,36.33,''],[2,36.41,''],[3,36.29,''],[4,36.44,''],[5,36.36,''],[6,36.52,''],
+ [7,36.31,''],[8,36.25,'ov'],[9,36.28,''],[10,36.72,'hi'],[11,36.80,'hi'],[12,36.75,'hi'],[13,36.83,'hi'],
+ [14,36.78,'hi'],[15,36.86,'hi'],[16,36.79,'hi'],[17,36.84,'hi'],[18,36.77,'hi']];
+const W=380,H=210,PL=6,PR=30,PT=14,PB=26,lo=36.1,hi2=37.0;
+const X=i=>PL+(i/(temps.length-1))*(W-PL-PR), Y=v=>PT+(1-(v-lo)/(hi2-lo))*(H-PT-PB);
+let s='';
+for(let g=36.2;g<=36.9;g+=0.2){s+=`<line x1="${PL}" y1="${Y(g)}" x2="${W-PR}" y2="${Y(g)}" stroke="#D8D4C8" stroke-width="1" stroke-dasharray="1 4"/>
+<text x="${W-2}" y="${Y(g)+3.5}" font-size="10" font-weight="700" fill="#6B6759" text-anchor="end" font-family="ui-monospace,monospace">${g.toFixed(1)}</text>`}
+s+=`<line x1="${PL}" y1="${Y(36.55)}" x2="${W-PR}" y2="${Y(36.55)}" stroke="#141310" stroke-width="1.4" stroke-dasharray="6 4"/>`;
+let p='M';temps.forEach((d,i)=>{p+=` ${X(i).toFixed(1)} ${Y(d[1]).toFixed(1)}${i<temps.length-1?' L':''}`});
+s+=`<path d="${p}" fill="none" stroke="#141310" stroke-width="2.5" stroke-linejoin="round"/>`;
+temps.forEach((d,i)=>{
+  const x=X(i),y=Y(d[1]);
+  if(d[2]==='pd')s+=`<circle cx="${x}" cy="${y}" r="5" fill="#DF2B1C" stroke="#fff" stroke-width="1.5"/>`;
+  else if(d[2]==='hi')s+=`<circle cx="${x}" cy="${y}" r="4.4" fill="#141310" stroke="#fff" stroke-width="1.5"/>`;
+  else s+=`<circle cx="${x}" cy="${y}" r="4.4" fill="#fff" stroke="#141310" stroke-width="2"/>`;
+  if(d[2]==='ov')s+=`<path d="M ${x-5} ${y+17} L ${x+5} ${y+17} L ${x} ${y+8} Z" fill="#141310"/><text x="${x}" y="${y+28}" font-size="9" font-weight="700" text-anchor="middle" fill="#6B6759" font-family="ui-monospace,monospace">POS</text>`;
+});
+[[0,'7/10'],[6,'7/16'],[12,'7/22'],[18,'7/28']].forEach(([i,l])=>{s+=`<text x="${X(i)}" y="${H-5}" font-size="10" font-weight="700" fill="#6B6759" text-anchor="middle" font-family="ui-monospace,monospace">${l}</text>`});
+document.getElementById('cv').innerHTML=s;
+</script>
+</body>
+</html>

@@ -5,528 +5,835 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="theme-color" content="#F4F1EA">
-<title>기초체온</title>
+<meta name="apple-mobile-web-app-title" content="BODY.LOG">
+<meta name="theme-color" content="#EDEAE1">
+<title>BODY.LOG</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Doto:wght@700;900&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#F4F1EA;          /* warm cream */
-  --bg2:#EFEAE0;
-  --card:#FFFFFF;
-  --ink:#2B2A26;         /* near-black warm */
-  --muted:#9A948A;       /* muted label */
-  --line:#EBE6DC;        /* hairline */
-  --amber:#E0A33C;       /* primary warm  (고온기) */
-  --amber-soft:#F6E4C4;
-  --sage:#8C9A5B;        /* cool green    (저온기) */
-  --sage-soft:#E3E8D3;
-  --rose:#C98F94;        /* dusty rose (생리) */
-  --rose-soft:#F2DEDF;
-  --terra:#CE8156;       /* terracotta (배란) */
-  --shadow:0 8px 24px rgba(60,50,30,.06), 0 2px 6px rgba(60,50,30,.04);
-  --serif:'Avenir Next',-apple-system,system-ui,sans-serif;      /* 큰 숫자·제목도 Avenir Next */
-  --sans:'Avenir Next',-apple-system,BlinkMacSystemFont,system-ui,'Helvetica Neue',sans-serif; /* iOS 내장 Avenir Next */
+  --paper:#EDEAE1; --panel:#F7F5EF; --dim:#E1DDD1;
+  --ink:#141310; --mut:#6B6759; --red:#DF2B1C;
+  --mono:ui-monospace,'SF Mono',Menlo,'Courier New',monospace;
+  --dot:'Doto',ui-monospace,monospace;
+  --b1:1px; --b2:2px;
 }
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;border-radius:0!important}
 html,body{margin:0;padding:0}
-body{
-  font-family:var(--sans);
-  background:
-    radial-gradient(120% 60% at 100% 0%, #F7 E6 D6 0%, rgba(247,230,214,0) 40%),
-    var(--bg);
-  background:linear-gradient(180deg,#F7ECDD 0%,var(--bg) 22%);
-  color:var(--ink);
-  -webkit-font-smoothing:antialiased;
-  padding-bottom:calc(84px + env(safe-area-inset-bottom));
-  min-height:100vh;
-}
-.wrap{max-width:440px;margin:0 auto;padding:0 18px}
+body{font-family:var(--mono);background:var(--paper);color:var(--ink);
+  -webkit-font-smoothing:antialiased;font-size:15px;line-height:1.5;
+  padding-bottom:calc(76px + env(safe-area-inset-bottom))}
+.wrap{max-width:430px;margin:0 auto;padding:0 14px}
+.cap{font-size:10.5px;letter-spacing:.16em;color:var(--mut);text-transform:uppercase;font-weight:700}
+button{font-family:var(--mono);cursor:pointer;color:var(--ink)}
+.screen{display:none}
+.screen.on{display:block}
 
-/* ---------- top bar ---------- */
-.status{height:env(safe-area-inset-top)}
-.top{display:flex;align-items:center;justify-content:space-between;padding:16px 0 6px}
-.top h1{font-family:var(--serif);font-size:26px;font-weight:600;letter-spacing:-.3px;margin:0}
-.top .date{font-size:13px;color:var(--muted);margin-top:2px}
-.iconbtn{width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:var(--card);
-  display:grid;place-items:center;box-shadow:var(--shadow)}
-.iconbtn svg{width:18px;height:18px;stroke:var(--ink)}
+/* 헤더 */
+.top{display:flex;justify-content:space-between;align-items:flex-end;padding:20px 0 12px}
+.logo{font-family:var(--dot);font-weight:900;font-size:27px;letter-spacing:.05em}
+.logo .r{color:var(--red)}
+.date{font-size:11.5px;letter-spacing:.12em;text-align:right;color:var(--mut);font-weight:700}
+.date b{color:var(--ink);display:block}
 
-/* ---------- weekday strip ---------- */
-.week{display:flex;gap:6px;justify-content:space-between;margin:8px 0 4px}
-.day{flex:1;text-align:center;cursor:pointer}
-.day .dow{font-size:11px;color:var(--muted);margin-bottom:6px}
-.day .num{width:38px;height:38px;margin:0 auto;border-radius:50%;display:grid;place-items:center;
-  font-size:15px;font-weight:600;border:1.5px solid transparent;position:relative;transition:.15s}
-.day.has .num{border-color:var(--sage-soft)}
-.day.active .num{background:var(--amber);color:#fff;border-color:var(--amber)}
-.day.period .num::after{content:"";position:absolute;bottom:3px;width:5px;height:5px;border-radius:50%;background:var(--rose)}
-.day.active.period .num::after{background:#fff}
+/* 주기 패널 */
+.cycle{border:var(--b2) solid var(--ink);background:var(--panel)}
+.cycle .main{display:flex;align-items:stretch}
+.cycle .day{flex:1;padding:16px 18px 12px}
+.cycle .day .n{font-family:var(--dot);font-weight:900;font-size:58px;line-height:.95}
+.cycle .day .n small{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--mut);letter-spacing:.1em}
+.cycle .phase{width:122px;border-left:var(--b1) solid var(--ink);display:flex;flex-direction:column}
+.cycle .phase>div{flex:1;display:flex;flex-direction:column;justify-content:center;padding:8px 14px}
+.cycle .phase>div+div{border-top:var(--b1) solid var(--ink)}
+.cycle .phase b{font-size:15px;font-weight:800}
+.cycle .phase .hl{background:var(--ink)}
+.cycle .phase .hl .cap{color:#B9B4A5}
+.cycle .phase .hl b{color:var(--panel)}
+.cycle .foot{border-top:var(--b1) solid var(--ink);display:flex;background:var(--dim)}
+.cycle .foot>div{flex:1;padding:9px 18px;font-size:12px;font-weight:700}
+.cycle .foot>div+div{border-left:var(--b1) solid var(--ink)}
 
-/* ---------- cards ---------- */
-.card{background:var(--card);border-radius:24px;box-shadow:var(--shadow);padding:20px;margin:14px 0}
-.card.tight{padding:16px}
-.card h2{font-size:15px;font-weight:600;margin:0 0 2px}
-.sub{font-size:12.5px;color:var(--muted)}
+/* 주간 스트립 */
+.week{display:flex;border:var(--b2) solid var(--ink);border-top:none;background:var(--panel)}
+.week .d{flex:1;text-align:center;padding:9px 0 10px;cursor:pointer}
+.week .d+.d{border-left:var(--b1) solid var(--ink)}
+.week .dw{font-size:9.5px;letter-spacing:.1em;color:var(--mut);font-weight:700}
+.week .dn{font-size:17px;font-weight:800;margin-top:2px}
+.week .d .mk{display:block;width:5px;height:5px;background:transparent;margin:3px auto 0}
+.week .d.rec .mk{background:var(--ink)}
+.week .d.pd .mk{background:var(--red)}
+.week .d.sel{background:var(--ink);color:var(--paper)}
+.week .d.sel .dw{color:#B9B4A5}
+.week .d.sel.rec .mk{background:var(--paper)}
+.week .d.sel.pd .mk{background:var(--red)}
 
-/* hero */
-.hero{background:linear-gradient(135deg,#FBF3E4 0%,#F6EAD6 100%);border:1px solid #F0E4CE}
-.hero .row{display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
-.hero .big{font-family:var(--serif);font-size:44px;line-height:1;font-weight:600;letter-spacing:-1px}
-.hero .big small{font-size:18px;font-weight:600;color:var(--muted);font-family:var(--sans)}
-.hero .phase{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;
-  padding:6px 12px;border-radius:999px;background:#fff}
-.dot{width:8px;height:8px;border-radius:50%;display:inline-block}
-.phase.lo{color:#6f7a41}.phase.lo .dot{background:var(--sage)}
-.phase.hi{color:#b07f27}.phase.hi .dot{background:var(--amber)}
-.phase.pd{color:#b06b70}.phase.pd .dot{background:var(--rose)}
+/* 진행률 */
+.prog{display:flex;align-items:center;gap:12px;margin:20px 0 10px}
+.prog .t{font-size:12px;letter-spacing:.18em;font-weight:800}
+.prog .bar{flex:1;height:16px;border:var(--b2) solid var(--ink);display:flex;background:var(--panel)}
+.prog .bar i{flex:1;border-right:var(--b1) solid var(--ink)}
+.prog .bar i:last-child{border-right:none}
+.prog .bar i.on{background:var(--ink)}
+.prog .n{font-family:var(--dot);font-weight:900;font-size:20px}
 
-/* input */
-.field{margin-top:12px}
-.field label{display:block;font-size:12.5px;color:var(--muted);margin-bottom:6px;font-weight:600}
-.temprow{display:flex;align-items:center;gap:14px}
-.tempbig{font-family:var(--serif);font-size:40px;font-weight:600;min-width:120px;letter-spacing:-1px}
-.tempbig .unit{font-size:18px;color:var(--muted);font-family:var(--sans);margin-left:2px}
-.slider{flex:1}
-input[type=range]{-webkit-appearance:none;width:100%;height:6px;border-radius:999px;
-  background:linear-gradient(90deg,var(--sage) 0%,var(--amber-soft) 55%,var(--amber) 100%);outline:none}
-input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;border-radius:50%;
-  background:#fff;border:2px solid var(--amber);box-shadow:0 2px 6px rgba(0,0,0,.15);cursor:pointer}
-.inline{display:flex;gap:10px}
-.inline .field{flex:1;margin-top:0}
-input[type=date],input[type=time]{width:100%;font-family:var(--sans);font-size:15px;color:var(--ink);
-  padding:11px 12px;border:1px solid var(--line);border-radius:14px;background:#FCFBF8;-webkit-appearance:none}
-.check{display:flex;align-items:center;gap:10px;margin-top:14px;padding:12px 14px;border-radius:14px;
-  background:#FCFBF8;border:1px solid var(--line);cursor:pointer;user-select:none}
-.check .box{width:22px;height:22px;border-radius:7px;border:1.5px solid var(--rose);display:grid;place-items:center;flex:0 0 auto}
-.check.on{background:var(--rose-soft);border-color:var(--rose)}
-.check.on .box{background:var(--rose)}
-.check .box svg{width:14px;height:14px;stroke:#fff;opacity:0}
-.check.on .box svg{opacity:1}
-.check .t{font-size:14px;font-weight:600}
-.check .s{font-size:12px;color:var(--muted)}
-.btn{width:100%;margin-top:14px;border:none;border-radius:16px;padding:15px;font-family:var(--sans);
-  font-size:15px;font-weight:700;color:#fff;background:var(--ink);cursor:pointer;box-shadow:var(--shadow)}
-.btn.amber{background:var(--amber)}
-.btn:active{transform:translateY(1px)}
+/* 섹션 */
+.sec{border:var(--b2) solid var(--ink);border-bottom:none;background:var(--panel)}
+.sec.last{border-bottom:var(--b2) solid var(--ink)}
+.sec .head{display:flex;align-items:center;gap:12px;padding:13px 14px;cursor:pointer;user-select:none}
+.sec .idx{font-family:var(--dot);font-weight:900;font-size:15px;width:33px;height:33px;
+  display:grid;place-items:center;border:var(--b1) solid var(--ink);color:var(--mut);flex:0 0 auto}
+.sec.done .idx{background:var(--ink);color:var(--panel)}
+.sec .ttl{flex:1;min-width:0}
+.sec .ttl .en{font-size:9.5px;letter-spacing:.16em;color:var(--mut);font-weight:700;display:block}
+.sec .ttl .ko{font-size:16px;font-weight:800}
+.sec .st{font-size:12.5px;color:var(--mut);text-align:right}
+.sec.done .st{color:var(--ink);font-weight:800}
+.sec .arrow{font-size:12px;color:var(--mut)}
+.sec .body{display:none;border-top:var(--b1) solid var(--ink);padding:16px 14px}
+.sec.open .body{display:block}
 
-/* segmented */
-.seg{display:flex;background:var(--bg2);border-radius:999px;padding:4px;gap:4px;margin:2px 0 8px}
-.seg button{flex:1;border:none;background:transparent;padding:8px 0;border-radius:999px;font-family:var(--sans);
-  font-size:13px;font-weight:600;color:var(--muted);cursor:pointer}
-.seg button.on{background:var(--card);color:var(--ink);box-shadow:0 1px 4px rgba(0,0,0,.06)}
+/* 체온 스테퍼 */
+.temp{display:flex;align-items:center;border:var(--b2) solid var(--ink);background:#fff}
+.temp button{width:56px;height:70px;border:none;background:var(--dim);font-size:26px;font-weight:800}
+.temp button:first-child{border-right:var(--b1) solid var(--ink)}
+.temp button:last-child{border-left:var(--b1) solid var(--ink)}
+.temp .v{flex:1;text-align:center;font-family:var(--dot);font-weight:900;font-size:42px}
+.temp .v small{font-size:14px;font-family:var(--mono);font-weight:700;color:var(--mut)}
+.trow{display:flex;gap:10px;margin-top:12px}
+.trow .f{flex:1}
+.trow label{display:block;font-size:10.5px;letter-spacing:.16em;color:var(--mut);font-weight:700;margin-bottom:5px}
+.trow input{width:100%;font-family:var(--mono);font-size:15px;font-weight:700;padding:10px 12px;
+  border:var(--b1) solid var(--ink);background:#fff;-webkit-appearance:none;color:var(--ink)}
 
-/* chart */
-.chartwrap{position:relative;margin-top:6px}
-svg.chart{width:100%;display:block;overflow:visible}
-.legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px}
-.legend span{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
-.empty{text-align:center;color:var(--muted);font-size:13.5px;padding:34px 10px;line-height:1.6}
+/* 컨디션 */
+.cond{display:flex;border:var(--b2) solid var(--ink);background:#fff}
+.cond button{flex:1;padding:14px 0;border:none;background:transparent;font-size:16px;font-weight:800;color:var(--mut)}
+.cond button+button{border-left:var(--b1) solid var(--ink)}
+.cond button.on{background:var(--ink);color:var(--paper)}
+textarea{width:100%;margin-top:12px;font-family:var(--mono);font-size:14px;padding:11px;
+  border:var(--b1) solid var(--ink);background:#fff;resize:none;color:var(--ink)}
 
-/* stat tiles */
-.tiles{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.tile{background:var(--card);border-radius:20px;box-shadow:var(--shadow);padding:16px}
-.tile .lab{font-size:12px;color:var(--muted);font-weight:600;display:flex;align-items:center;gap:6px}
-.tile .val{font-family:var(--serif);font-size:26px;font-weight:600;margin-top:8px;letter-spacing:-.5px}
-.tile .val small{font-size:13px;color:var(--muted);font-family:var(--sans);font-weight:600}
+/* 칩 */
+.chips{display:flex;flex-wrap:wrap;gap:9px}
+.chip{border:var(--b1) solid var(--ink);background:#fff;padding:9px 13px;font-size:13.5px;font-weight:800}
+.chip.on{background:var(--ink);color:var(--paper)}
+.chip.red.on{background:var(--red);border-color:var(--red);color:#fff}
+.grouplab{font-size:10.5px;letter-spacing:.16em;color:var(--mut);font-weight:700;margin:16px 0 7px}
+.grouplab:first-child{margin-top:0}
 
-/* list */
-.rec{display:flex;align-items:center;gap:12px;padding:12px 2px;border-bottom:1px solid var(--line)}
-.rec:last-child{border-bottom:none}
-.rec .rdate{width:52px;flex:0 0 auto}
-.rec .rdate .d{font-family:var(--serif);font-size:19px;font-weight:600;line-height:1}
-.rec .rdate .m{font-size:11px;color:var(--muted)}
-.rec .rmid{flex:1}
-.rec .rt{font-size:16px;font-weight:700}
-.rec .rmeta{font-size:11.5px;color:var(--muted);margin-top:2px;display:flex;gap:8px;flex-wrap:wrap}
-.pillbadge{font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:999px}
-.pb-rose{background:var(--rose-soft);color:#b06b70}
-.pb-sage{background:var(--sage-soft);color:#6f7a41}
-.pb-amber{background:var(--amber-soft);color:#b07f27}
-.pb-terra{background:#F3DECF;color:#b5673c}
-.rec .del{border:none;background:transparent;color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;padding:6px}
+/* 영양제 체크 */
+.supp{border:var(--b2) solid var(--ink);background:#fff}
+.supp .row{display:flex;align-items:center;gap:13px;padding:12px 14px;cursor:pointer}
+.supp .row+.row{border-top:var(--b1) solid var(--ink)}
+.supp .bx{width:23px;height:23px;border:var(--b2) solid var(--ink);display:grid;place-items:center;flex:0 0 auto;font-size:14px;font-weight:900;color:#fff}
+.supp .row.on .bx{background:var(--ink)}
+.supp .nm{flex:1;font-size:15px;font-weight:800}
+.supp .nm .tm{display:block;font-size:10.5px;color:var(--mut);font-weight:700;margin-top:1px}
+.supp .row.on .nm>span:first-child{text-decoration:line-through;text-decoration-thickness:2px;color:var(--mut)}
+.supp .empty{padding:14px;font-size:13px;color:var(--mut);font-weight:700}
 
-/* demo banner */
-.banner{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#FBF0DC;
-  border:1px solid #F0E1C2;border-radius:16px;padding:11px 14px;margin:14px 0 0;font-size:12.5px;color:#9a7c3d}
-.banner button{border:1px solid #E4C98E;background:#fff;color:#9a7c3d;font-weight:700;font-size:12px;
-  padding:6px 12px;border-radius:999px;cursor:pointer}
+.save{width:100%;margin:16px 0 0;padding:17px;border:var(--b2) solid var(--ink);
+  background:var(--ink);color:var(--paper);font-size:15px;font-weight:800;letter-spacing:.22em}
+.save.flash{background:var(--red);border-color:var(--red)}
 
-/* bottom nav */
-.nav{position:fixed;left:0;right:0;bottom:0;background:rgba(255,255,255,.92);backdrop-filter:blur(12px);
-  border-top:1px solid var(--line);display:flex;justify-content:space-around;align-items:center;
-  padding:8px 0 calc(8px + env(safe-area-inset-bottom));z-index:40}
-.nav a{display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--muted);font-size:10.5px;font-weight:600;
-  text-decoration:none;cursor:pointer;flex:1}
-.nav a svg{width:22px;height:22px;stroke:var(--muted);fill:none}
-.nav a.on{color:var(--amber)}
-.nav a.on svg{stroke:var(--amber)}
-.disclaimer{text-align:center;font-size:11px;color:var(--muted);line-height:1.6;padding:6px 20px 10px}
+/* 차트/패널 */
+.panel-t{margin-top:24px}
+.phead{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
+.phead .en{font-family:var(--dot);font-weight:900;font-size:19px}
+.seg{display:flex;border:var(--b2) solid var(--ink);background:var(--panel)}
+.seg button{flex:1;padding:11px 0;border:none;background:transparent;font-size:12.5px;font-weight:800;color:var(--mut)}
+.seg button+button{border-left:var(--b1) solid var(--ink)}
+.seg button.on{background:var(--ink);color:var(--paper)}
+.chart{border:var(--b2) solid var(--ink);border-top:none;padding:16px 8px 8px;background:#fff}
+.chart .empty{padding:40px 16px;text-align:center;font-size:13px;color:var(--mut);font-weight:700;line-height:1.8}
+.legend{display:flex;gap:13px;flex-wrap:wrap;border:var(--b2) solid var(--ink);border-top:none;padding:10px 13px;
+  font-size:11.5px;color:var(--ink);font-weight:700;background:var(--panel)}
+.legend b{display:inline-block;width:10px;height:10px;margin-right:5px;vertical-align:-1px}
+
+/* 통계 */
+.stats{border:var(--b2) solid var(--ink);margin-top:24px;background:var(--panel)}
+.stats .row{display:flex}
+.stats .row+.row{border-top:var(--b1) solid var(--ink)}
+.stats .cell{flex:1;padding:13px 16px;min-width:0}
+.stats .cell+.cell{border-left:var(--b1) solid var(--ink)}
+.stats .v{font-family:var(--dot);font-weight:900;font-size:28px;margin-top:5px;white-space:nowrap}
+.stats .v small{font-size:12px;font-family:var(--mono);font-weight:700;color:var(--mut)}
+.stats .v.ko{font-family:var(--mono);font-weight:800;font-size:20px}
+
+/* 로그 */
+.log{border:var(--b2) solid var(--ink);background:var(--panel)}
+.log .row{display:flex;gap:12px;padding:13px 14px;align-items:baseline;cursor:pointer}
+.log .row+.row{border-top:var(--b1) solid var(--ink)}
+.log .d{font-family:var(--dot);font-weight:900;font-size:16px;width:56px;flex:0 0 auto}
+.log .t{font-weight:800;width:60px;font-size:15px;flex:0 0 auto}
+.log .t.no{color:var(--mut);font-weight:700}
+.log .tags{flex:1;font-size:12px;color:var(--mut);font-weight:700;line-height:1.6}
+.log .tags .rd{color:var(--red);font-weight:800}
+.log .del{border:none;background:transparent;color:var(--mut);font-size:11.5px;font-weight:700;padding:2px 4px;flex:0 0 auto}
+.log .empty{padding:30px 16px;text-align:center;font-size:13px;color:var(--mut);font-weight:700;line-height:1.8}
+
+/* MY 탭 */
+.mycard{border:var(--b2) solid var(--ink);background:var(--panel);margin-bottom:20px}
+.mycard .mh{padding:13px 14px;border-bottom:var(--b1) solid var(--ink);display:flex;justify-content:space-between;align-items:center}
+.mycard .mh .ko{font-size:16px;font-weight:800}
+.mycard .mb{padding:14px}
+.slist .srow{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:var(--b1) solid var(--dim)}
+.slist .srow:last-child{border-bottom:none}
+.slist .snm{flex:1;font-size:15px;font-weight:800}
+.slist .snm .tm{display:block;font-size:11px;color:var(--mut);font-weight:700;margin-top:1px}
+.slist .sdel{border:var(--b1) solid var(--ink);background:#fff;font-size:11px;font-weight:800;padding:6px 10px}
+.addrow{display:flex;gap:8px;margin-top:12px}
+.addrow input{flex:1;font-family:var(--mono);font-size:14px;font-weight:700;padding:11px 12px;
+  border:var(--b1) solid var(--ink);background:#fff;color:var(--ink)}
+.addrow button{border:var(--b2) solid var(--ink);background:var(--ink);color:var(--paper);font-size:13px;font-weight:800;padding:0 16px}
+.mybtn{width:100%;border:var(--b1) solid var(--ink);background:#fff;padding:13px;font-size:13.5px;font-weight:800;margin-top:8px}
+.mybtn.warn{color:var(--red);border-color:var(--red)}
+.myhint{font-size:11.5px;color:var(--mut);font-weight:700;line-height:1.7;margin-top:10px}
+
+.banner{display:flex;align-items:center;justify-content:space-between;gap:10px;border:var(--b2) solid var(--ink);
+  background:var(--dim);padding:11px 14px;margin:16px 0 0;font-size:12px;font-weight:700}
+.banner button{border:var(--b1) solid var(--ink);background:var(--ink);color:var(--paper);font-weight:800;font-size:11.5px;padding:7px 12px}
+.note{font-size:11px;color:var(--mut);text-align:center;margin:24px 0 8px;line-height:1.8;font-weight:700}
+
+/* 하단 탭 */
+.nav{position:fixed;left:0;right:0;bottom:0;background:var(--paper);border-top:var(--b2) solid var(--ink);
+  display:flex;z-index:50;padding-bottom:env(safe-area-inset-bottom)}
+.nav a{flex:1;text-align:center;padding:15px 0 13px;font-size:11.5px;letter-spacing:.18em;font-weight:800;color:var(--mut);cursor:pointer}
+.nav a+a{border-left:var(--b1) solid var(--ink)}
+.nav a.on{background:var(--ink);color:var(--paper)}
 </style>
 </head>
 <body>
-<div class="status"></div>
 <div class="wrap">
-
   <div class="top">
-    <div>
-      <h1>기초체온</h1>
-      <div class="date" id="todayLabel"></div>
-    </div>
-    <div class="iconbtn" id="jumpToday" title="오늘로">
-      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <rect x="3" y="4" width="18" height="18" rx="3"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-    </div>
+    <div class="logo">BODY<span class="r">.</span>LOG</div>
+    <div class="date" id="hdate"></div>
   </div>
 
-  <div class="week" id="week"></div>
-
-  <!-- HERO -->
-  <div class="card hero" id="hero">
-    <div class="row">
-      <div>
-        <div class="sub" id="heroTop">이번 주기</div>
-        <div class="big" id="heroBig">—</div>
+  <!-- ============ TODAY ============ -->
+  <section class="screen on" id="scr-today">
+    <div class="cycle">
+      <div class="main">
+        <div class="day"><div class="cap">CYCLE DAY</div><div class="n" id="cday">—</div></div>
+        <div class="phase">
+          <div class="hl"><span class="cap">PHASE</span><b id="cphase">—</b></div>
+          <div><span class="cap">O-DAY</span><b id="coday">—</b></div>
+          <div><span class="cap">P-DAY</span><b id="cpday">—</b></div>
+        </div>
       </div>
-      <div id="heroPhase"></div>
+      <div class="foot"><div id="cstart">—</div><div id="cavg">—</div></div>
     </div>
-  </div>
+    <div class="week" id="week"></div>
 
-  <!-- INPUT -->
-  <div class="card" id="inputCard">
-    <h2 id="inputTitle">오늘의 기초체온</h2>
-    <div class="sub">아침에 눈뜨자마자, 움직이기 전에 재는 게 정확해요.</div>
+    <div class="prog">
+      <div class="t">TODAY</div>
+      <div class="bar" id="pbar"></div>
+      <div class="n" id="pnum">0/6</div>
+    </div>
 
-    <div class="field">
-      <div class="temprow">
-        <div class="tempbig"><span id="tempVal">36.50</span><span class="unit">°C</span></div>
-        <div class="slider">
-          <input type="range" id="temp" min="35.50" max="37.50" step="0.01" value="36.50">
+    <div class="sec open" id="s1">
+      <div class="head" data-tg>
+        <span class="idx">01</span>
+        <span class="ttl"><span class="en">BASAL BODY TEMP</span><span class="ko">기초체온</span></span>
+        <span class="st" id="st1">미기록</span><span class="arrow">▾</span>
+      </div>
+      <div class="body">
+        <div class="temp">
+          <button id="tminus">−</button>
+          <div class="v" id="tv">36.50<small> °C</small></div>
+          <button id="tplus">+</button>
+        </div>
+        <div class="trow">
+          <div class="f"><label>DATE</label><input type="date" id="fdate"></div>
+          <div class="f"><label>TIME</label><input type="time" id="ftime"></div>
+        </div>
+        <div class="chips" style="margin-top:14px">
+          <button class="chip red" id="fperiod">생리 시작일</button>
         </div>
       </div>
     </div>
 
-    <div class="inline" style="margin-top:14px">
-      <div class="field"><label>날짜</label><input type="date" id="date"></div>
-      <div class="field"><label>측정 시각</label><input type="time" id="time"></div>
+    <div class="sec" id="s2">
+      <div class="head" data-tg>
+        <span class="idx">02</span>
+        <span class="ttl"><span class="en">CONDITION</span><span class="ko">몸 상태</span></span>
+        <span class="st" id="st2">미기록</span><span class="arrow">▾</span>
+      </div>
+      <div class="body">
+        <div class="cond" id="fcond">
+          <button data-v="1">1</button><button data-v="2">2</button><button data-v="3">3</button><button data-v="4">4</button><button data-v="5">5</button>
+        </div>
+        <textarea rows="2" id="fmemo" placeholder="메모 — 오늘 몸 상태를 자유롭게"></textarea>
+      </div>
     </div>
 
-    <div class="check" id="periodChk">
-      <span class="box"><svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg></span>
-      <div><div class="t">생리 시작일</div><div class="s">주기 시작이면 체크 (예측의 기준점)</div></div>
+    <div class="sec" id="s3">
+      <div class="head" data-tg>
+        <span class="idx">03</span>
+        <span class="ttl"><span class="en">OVULATION TEST</span><span class="ko">배란테스트기</span></span>
+        <span class="st" id="st3">미기록</span><span class="arrow">▾</span>
+      </div>
+      <div class="body">
+        <div class="grouplab">RESULT</div>
+        <div class="chips" id="fovres">
+          <button class="chip" data-v="negative">음성</button>
+          <button class="chip" data-v="positive">양성</button>
+          <button class="chip" data-v="peak">피크</button>
+        </div>
+        <div class="grouplab">T/C 수치 (선택)</div>
+        <div class="temp" style="max-width:230px">
+          <button id="ominus" style="height:56px;width:50px">−</button>
+          <div class="v" id="ov" style="font-size:26px">—</div>
+          <button id="oplus" style="height:56px;width:50px">+</button>
+        </div>
+      </div>
     </div>
 
-    <button class="btn amber" id="save">저장하기</button>
-  </div>
-
-  <!-- CHART -->
-  <div class="card">
-    <div style="display:flex;align-items:center;justify-content:space-between">
-      <h2>체온 곡선</h2>
+    <div class="sec" id="s4">
+      <div class="head" data-tg>
+        <span class="idx">04</span>
+        <span class="ttl"><span class="en">PREGNANCY TEST</span><span class="ko">임신테스트기</span></span>
+        <span class="st" id="st4">미기록</span><span class="arrow">▾</span>
+      </div>
+      <div class="body">
+        <div class="chips" id="fpreg">
+          <button class="chip" data-v="none">한 줄 (단호박)</button>
+          <button class="chip" data-v="faint">미세 시약선</button>
+          <button class="chip" data-v="strong">진한 두 줄</button>
+        </div>
+      </div>
     </div>
+
+    <div class="sec" id="s5">
+      <div class="head" data-tg>
+        <span class="idx">05</span>
+        <span class="ttl"><span class="en">SUPPLEMENTS</span><span class="ko">영양제</span></span>
+        <span class="st" id="st5">미기록</span><span class="arrow">▾</span>
+      </div>
+      <div class="body"><div class="supp" id="fsupp"></div></div>
+    </div>
+
+    <div class="sec last" id="s6">
+      <div class="head" data-tg>
+        <span class="idx">06</span>
+        <span class="ttl"><span class="en">SYMPTOMS</span><span class="ko">신체 증상</span></span>
+        <span class="st" id="st6">미기록</span><span class="arrow">▾</span>
+      </div>
+      <div class="body">
+        <div class="grouplab">분비물</div>
+        <div class="chips" id="fdis">
+          <button class="chip" data-v="dry">건조</button><button class="chip" data-v="sticky">끈적</button>
+          <button class="chip" data-v="creamy">크림</button><button class="chip" data-v="eggwhite">계란흰자</button>
+          <button class="chip" data-v="watery">물 같음</button>
+        </div>
+        <div class="grouplab">통증</div>
+        <div class="chips" id="fpain">
+          <button class="chip" data-v="아랫배">아랫배</button><button class="chip" data-v="허리">허리</button>
+          <button class="chip" data-v="가슴 통증">가슴 통증</button><button class="chip" data-v="두통">두통</button>
+        </div>
+        <div class="grouplab">감정</div>
+        <div class="chips" id="femo">
+          <button class="chip" data-v="안정">안정</button><button class="chip" data-v="예민">예민</button>
+          <button class="chip" data-v="불안">불안</button><button class="chip" data-v="우울">우울</button>
+          <button class="chip" data-v="기대감">기대감</button>
+        </div>
+      </div>
+    </div>
+
+    <button class="save" id="btnSave">SAVE — 기록 저장</button>
+    <div class="banner" id="demoBanner" style="display:none">
+      <span>예시 데이터로 미리보는 중</span><button id="clearDemo">내 기록 시작</button>
+    </div>
+  </section>
+
+  <!-- ============ CHART ============ -->
+  <section class="screen" id="scr-chart">
+    <div class="phead"><span class="en">TEMP CURVE</span><span class="cap">°C</span></div>
     <div class="seg" id="rangeSeg">
-      <button data-r="cycle" class="on">이번 주기</button>
+      <button class="on" data-r="cycle">이번 주기</button>
       <button data-r="30">최근 30일</button>
       <button data-r="all">전체</button>
     </div>
-    <div class="chartwrap" id="chartwrap"></div>
+    <div class="chart" id="chartbox"></div>
     <div class="legend">
-      <span><i class="dot" style="background:var(--sage)"></i>저온기</span>
-      <span><i class="dot" style="background:var(--amber)"></i>고온기</span>
-      <span><i class="dot" style="background:var(--terra)"></i>배란 추정</span>
-      <span><i class="dot" style="background:var(--rose)"></i>생리</span>
+      <span><b style="background:#fff;border:2px solid var(--ink)"></b>저온기</span>
+      <span><b style="background:var(--ink)"></b>고온기</span>
+      <span><b style="background:var(--red)"></b>생리</span>
+      <span><b style="background:#fff;border-top:2px dashed var(--ink);width:16px;height:0"></b>커버라인</span>
+      <span>▲ 배테기 양성</span>
     </div>
-  </div>
-
-  <!-- STATS -->
-  <div class="tiles" style="margin:14px 0">
-    <div class="tile"><div class="lab"><i class="dot" style="background:var(--rose)"></i>다음 생리</div><div class="val" id="stNextP">—</div></div>
-    <div class="tile"><div class="lab"><i class="dot" style="background:var(--terra)"></i>다음 배란</div><div class="val" id="stNextO">—</div></div>
-    <div class="tile"><div class="lab"><i class="dot" style="background:var(--sage)"></i>평균 주기</div><div class="val" id="stAvg">—</div></div>
-    <div class="tile"><div class="lab"><i class="dot" style="background:var(--amber)"></i>현재 시기</div><div class="val" id="stPhase">—</div></div>
-  </div>
-
-  <!-- RECORDS -->
-  <div class="card">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-      <h2>기록</h2><span class="sub" id="recCount"></span>
+    <div class="stats">
+      <div class="row">
+        <div class="cell"><span class="cap">NEXT PERIOD</span><div class="v" id="stNP">—</div></div>
+        <div class="cell"><span class="cap">NEXT O-DAY</span><div class="v" id="stNO">—</div></div>
+      </div>
+      <div class="row">
+        <div class="cell"><span class="cap">AVG CYCLE</span><div class="v" id="stAvg">—</div></div>
+        <div class="cell"><span class="cap">PHASE</span><div class="v ko" id="stPh">—</div></div>
+      </div>
     </div>
-    <div id="recList"></div>
-  </div>
+    <div class="note">예측은 통계 기반 참고용이며 의학적 진단이 아닙니다.</div>
+  </section>
 
-  <div class="banner" id="demoBanner" style="display:none">
-    <span>예시 데이터로 미리보는 중이에요.</span>
-    <button id="clearDemo">내 기록 시작</button>
-  </div>
+  <!-- ============ LOG ============ -->
+  <section class="screen" id="scr-log">
+    <div class="phead"><span class="en">LOG</span><span class="cap" id="logCount"></span></div>
+    <div class="log" id="loglist"></div>
+    <div class="note">행을 누르면 그날 기록을 수정할 수 있어요.</div>
+  </section>
 
-  <div class="disclaimer">배란·생리 예측은 통계 기반 참고용이며 의학적 진단이 아니에요.<br>데이터는 이 기기에만 저장됩니다.</div>
+  <!-- ============ MY ============ -->
+  <section class="screen" id="scr-my">
+    <div class="mycard">
+      <div class="mh"><span class="ko">내 영양제</span><span class="cap">SUPPLEMENTS</span></div>
+      <div class="mb">
+        <div class="slist" id="slist"></div>
+        <div class="addrow">
+          <input id="snew" placeholder="영양제 이름 (예: 엽산, 철분)">
+          <button id="sadd">추가</button>
+        </div>
+        <div class="myhint">이름을 인식해 권장 복용시간을 자동으로 알려드려요. (철분, 엽산, 비타민D, 오메가3, 칼슘, 마그네슘, 유산균, 이노시톨, 코큐텐, 비타민C, 종합비타민)</div>
+      </div>
+    </div>
+    <div class="mycard">
+      <div class="mh"><span class="ko">데이터</span><span class="cap">DATA</span></div>
+      <div class="mb">
+        <button class="mybtn" id="btnExport">기록 내보내기 (JSON 백업)</button>
+        <button class="mybtn" id="btnImport">백업 불러오기</button>
+        <input type="file" id="fileImport" accept=".json" style="display:none">
+        <button class="mybtn warn" id="btnWipe">모든 기록 삭제</button>
+        <div class="myhint">기록은 이 기기 브라우저에만 저장됩니다. 기기를 바꾸기 전에 꼭 내보내기로 백업하세요.</div>
+      </div>
+    </div>
+    <div class="note">BODY.LOG — 예측은 참고용이며 의학적 진단이 아닙니다.</div>
+  </section>
 </div>
 
-<!-- BOTTOM NAV -->
 <div class="nav">
-  <a class="on"><svg viewBox="0 0 24 24" stroke-width="1.8"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>홈</a>
-  <a id="navChart"><svg viewBox="0 0 24 24" stroke-width="1.8"><path d="M4 19V5M4 19h16"/><path d="M8 15l4-5 3 3 4-6"/></svg>차트</a>
-  <a id="navRec"><svg viewBox="0 0 24 24" stroke-width="1.8"><path d="M4 6h16M4 12h16M4 18h10"/></svg>기록</a>
+  <a class="on" data-tab="today">TODAY</a>
+  <a data-tab="chart">CHART</a>
+  <a data-tab="log">LOG</a>
+  <a data-tab="my">MY</a>
 </div>
 
 <script>
+'use strict';
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
-const KEY='bbt_entries_v1', DEMO='bbt_demo_v1';
+const KEY='bodylog_v2', DEMO='bodylog_demo_v2';
 const pad=n=>String(n).padStart(2,'0');
 const toKey=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
 const parseKey=s=>{const[a,b,c]=s.split('-').map(Number);return new Date(a,b-1,c)};
 const dayDiff=(a,b)=>Math.round((parseKey(a)-parseKey(b))/86400000);
 const addDays=(s,n)=>{const d=parseKey(s);d.setDate(d.getDate()+n);return toKey(d)};
-const MON=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
-const DOW=['일','월','화','수','목','금','토'];
+const DOW=['SUN','MON','TUE','WED','THU','FRI','SAT'];
+const DOWK=['일','월','화','수','목','금','토'];
 
-let store=load(), selDate=toKey(new Date());
+/* ---------- 영양제 복용시간 지식 ---------- */
+const TIMING=[
+  [/철분|iron/i,'아침 공복 · 비타민C와 함께, 칼슘·커피와 2시간 간격'],
+  [/엽산|folic|folate/i,'아침 식후'],
+  [/비타민\s*d|vit\s*d|비타민디/i,'아침·점심 식후 (지방과 함께 흡수)'],
+  [/오메가|omega|epa|dha|피쉬오일|fish/i,'식사 직후 (공복 섭취 시 트림 유발)'],
+  [/칼슘|calcium/i,'저녁 식후 · 철분과 시간 분리'],
+  [/마그네슘|magnesium/i,'취침 전 (수면에 도움)'],
+  [/유산균|프로바이오|probio/i,'아침 공복 또는 취침 전'],
+  [/이노시톨|inositol/i,'아침·저녁 나눠서 복용'],
+  [/코큐텐|코엔자임|coq/i,'식사 직후 (지용성)'],
+  [/비타민\s*c|vit\s*c|비타민씨/i,'식후 · 철분과 함께 먹으면 흡수 상승'],
+  [/종합|멀티|multi/i,'아침 식후'],
+  [/비타민\s*e/i,'식사 직후 (지용성)'],
+];
+const timingFor=name=>{for(const[re,t]of TIMING)if(re.test(name))return t;return '식후 복용 권장'};
 
-function load(){try{return JSON.parse(localStorage.getItem(KEY))||{}}catch(e){return {}}}
-function save(){localStorage.setItem(KEY,JSON.stringify(store))}
-function entries(){return Object.values(store).sort((a,b)=>a.date<b.date?-1:1)}
+/* ---------- 저장소 ---------- */
+let S=loadStore();
+function loadStore(){
+  try{const v=JSON.parse(localStorage.getItem(KEY));if(v&&v.days)return v}catch(e){}
+  // v1 마이그레이션 (실기록만 — 예시데이터는 제외)
+  const s={version:2,settings:{supplements:[]},days:{}};
+  try{
+    const v1=JSON.parse(localStorage.getItem('bbt_entries_v1'));
+    if(v1&&localStorage.getItem('bbt_demo_v1')!=='on'){
+      for(const k in v1){const e=v1[k];
+        s.days[e.date]={temp:{value:e.temp,time:e.time||''}};
+        if(e.period)s.days[e.date].period=true;}
+    }
+  }catch(e){}
+  return s;
+}
+function save(){localStorage.setItem(KEY,JSON.stringify(S))}
+function days(){return Object.keys(S.days).sort()}
 
-/* ---------- demo seed ---------- */
+/* ---------- 예시 데이터 ---------- */
 function seedDemo(){
-  if(localStorage.getItem(DEMO)) return;         // already decided
-  if(Object.keys(store).length) return;
-  const today=new Date(); const s={};
-  // two cycles: period starts at day -34 and day -6 (avg ~28)
-  const starts=[-34,-6];
-  const base=[36.35,36.42,36.30,36.38,36.33,36.41,36.29,36.44,36.36,36.31,36.25,36.28, // low phase w/ dip
-              36.72,36.80,36.75,36.83,36.78,36.86,36.79,36.84,36.77,36.81,36.74,36.80,36.71,36.68]; // high
+  if(Object.keys(S.days).length||localStorage.getItem(DEMO))return;
+  const base=[36.38,36.33,36.41,36.29,36.44,36.36,36.52,36.31,36.25,36.28,36.72,36.80,36.75,36.83,36.78,36.86,36.79,36.84,36.77,36.81,36.74,36.80,36.71,36.68,36.42,36.35];
+  S.settings.supplements=[{id:'p1',name:'엽산'},{id:'p2',name:'비타민 D'},{id:'p3',name:'오메가 3'}];
+  const today=toKey(new Date());
   for(let i=34;i>=0;i--){
-    const dk=toKey(new Date(today.getFullYear(),today.getMonth(),today.getDate()-i));
-    // cycle day within current cycle (start -6) or previous (start -34)
-    let cd = i<=6 ? (6-i) : (34-i);
-    let t = base[Math.min(cd,base.length-1)] + (i%2?0.0:0.01);
-    if(i>34) continue;
-    s[dk]={date:dk,temp:+t.toFixed(2),time:'07:'+pad(10+(i%20)),period:(i===34||i===6)};
+    const dk=addDays(today,-i);
+    const cd=i<=6?(6-i):(34-i);
+    if(cd>=base.length)continue;
+    const d={temp:{value:+(base[cd]+(i%2?0:0.01)).toFixed(2),time:'07:'+pad(5+(i%25))}};
+    if(i===34||i===6)d.period=true;
+    if(i%2===0)d.condition={score:3+(i%3),memo:i%6===0?'몸이 가볍고 컨디션 좋음':''};
+    if(cd>=7&&cd<=10)d.ovulation={result:cd===9?'positive':cd===10?'peak':'negative',ratio:cd===10?1.2:0.6};
+    d.supplements={p1:true,p2:i%3!==0,p3:i%2===0};
+    if(i===34||i===6)d.symptoms={pains:['아랫배'],emotions:['예민']};
+    if(cd===8)d.symptoms={discharge:'eggwhite',pains:[],emotions:['기대감']};
+    S.days[dk]=d;
   }
-  store=s; save(); localStorage.setItem(DEMO,'on');
+  save();localStorage.setItem(DEMO,'on');
 }
 
-/* ---------- cycle analytics ---------- */
-function periodStarts(){return entries().filter(e=>e.period).map(e=>e.date)}
+/* ---------- 주기 계산 ---------- */
+function periodStarts(){return days().filter(k=>S.days[k].period)}
+function lastPeriod(before){const p=periodStarts().filter(k=>k<=before);return p.length?p[p.length-1]:null}
 function avgCycle(){
-  const p=periodStarts(); if(p.length<2) return null;
-  let sum=0,n=0; for(let i=1;i<p.length;i++){const g=dayDiff(p[i],p[i-1]); if(g>=18&&g<=45){sum+=g;n++}}
+  const p=periodStarts();if(p.length<2)return null;
+  let sum=0,n=0;for(let i=1;i<p.length;i++){const g=dayDiff(p[i],p[i-1]);if(g>=18&&g<=45){sum+=g;n++}}
   return n?Math.round(sum/n):null;
 }
-function lastPeriod(){const p=periodStarts();return p.length?p[p.length-1]:null}
-function currentCycleDay(){const lp=lastPeriod();if(!lp)return null;return dayDiff(selDate,lp)+1}
-// coverline: after >=6 lows, 3 consecutive temps > (max of prev 6 lows + 0.10) => high phase
-function analyzeCycle(cycleEntries){
-  const es=cycleEntries.filter(e=>e.temp).sort((a,b)=>a.date<b.date?-1:1);
+function tempEntries(){return days().filter(k=>S.days[k].temp).map(k=>({date:k,temp:S.days[k].temp.value}))}
+function cycleEntriesFor(anchor){
+  const p=periodStarts();let start=null,end=null;
+  for(let i=0;i<p.length;i++){if(p[i]<=anchor){start=p[i];end=p[i+1]||null}}
+  const all=tempEntries();
+  if(!start)start=all.length?all[0].date:anchor;
+  return all.filter(e=>e.date>=start&&(!end||e.date<end));
+}
+function analyzeCycle(es){
   let riseIdx=-1;
-  for(let i=6;i<=es.length-1;i++){
+  for(let i=6;i<es.length;i++){
     const prev6=es.slice(i-6,i).map(e=>e.temp);
     const cover=Math.max(...prev6)+0.10;
-    if(es[i]&&es[i].temp>cover && es[i+1]&&es[i+1].temp>cover-0.05 && es[i+2]&&es[i+2].temp>cover-0.05){
-      riseIdx=i;break;
-    }
+    if(es[i].temp>cover&&es[i+1]&&es[i+1].temp>cover-0.05&&es[i+2]&&es[i+2].temp>cover-0.05){riseIdx=i;break}
   }
-  let ovulation=null,cover=null;
-  if(riseIdx>0){
-    ovulation=es[riseIdx-1].date;
-    cover=Math.max(...es.slice(riseIdx-6,riseIdx).map(e=>e.temp))+0.10;
-  }
-  return {es,riseIdx,ovulation,cover};
-}
-function cycleEntriesFor(anchor){
-  const lp=lastPeriod(); const all=entries();
-  const p=periodStarts();
-  // find period start <= anchor
-  let start=null,end=null;
-  for(let i=0;i<p.length;i++){ if(p[i]<=anchor){start=p[i]; end=p[i+1]||null} }
-  if(!start){ start=all.length?all[0].date:anchor }
-  return all.filter(e=> e.date>=start && (!end||e.date<end));
+  let ovu=null,cover=null;
+  if(riseIdx>0){ovu=es[riseIdx-1].date;cover=Math.max(...es.slice(riseIdx-6,riseIdx).map(e=>e.temp))+0.10}
+  return{riseIdx,ovulation:ovu,cover};
 }
 
-/* ---------- render ---------- */
-function render(){
-  const now=new Date();
-  $('#todayLabel').textContent=`${now.getFullYear()}년 ${MON[now.getMonth()]} ${now.getDate()}일 ${DOW[now.getDay()]}요일`;
-  renderWeek();
-  renderInput();
-  renderHero();
-  renderChart();
-  renderStats();
-  renderList();
-  $('#demoBanner').style.display = localStorage.getItem(DEMO)==='on' ? 'flex':'none';
-}
+/* ---------- 상태 ---------- */
+let selDate=toKey(new Date());
+let range='cycle';
+let form={};      // 편집 중 폼 상태
+let tempTouched=false;
 
+/* ---------- TODAY 렌더 ---------- */
+function loadForm(){
+  const d=S.days[selDate]||{};
+  form={
+    temp:d.temp?d.temp.value:36.50,
+    time:d.temp?d.temp.time:(selDate===toKey(new Date())?`${pad(new Date().getHours())}:${pad(new Date().getMinutes())}`:'07:00'),
+    period:!!d.period,
+    cond:d.condition?d.condition.score:0,
+    memo:d.condition?d.condition.memo||'':'',
+    ovres:d.ovulation?d.ovulation.result:'',
+    ovratio:d.ovulation&&d.ovulation.ratio!=null?d.ovulation.ratio:null,
+    preg:d.pregnancy?d.pregnancy.result:'',
+    supp:Object.assign({},d.supplements||{}),
+    dis:d.symptoms?d.symptoms.discharge||'':'',
+    pains:d.symptoms?[...(d.symptoms.pains||[])]:[],
+    emos:d.symptoms?[...(d.symptoms.emotions||[])]:[],
+  };
+  tempTouched=!!d.temp;
+}
+function renderForm(){
+  $('#tv').innerHTML=(+form.temp).toFixed(2)+'<small> °C</small>';
+  $('#fdate').value=selDate;
+  $('#ftime').value=form.time;
+  $('#fperiod').classList.toggle('on',form.period);
+  $$('#fcond button').forEach(b=>b.classList.toggle('on',+b.dataset.v===form.cond));
+  $('#fmemo').value=form.memo;
+  $$('#fovres .chip').forEach(b=>b.classList.toggle('on',b.dataset.v===form.ovres));
+  $('#ov').textContent=form.ovratio==null?'—':form.ovratio.toFixed(1);
+  $$('#fpreg .chip').forEach(b=>b.classList.toggle('on',b.dataset.v===form.preg));
+  renderSuppCheck();
+  $$('#fdis .chip').forEach(b=>b.classList.toggle('on',b.dataset.v===form.dis));
+  $$('#fpain .chip').forEach(b=>b.classList.toggle('on',form.pains.includes(b.dataset.v)));
+  $$('#femo .chip').forEach(b=>b.classList.toggle('on',form.emos.includes(b.dataset.v)));
+  renderStatuses();
+}
+function renderSuppCheck(){
+  const box=$('#fsupp');const list=S.settings.supplements;
+  if(!list.length){box.innerHTML='<div class="empty">MY 탭에서 내 영양제를 먼저 등록하세요.</div>';return}
+  box.innerHTML=list.map(s=>`
+    <div class="row ${form.supp[s.id]?'on':''}" data-sid="${s.id}">
+      <span class="bx">✓</span>
+      <span class="nm"><span>${esc(s.name)}</span><span class="tm">${timingFor(s.name)}</span></span>
+    </div>`).join('');
+  $$('#fsupp .row').forEach(r=>r.onclick=()=>{
+    form.supp[r.dataset.sid]=!form.supp[r.dataset.sid];
+    r.classList.toggle('on');renderStatuses();
+  });
+}
+function sectionStates(){
+  const sup=S.settings.supplements;
+  const supN=sup.filter(s=>form.supp[s.id]).length;
+  const symN=(form.dis?1:0)+form.pains.length+form.emos.length;
+  return[
+    {done:tempTouched,st:tempTouched?(+form.temp).toFixed(2)+' · '+form.time:'미기록'},
+    {done:form.cond>0,st:form.cond>0?form.cond+'/5':'미기록'},
+    {done:!!form.ovres,st:form.ovres?({negative:'음성',positive:'양성',peak:'피크'})[form.ovres]:'미기록'},
+    {done:!!form.preg,st:form.preg?({none:'한 줄',faint:'미세선',strong:'두 줄'})[form.preg]:'미기록'},
+    {done:supN>0,st:sup.length?supN+'/'+sup.length:'미등록'},
+    {done:symN>0,st:symN>0?symN+'개 선택':'미기록'},
+  ];
+}
+function renderStatuses(){
+  const sts=sectionStates();
+  sts.forEach((s,i)=>{
+    $('#st'+(i+1)).textContent=s.st;
+    $('#s'+(i+1)).classList.toggle('done',s.done);
+  });
+  const n=sts.filter(s=>s.done).length;
+  $('#pnum').textContent=n+'/6';
+  $('#pbar').innerHTML=sts.map(s=>`<i class="${s.done?'on':''}"></i>`).join('');
+}
 function renderWeek(){
-  const w=$('#week'); w.innerHTML='';
+  const w=$('#week');w.innerHTML='';
   const base=parseKey(selDate);
-  const dow=base.getDay();
-  const monday=new Date(base); monday.setDate(base.getDate()-dow); // start Sunday
+  const sun=new Date(base);sun.setDate(base.getDate()-base.getDay());
   for(let i=0;i<7;i++){
-    const d=new Date(monday); d.setDate(monday.getDate()+i);
-    const k=toKey(d); const e=store[k];
+    const d=new Date(sun);d.setDate(sun.getDate()+i);
+    const k=toKey(d),e=S.days[k];
     const el=document.createElement('div');
-    el.className='day'+(k===selDate?' active':'')+(e?' has':'')+(e&&e.period?' period':'');
-    el.innerHTML=`<div class="dow">${DOW[i]}</div><div class="num">${d.getDate()}</div>`;
-    el.onclick=()=>{selDate=k; renderWeek(); renderInput(); renderHero(); renderChart();};
+    el.className='d'+(k===selDate?' sel':'')+(e?' rec':'')+(e&&e.period?' pd':'');
+    el.innerHTML=`<div class="dw">${DOW[i]}</div><div class="dn">${d.getDate()}</div><span class="mk"></span>`;
+    el.onclick=()=>{selDate=k;loadForm();renderToday()};
     w.appendChild(el);
   }
 }
-
-function renderInput(){
-  const e=store[selDate];
-  $('#date').value=selDate;
-  const isToday=selDate===toKey(new Date());
-  $('#inputTitle').textContent = isToday?'오늘의 기초체온':`${MON[parseKey(selDate).getMonth()]} ${parseKey(selDate).getDate()}일 기록`;
-  if(e){ setTemp(e.temp); $('#time').value=e.time||''; setPeriod(!!e.period); $('#save').textContent='수정하기';}
-  else{ setTemp(36.50); $('#time').value = isToday?`${pad(new Date().getHours())}:${pad(new Date().getMinutes())}`:'07:00'; setPeriod(false); $('#save').textContent='저장하기';}
+function renderCycle(){
+  const lp=lastPeriod(selDate);
+  const avg=avgCycle();
+  if(lp){
+    const cd=dayDiff(selDate,lp)+1;
+    $('#cday').innerHTML=pad(cd)+(avg?`<small> /${avg}</small>`:'');
+    $('#cstart').textContent=lp.slice(5).replace('-','/')+' 주기 시작';
+  }else{$('#cday').textContent='—';$('#cstart').textContent='생리 시작일을 기록하세요'}
+  $('#cavg').textContent=avg?'평균 '+avg+'일':'평균 계산 전';
+  const an=analyzeCycle(cycleEntriesFor(selDate));
+  const d=S.days[selDate];
+  let ph='—';
+  if(d&&d.period)ph='생리 중';
+  else if(an.ovulation&&selDate>=an.ovulation)ph='고온기';
+  else if(lp)ph='저온기';
+  $('#cphase').textContent=ph;
+  if(avg&&lp){
+    const np=addDays(lp,avg),no=addDays(np,-14);
+    const od=dayDiff(no,toKey(new Date())),pd2=dayDiff(np,toKey(new Date()));
+    $('#coday').textContent=od>=0?'D-'+od:'D+'+(-od);
+    $('#cpday').textContent=pd2>=0?'D-'+pd2:'D+'+(-pd2);
+  }else{$('#coday').textContent='—';$('#cpday').textContent='—'}
 }
-function setTemp(v){$('#temp').value=v; $('#tempVal').textContent=(+v).toFixed(2)}
-function setPeriod(on){$('#periodChk').classList.toggle('on',on)}
+function renderToday(){renderWeek();renderCycle();renderForm()}
 
-function renderHero(){
-  const cd=currentCycleDay();
-  const lp=lastPeriod();
-  const ce=lp?cycleEntriesFor(selDate):[];
-  const an=analyzeCycle(ce);
-  let phaseHTML='',topTxt='이번 주기',bigTxt='—';
-  if(cd){ topTxt=`이번 주기 · ${lp?MON[parseKey(lp).getMonth()]+' '+parseKey(lp).getDate()+'일 시작':''}`;
-    bigTxt=`${cd}<small> 일째</small>`; }
-  // phase for selDate
-  const e=store[selDate];
-  if(e&&e.period){ phaseHTML=`<span class="phase pd"><span class="dot"></span>생리 중</span>`; }
-  else if(an.ovulation&&selDate>=an.ovulation){ phaseHTML=`<span class="phase hi"><span class="dot"></span>고온기</span>`; }
-  else if(cd){ phaseHTML=`<span class="phase lo"><span class="dot"></span>저온기</span>`; }
-  $('#heroTop').textContent=topTxt;
-  $('#heroBig').innerHTML=bigTxt;
-  $('#heroPhase').innerHTML=phaseHTML;
-}
-
-let range='cycle';
+/* ---------- CHART 렌더 ---------- */
 function chartData(){
-  let list;
-  if(range==='cycle'){ list=cycleEntriesFor(selDate); }
-  else if(range==='30'){ const cut=addDays(toKey(new Date()),-30); list=entries().filter(e=>e.date>=cut); }
-  else list=entries();
-  return list.filter(e=>e.temp).sort((a,b)=>a.date<b.date?-1:1);
+  if(range==='cycle')return cycleEntriesFor(selDate);
+  if(range==='30'){const cut=addDays(toKey(new Date()),-30);return tempEntries().filter(e=>e.date>=cut)}
+  return tempEntries();
 }
 function renderChart(){
-  const wrap=$('#chartwrap');
+  const box=$('#chartbox');
   const data=chartData();
-  if(data.length<2){ wrap.innerHTML=`<div class="empty">체온을 2일 이상 기록하면<br>곡선이 그려져요.</div>`; return; }
-  const W=380,H=210,PL=8,PR=8,PT=14,PB=26;
+  if(data.length<2){box.innerHTML='<div class="empty">체온을 2일 이상 기록하면<br>곡선이 그려져요.</div>';renderStats();return}
+  const W=380,H=210,PL=6,PR=30,PT=14,PB=26;
   const temps=data.map(d=>d.temp);
-  let lo=Math.min(...temps),hi=Math.max(...temps);
-  lo=Math.floor((lo-0.1)*10)/10; hi=Math.ceil((hi+0.1)*10)/10;
-  if(hi-lo<0.6){hi=lo+0.6}
-  const x=i=>PL+(i/(data.length-1))*(W-PL-PR);
-  const y=t=>PT+(1-(t-lo)/(hi-lo))*(H-PT-PB);
-  // analysis on the cycle containing anchor (only meaningful in cycle view)
+  let lo=Math.floor((Math.min(...temps)-0.1)*10)/10;
+  let hi=Math.ceil((Math.max(...temps)+0.1)*10)/10;
+  if(hi-lo<0.6)hi=lo+0.6;
+  const X=i=>PL+(i/(data.length-1))*(W-PL-PR);
+  const Y=v=>PT+(1-(v-lo)/(hi-lo))*(H-PT-PB);
   const an=analyzeCycle(range==='cycle'?data:cycleEntriesFor(selDate));
-  // gridlines
-  let grid='';
-  for(let t=lo;t<=hi+1e-9;t+=0.2){ const yy=y(+t.toFixed(2));
-    grid+=`<line x1="${PL}" y1="${yy}" x2="${W-PR}" y2="${yy}" stroke="var(--line)" stroke-dasharray="2 5"/>`;
-    grid+=`<text x="${W-PR}" y="${yy-3}" text-anchor="end" font-size="9" fill="#bdb7ab">${(+t).toFixed(1)}</text>`;}
-  // coverline
-  let coverEl='';
-  if(range==='cycle'&&an.cover){ const yy=y(an.cover);
-    coverEl=`<line x1="${PL}" y1="${yy}" x2="${W-PR}" y2="${yy}" stroke="var(--terra)" stroke-width="1.2" stroke-dasharray="5 4" opacity=".7"/>`;}
-  // path split lo/hi
-  const riseKey=(range==='cycle'&&an.riseIdx>0)?data[an.riseIdx]?.date:null;
-  function seg(cond){ let p='';let started=false;
-    data.forEach((d,i)=>{ if(cond(d,i)){ p+=(started?'L':'M')+x(i).toFixed(1)+' '+y(d.temp).toFixed(1)+' '; started=true;} else started=false;});
-    return p;}
-  const isHigh=(d)=> riseKey && d.date>=riseKey;
-  // build continuous line, colored by phase via two overlaid paths
-  let full='M';
-  data.forEach((d,i)=>{ full+=` ${x(i).toFixed(1)} ${y(d.temp).toFixed(1)}${i<data.length-1?' L':''}`; });
-  // dots
-  let dots='';
+  const riseKey=an.riseIdx>0&&range==='cycle'?data[an.riseIdx]?.date:null;
+  let s='';
+  for(let g=lo;g<=hi+1e-9;g+=0.2){
+    s+=`<line x1="${PL}" y1="${Y(g)}" x2="${W-PR}" y2="${Y(g)}" stroke="#D8D4C8" stroke-width="1" stroke-dasharray="1 4"/>
+    <text x="${W-2}" y="${Y(g)+3.5}" font-size="10" font-weight="700" fill="#6B6759" text-anchor="end" font-family="ui-monospace,monospace">${g.toFixed(1)}</text>`;
+  }
+  if(range==='cycle'&&an.cover)
+    s+=`<line x1="${PL}" y1="${Y(an.cover)}" x2="${W-PR}" y2="${Y(an.cover)}" stroke="#141310" stroke-width="1.4" stroke-dasharray="6 4"/>`;
+  let p='M';data.forEach((d,i)=>{p+=` ${X(i).toFixed(1)} ${Y(d.temp).toFixed(1)}${i<data.length-1?' L':''}`});
+  s+=`<path d="${p}" fill="none" stroke="#141310" stroke-width="2.5" stroke-linejoin="round"/>`;
   data.forEach((d,i)=>{
-    let c='var(--sage)'; if(isHigh(d))c='var(--amber)';
-    if(range==='cycle'&&an.ovulation&&d.date===an.ovulation)c='var(--terra)';
-    if(store[d.date]&&store[d.date].period)c='var(--rose)';
-    const r=(d.date===selDate)?5:3.4;
-    dots+=`<circle cx="${x(i).toFixed(1)}" cy="${y(d.temp).toFixed(1)}" r="${r}" fill="${c}" stroke="#fff" stroke-width="1.6"/>`;
-    if(range==='cycle'&&an.ovulation&&d.date===an.ovulation){
-      dots+=`<text x="${x(i).toFixed(1)}" y="${y(d.temp)-12}" text-anchor="middle" font-size="9" font-weight="700" fill="var(--terra)">배란?</text>`;}
+    const x=X(i),y=Y(d.temp),day=S.days[d.date];
+    if(day&&day.period)s+=`<circle cx="${x}" cy="${y}" r="5" fill="#DF2B1C" stroke="#fff" stroke-width="1.5"/>`;
+    else if(riseKey&&d.date>=riseKey)s+=`<circle cx="${x}" cy="${y}" r="4.4" fill="#141310" stroke="#fff" stroke-width="1.5"/>`;
+    else s+=`<circle cx="${x}" cy="${y}" r="4.4" fill="#fff" stroke="#141310" stroke-width="2"/>`;
+    if(d.date===selDate)s+=`<circle cx="${x}" cy="${y}" r="8" fill="none" stroke="#141310" stroke-width="1" stroke-dasharray="2 2"/>`;
+    if(day&&day.ovulation&&(day.ovulation.result==='positive'||day.ovulation.result==='peak'))
+      s+=`<path d="M ${x-5} ${y+17} L ${x+5} ${y+17} L ${x} ${y+8} Z" fill="#141310"/>`;
   });
-  // x labels (sparse)
-  let xl=''; const step=Math.ceil(data.length/6);
-  data.forEach((d,i)=>{ if(i%step===0||i===data.length-1){ const dd=parseKey(d.date);
-    xl+=`<text x="${x(i).toFixed(1)}" y="${H-6}" text-anchor="middle" font-size="9" fill="#bdb7ab">${dd.getMonth()+1}/${dd.getDate()}</text>`;}});
-
-  wrap.innerHTML=`<svg class="chart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="height:210px">
-    ${grid}${coverEl}
-    <path d="${full}" fill="none" stroke="url(#g)" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
-    <defs><linearGradient id="g" x1="0" x2="1" y1="0" y2="0">
-      <stop offset="0" stop-color="var(--sage)"/><stop offset="1" stop-color="var(--amber)"/></linearGradient></defs>
-    ${dots}${xl}
-  </svg>`;
+  const step=Math.max(1,Math.ceil(data.length/5));
+  data.forEach((d,i)=>{if(i%step===0||i===data.length-1){
+    s+=`<text x="${X(i)}" y="${H-5}" font-size="10" font-weight="700" fill="#6B6759" text-anchor="middle" font-family="ui-monospace,monospace">${+d.date.slice(5,7)}/${+d.date.slice(8)}</text>`}});
+  box.innerHTML=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;display:block;overflow:visible">${s}</svg>`;
+  renderStats();
 }
-
 function renderStats(){
-  const avg=avgCycle(), lp=lastPeriod();
-  $('#stAvg').innerHTML= avg?`${avg}<small> 일</small>`:'<small style="font-size:14px">기록 부족</small>';
+  const avg=avgCycle(),lp=lastPeriod(toKey(new Date()));
+  $('#stAvg').innerHTML=avg?avg+' <small>일</small>':'<small>기록 부족</small>';
   if(avg&&lp){
-    const np=addDays(lp,avg); const dleft=dayDiff(np,toKey(new Date()));
-    const pd=parseKey(np);
-    $('#stNextP').innerHTML=`${pd.getMonth()+1}/${pd.getDate()}<small> · D${dleft>=0?'-'+dleft:'+'+(-dleft)}</small>`;
-    const no=addDays(np,-14); const od=parseKey(no); const oleft=dayDiff(no,toKey(new Date()));
-    $('#stNextO').innerHTML=`${od.getMonth()+1}/${od.getDate()}<small> · D${oleft>=0?'-'+oleft:'+'+(-oleft)}</small>`;
-  }else{ $('#stNextP').innerHTML='<small style="font-size:14px">—</small>'; $('#stNextO').innerHTML='<small style="font-size:14px">—</small>'; }
-  // current phase
-  const ce=lp?cycleEntriesFor(toKey(new Date())):[]; const an=analyzeCycle(ce);
-  const te=store[toKey(new Date())];
-  let ph='—';
-  if(te&&te.period)ph='생리 중'; else if(an.ovulation)ph='고온기'; else if(lp)ph='저온기';
-  $('#stPhase').innerHTML=`<span style="font-size:20px">${ph}</span>`;
+    const np=addDays(lp,avg),no=addDays(np,-14);
+    const dl=dayDiff(np,toKey(new Date())),ol=dayDiff(no,toKey(new Date()));
+    $('#stNP').innerHTML=`${+np.slice(5,7)}/${+np.slice(8)} <small>D${dl>=0?'-'+dl:'+'+(-dl)}</small>`;
+    $('#stNO').innerHTML=`${+no.slice(5,7)}/${+no.slice(8)} <small>D${ol>=0?'-'+ol:'+'+(-ol)}</small>`;
+  }else{$('#stNP').innerHTML='<small>—</small>';$('#stNO').innerHTML='<small>—</small>'}
+  const an=analyzeCycle(cycleEntriesFor(toKey(new Date())));
+  const td=S.days[toKey(new Date())];
+  $('#stPh').textContent=td&&td.period?'생리 중':an.ovulation?'고온기':lp?'저온기':'—';
 }
 
-function renderList(){
-  const es=entries().reverse(); const wrap=$('#recList');
-  $('#recCount').textContent=es.length?`총 ${es.length}일`:'';
-  if(!es.length){ wrap.innerHTML=`<div class="empty">아직 기록이 없어요.<br>위에서 오늘 체온을 저장해보세요.</div>`; return; }
-  const lp=lastPeriod();
-  wrap.innerHTML=es.slice(0,60).map(e=>{
-    const d=parseKey(e.date);
-    const ce=cycleEntriesFor(e.date); const an=analyzeCycle(ce);
-    let badges='';
-    if(e.period)badges+=`<span class="pillbadge pb-rose">생리 시작</span>`;
-    else if(an.ovulation&&e.date===an.ovulation)badges+=`<span class="pillbadge pb-terra">배란 추정</span>`;
-    else if(an.ovulation&&e.date>=an.ovulation)badges+=`<span class="pillbadge pb-amber">고온기</span>`;
-    else if(lp&&e.date>=lp)badges+=`<span class="pillbadge pb-sage">저온기</span>`;
-    return `<div class="rec">
-      <div class="rdate"><div class="d">${d.getDate()}</div><div class="m">${MON[d.getMonth()]}·${DOW[d.getDay()]}</div></div>
-      <div class="rmid">
-        <div class="rt">${e.temp.toFixed(2)}°C</div>
-        <div class="rmeta">${e.time?'측정 '+e.time:''} ${badges}</div>
-      </div>
-      <button class="del" data-d="${e.date}">삭제</button>
-    </div>`;}).join('');
-  $$('.del').forEach(b=>b.onclick=()=>{ if(confirm('이 기록을 삭제할까요?')){ delete store[b.dataset.d]; save(); render(); }});
+/* ---------- LOG 렌더 ---------- */
+function renderLog(){
+  const ks=days().reverse();
+  $('#logCount').textContent=ks.length?'총 '+ks.length+'일':'';
+  const box=$('#loglist');
+  if(!ks.length){box.innerHTML='<div class="empty">아직 기록이 없어요.<br>TODAY 탭에서 시작하세요.</div>';return}
+  box.innerHTML=ks.slice(0,90).map(k=>{
+    const d=S.days[k],tags=[];
+    if(d.period)tags.push('<span class="rd">생리 시작</span>');
+    if(d.condition)tags.push('컨디션'+d.condition.score);
+    if(d.ovulation)tags.push('배테기 '+({negative:'음성',positive:'양성',peak:'피크'})[d.ovulation.result]);
+    if(d.pregnancy)tags.push('임테기 '+({none:'한줄',faint:'미세선',strong:'두줄'})[d.pregnancy.result]);
+    if(d.supplements){const sup=S.settings.supplements;const n=sup.filter(s=>d.supplements[s.id]).length;if(n)tags.push('영양제 '+n+'/'+sup.length)}
+    if(d.symptoms){if(d.symptoms.pains)tags.push(...d.symptoms.pains);if(d.symptoms.emotions)tags.push(...d.symptoms.emotions)}
+    return`<div class="row" data-d="${k}">
+      <span class="d">${+k.slice(5,7)}.${pad(+k.slice(8))}</span>
+      <span class="t ${d.temp?'':'no'}">${d.temp?d.temp.value.toFixed(2):'—'}</span>
+      <span class="tags">${tags.join(' · ')||'기록 없음'}</span>
+      <button class="del" data-del="${k}">삭제</button>
+    </div>`}).join('');
+  $$('#loglist .row').forEach(r=>r.onclick=e=>{
+    if(e.target.dataset.del){
+      if(confirm(e.target.dataset.del+' 기록을 삭제할까요?')){delete S.days[e.target.dataset.del];save();renderAll()}
+      return;
+    }
+    selDate=r.dataset.d;loadForm();renderToday();showTab('today');
+  });
 }
 
-/* ---------- events ---------- */
-$('#temp').oninput=e=>$('#tempVal').textContent=(+e.target.value).toFixed(2);
-$('#date').onchange=e=>{selDate=e.target.value; render();};
-$('#periodChk').onclick=()=>$('#periodChk').classList.toggle('on');
-$('#save').onclick=()=>{
-  const d=$('#date').value; if(!d)return;
-  store[d]={date:d,temp:+(+$('#temp').value).toFixed(2),time:$('#time').value,period:$('#periodChk').classList.contains('on')};
-  save(); selDate=d;
-  if(localStorage.getItem(DEMO)!=='cleared') { /* keep */ }
-  render();
-  const btn=$('#save'); btn.textContent='저장됨 ✓'; setTimeout(()=>renderInput(),900);
+/* ---------- MY 렌더 ---------- */
+function renderMy(){
+  const box=$('#slist');const list=S.settings.supplements;
+  box.innerHTML=list.length?list.map(s=>`
+    <div class="srow">
+      <span class="snm">${esc(s.name)}<span class="tm">${timingFor(s.name)}</span></span>
+      <button class="sdel" data-id="${s.id}">삭제</button>
+    </div>`).join(''):'<div class="myhint" style="margin:0">아직 등록한 영양제가 없어요. 아래에서 추가하세요.</div>';
+  $$('#slist .sdel').forEach(b=>b.onclick=()=>{
+    if(!confirm('이 영양제를 목록에서 삭제할까요? (과거 복용 기록은 남아요)'))return;
+    S.settings.supplements=S.settings.supplements.filter(s=>s.id!==b.dataset.id);
+    save();renderMy();renderSuppCheck();renderStatuses();
+  });
+}
+
+/* ---------- 탭 ---------- */
+function showTab(name){
+  $$('.screen').forEach(s=>s.classList.remove('on'));
+  $('#scr-'+name).classList.add('on');
+  $$('.nav a').forEach(a=>a.classList.toggle('on',a.dataset.tab===name));
+  if(name==='chart')renderChart();
+  if(name==='log')renderLog();
+  if(name==='my')renderMy();
+  window.scrollTo(0,0);
+}
+
+/* ---------- 이벤트 ---------- */
+function esc(t){return t.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c])}
+$$('.nav a').forEach(a=>a.onclick=()=>showTab(a.dataset.tab));
+$$('[data-tg]').forEach(h=>h.onclick=()=>h.parentElement.classList.toggle('open'));
+$('#tminus').onclick=()=>{form.temp=Math.max(35.5,+(+form.temp-0.01).toFixed(2));tempTouched=true;renderForm()};
+$('#tplus').onclick=()=>{form.temp=Math.min(37.5,+(+form.temp+0.01).toFixed(2));tempTouched=true;renderForm()};
+$('#fdate').onchange=e=>{selDate=e.target.value;loadForm();renderToday()};
+$('#ftime').onchange=e=>{form.time=e.target.value;tempTouched=true;renderStatuses()};
+$('#fperiod').onclick=()=>{form.period=!form.period;$('#fperiod').classList.toggle('on');};
+$$('#fcond button').forEach(b=>b.onclick=()=>{form.cond=form.cond===+b.dataset.v?0:+b.dataset.v;renderForm()});
+$('#fmemo').oninput=e=>form.memo=e.target.value;
+$$('#fovres .chip').forEach(b=>b.onclick=()=>{form.ovres=form.ovres===b.dataset.v?'':b.dataset.v;renderForm()});
+$('#ominus').onclick=()=>{form.ovratio=Math.max(0,+((form.ovratio==null?0.5:form.ovratio)-0.1).toFixed(1));renderForm()};
+$('#oplus').onclick=()=>{form.ovratio=Math.min(5,+((form.ovratio==null?0.4:form.ovratio)+0.1).toFixed(1));renderForm()};
+$$('#fpreg .chip').forEach(b=>b.onclick=()=>{form.preg=form.preg===b.dataset.v?'':b.dataset.v;renderForm()});
+$$('#fdis .chip').forEach(b=>b.onclick=()=>{form.dis=form.dis===b.dataset.v?'':b.dataset.v;renderForm()});
+$$('#fpain .chip').forEach(b=>b.onclick=()=>{
+  const v=b.dataset.v,i=form.pains.indexOf(v);i<0?form.pains.push(v):form.pains.splice(i,1);renderForm()});
+$$('#femo .chip').forEach(b=>b.onclick=()=>{
+  const v=b.dataset.v,i=form.emos.indexOf(v);i<0?form.emos.push(v):form.emos.splice(i,1);renderForm()});
+
+$('#btnSave').onclick=()=>{
+  const d={};
+  if(tempTouched)d.temp={value:+(+form.temp).toFixed(2),time:form.time};
+  if(form.period)d.period=true;
+  if(form.cond>0||form.memo)d.condition={score:form.cond,memo:form.memo};
+  if(form.ovres)d.ovulation=Object.assign({result:form.ovres},form.ovratio!=null?{ratio:form.ovratio}:{});
+  if(form.preg)d.pregnancy={result:form.preg};
+  const checked={};S.settings.supplements.forEach(s=>{if(form.supp[s.id])checked[s.id]=true});
+  if(Object.keys(checked).length)d.supplements=checked;
+  const sym={};
+  if(form.dis)sym.discharge=form.dis;
+  if(form.pains.length)sym.pains=[...form.pains];
+  if(form.emos.length)sym.emotions=[...form.emos];
+  if(Object.keys(sym).length)d.symptoms=sym;
+  if(Object.keys(d).length)S.days[selDate]=d;else delete S.days[selDate];
+  save();renderToday();
+  const btn=$('#btnSave');btn.textContent='SAVED';btn.classList.add('flash');
+  setTimeout(()=>{btn.textContent='SAVE — 기록 저장';btn.classList.remove('flash')},900);
 };
-$('#jumpToday').onclick=()=>{selDate=toKey(new Date()); render();};
-$('#rangeSeg').onclick=e=>{ if(e.target.dataset.r){ range=e.target.dataset.r;
-  $$('#rangeSeg button').forEach(b=>b.classList.toggle('on',b===e.target)); renderChart(); }};
-$('#navChart').onclick=()=>$('.card:nth-of-type(3)')?.scrollIntoView({behavior:'smooth'});
-$('#navRec').onclick=()=>$('#recList').scrollIntoView({behavior:'smooth',block:'center'});
-$('#clearDemo').onclick=()=>{ if(confirm('예시 데이터를 지우고 새로 시작할까요?')){ store={}; save(); localStorage.setItem(DEMO,'cleared'); selDate=toKey(new Date()); render(); }};
 
-/* ---------- init ---------- */
+$('#sadd').onclick=()=>{
+  const v=$('#snew').value.trim();if(!v)return;
+  S.settings.supplements.push({id:'p'+Date.now(),name:v});
+  $('#snew').value='';save();renderMy();renderSuppCheck();renderStatuses();
+};
+$('#snew').onkeydown=e=>{if(e.key==='Enter')$('#sadd').click()};
+
+$('#btnExport').onclick=()=>{
+  const blob=new Blob([JSON.stringify(S,null,1)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='bodylog-backup-'+toKey(new Date())+'.json';
+  a.click();URL.revokeObjectURL(a.href);
+};
+$('#btnImport').onclick=()=>$('#fileImport').click();
+$('#fileImport').onchange=e=>{
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{try{
+    const v=JSON.parse(r.result);
+    if(!v||!v.days)throw 0;
+    if(!confirm('백업으로 현재 기록을 덮어쓸까요?'))return;
+    S=v;save();localStorage.removeItem(DEMO);loadForm();renderAll();alert('불러오기 완료');
+  }catch(err){alert('올바른 백업 파일이 아니에요.')}};
+  r.readAsText(f);
+};
+$('#btnWipe').onclick=()=>{
+  if(!confirm('모든 기록과 영양제 목록을 삭제할까요? 되돌릴 수 없어요.'))return;
+  if(!confirm('정말 삭제합니다. 백업하셨나요?'))return;
+  S={version:2,settings:{supplements:[]},days:{}};
+  save();localStorage.setItem(DEMO,'cleared');loadForm();renderAll();
+};
+$('#clearDemo').onclick=()=>{
+  if(!confirm('예시 데이터를 지우고 새로 시작할까요?'))return;
+  S={version:2,settings:{supplements:S.settings.supplements}, days:{}};
+  save();localStorage.setItem(DEMO,'cleared');loadForm();renderAll();
+};
+
+/* ---------- 초기화 ---------- */
+function renderAll(){
+  const now=new Date();
+  $('#hdate').innerHTML=`${now.getFullYear()}.${pad(now.getMonth()+1)}.${pad(now.getDate())} ${DOW[now.getDay()]}<b>CYCLE TRACKING</b>`;
+  $('#demoBanner').style.display=localStorage.getItem(DEMO)==='on'?'flex':'none';
+  renderToday();
+  if($('#scr-chart').classList.contains('on'))renderChart();
+  if($('#scr-log').classList.contains('on'))renderLog();
+  if($('#scr-my').classList.contains('on'))renderMy();
+}
 seedDemo();
-render();
+loadForm();
+renderAll();
 </script>
 </body>
 </html>
