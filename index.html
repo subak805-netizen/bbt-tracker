@@ -185,17 +185,11 @@ textarea{width:100%;margin-top:12px;font-family:var(--mono);font-size:14px;paddi
 .save{width:100%;margin:16px 0 0;padding:17px;border:var(--b2) solid var(--ink);
   background:var(--ink);color:var(--paper);font-size:15px;font-weight:800;letter-spacing:.22em}
 .save.flash{background:var(--red);border-color:var(--red)}
-/* 화면 하단 고정 저장바 — 아래까지 스크롤하지 않아도 저장 */
-.savebar{position:fixed;left:0;right:0;z-index:45;pointer-events:none;
-  bottom:calc(47px + env(safe-area-inset-bottom))}
-.savebar .in{max-width:430px;margin:0 auto;padding:0 14px}
-.savebar .save{margin:0;pointer-events:auto;box-shadow:0 -3px 14px rgba(20,19,16,.18);
-  display:flex;align-items:center;justify-content:center;gap:9px}
-.savebar .save .badge{font-size:10px;letter-spacing:.1em;background:var(--yellow);color:var(--ink);padding:3px 7px}
-/* 저장 안 된 변경이 있을 때 */
-.savebar .save.dirty{background:var(--orange);border-color:var(--orange)}
-.savebar .save.saved{background:var(--olive);border-color:var(--olive)}
-body.on-today{padding-bottom:calc(140px + env(safe-area-inset-bottom))}
+/* 자동 저장 상태 표시 */
+.asave{font-size:10.5px;font-weight:800;letter-spacing:.06em;color:var(--mut);
+  white-space:nowrap;flex:0 0 auto}
+.asave.on{color:var(--olive)}
+.asave.wait{color:var(--orange)}
 
 /* 차트/패널 */
 .panel-t{margin-top:24px}
@@ -291,6 +285,24 @@ body.on-today{padding-bottom:calc(140px + env(safe-area-inset-bottom))}
 .slist .snm .tm{display:block;font-size:11px;color:var(--mut);font-weight:700;margin-top:1px}
 .slist .slot{font-size:10px;letter-spacing:.06em;font-weight:800;border:var(--b1) solid var(--ink);padding:4px 7px;flex:0 0 auto}
 .slist .sdel{border:var(--b1) solid var(--ink);background:#fff;font-size:11px;font-weight:800;padding:6px 10px;flex:0 0 auto}
+.slist .sedit{border:var(--b1) solid var(--ink);background:var(--yellow);font-size:11px;font-weight:800;padding:6px 10px;flex:0 0 auto}
+/* 수정 폼 */
+.efrm{border:var(--b2) solid var(--ink);background:#fff;padding:12px;margin:8px 0}
+.efrm label{display:block;font-size:10px;letter-spacing:.13em;color:var(--mut);font-weight:700;margin-bottom:4px}
+.efrm input{width:100%;font-family:var(--mono);font-size:14px;font-weight:700;padding:9px 10px;
+  border:var(--b1) solid var(--ink);background:#fff;color:var(--ink);-webkit-appearance:none;margin-bottom:9px}
+.efrm .r2{display:flex;gap:8px}
+.efrm .r2>div{flex:1;min-width:0}
+.efrm .acts{display:flex;gap:8px;margin-top:2px}
+.efrm .acts button{flex:1;border:var(--b1) solid var(--ink);background:#fff;font-size:13px;font-weight:800;padding:10px}
+.efrm .acts button.ok{background:var(--ink);color:var(--paper)}
+/* 복용 시간 칩 */
+.tchips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:9px}
+.tchip{border:var(--b1) solid var(--ink);background:#fff;font-size:12px;font-weight:800;padding:6px 9px;
+  display:flex;align-items:center;gap:5px}
+.tchip b{color:var(--mut);font-size:13px}
+.tchip.add{background:var(--dim);color:var(--mut)}
+.slist .tms{display:block;font-size:10.5px;color:var(--orange);font-weight:800;margin-top:2px}
 .addrow{display:flex;gap:8px;margin-top:12px}
 .addrow input{flex:1;min-width:0;font-family:var(--mono);font-size:14px;font-weight:700;padding:11px 12px;
   border:var(--b1) solid var(--ink);background:#fff;color:var(--ink)}
@@ -507,6 +519,7 @@ body.on-today{padding-bottom:calc(140px + env(safe-area-inset-bottom))}
       <svg class="ring" id="rring" width="52" height="52" viewBox="0 0 52 52"></svg>
       <div class="rt"><div class="k" id="rdonek">—</div><div class="s" id="rdones">—</div></div>
     </div>
+    <div id="rdue"></div>
     <div id="ralerts"></div>
 
     <div class="rcard">
@@ -567,6 +580,7 @@ body.on-today{padding-bottom:calc(140px + env(safe-area-inset-bottom))}
       <div class="t">TODAY</div>
       <div class="bar" id="pbar"></div>
       <div class="n" id="pnum">0/7</div>
+      <div class="asave" id="asave"></div>
     </div>
 
     <div class="sec open" id="s1">
@@ -823,6 +837,11 @@ body.on-today{padding-bottom:calc(140px + env(safe-area-inset-bottom))}
       <button data-l="meal">식단</button>
     </div>
     <div class="srch"><input id="logQ" type="search" placeholder="검색 — 병원·증상·메모·식단"><button id="logQX">✕</button></div>
+    <div class="calnav" style="border-top:none;margin-bottom:16px">
+      <button id="logPrev">‹</button>
+      <div class="mlab" id="logMonth">전체 기간</div>
+      <button id="logNext">›</button>
+    </div>
 
     <!-- 병원·식단은 여기서 바로 추가할 수 있게 -->
     <div id="quickAdd"></div>
@@ -890,7 +909,9 @@ body.on-today{padding-bottom:calc(140px + env(safe-area-inset-bottom))}
           <div class="f"><label>종료일 (선택)</label><input type="date" id="mend"></div>
         </div>
         <button class="mybtn" id="madd" style="background:var(--ink);color:var(--paper);border-color:var(--ink)">약 추가</button>
-        <div class="myhint">처방 기간을 넣으면 그 기간에만 TODAY 07번에 나타나고, 끝나면 자동으로 사라져요. 종료일을 비우면 계속 복용으로 봅니다. 영양제와 달리 시간대 자동분류는 하지 않아요 — 처방 지시를 따르세요.</div>
+        <button class="mybtn" id="medAiBtn" style="display:none">AI로 분석하기</button>
+        <div class="mealstat" id="medAiStat"></div>
+        <div class="myhint">처방 기간을 넣으면 그 기간에만 TODAY에 나타나고 끝나면 자동으로 사라져요. <b>수정</b>으로 이름·횟수·기간·복용시간을 바꿀 수 있어요.<br><b>AI 분석은 참고용이에요 — 처방한 의사·약사의 지시가 항상 우선입니다.</b> 임신 준비 중 주의가 필요한 약이면 표시해드리지만, 임의로 끊거나 바꾸지 마시고 꼭 의료진과 상의하세요.</div>
       </div>
     </div>
 
@@ -940,10 +961,6 @@ body.on-today{padding-bottom:calc(140px + env(safe-area-inset-bottom))}
     </div>
     <div class="note">BODY.LOG — 예측·분석은 참고용이며 의학적 진단이 아닙니다.</div>
   </section>
-</div>
-
-<div class="savebar" id="saveBar" style="display:none">
-  <div class="in"><button class="save" id="btnSave">SAVE — 기록 저장</button></div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -1052,6 +1069,65 @@ async function aiClassify(item){
   const r=await analyzeSupp(item.name,others);
   item.slot=r.slot; item.note=r.timing; item.caution=r.caution||''; item.ai=true;
   delete item.analyzing;
+  save();
+}
+/* 약 이름 → 복용 안내 + 임신 준비 관점 주의사항 (Claude API)
+   ※ 정보 제공용. 앱은 절대 복용 중단·변경을 권하지 않고, 의료진 상담으로 안내한다. */
+async function analyzeMed(name,others,supps){
+  const res=await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'content-type':'application/json','x-api-key':S.settings.apiKey,
+      'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+    body:JSON.stringify({
+      model:MODEL,max_tokens:2048,
+      output_config:{format:{type:'json_schema',schema:{
+        type:'object',
+        properties:{
+          what:{type:'string',description:'이 약이 보통 어떤 용도로 쓰이는지 한국어 20자 내외. 모르면 빈 문자열'},
+          timing:{type:'string',description:'일반적인 복용 시점(식후/공복/취침전 등) 한국어 25자 내외. 처방 지시 우선이라는 전제'},
+          pregnancy:{type:'string',enum:['safe','caution','avoid','unknown'],description:'임신 준비·임신 중 안전성 분류'},
+          caution:{type:'string',description:'임신 준비 중 알아둘 점이나 함께 먹는 약·영양제와의 상호작용. 한국어 한두 문장. 특별히 없으면 빈 문자열'}
+        },
+        required:['what','timing','pregnancy','caution'],additionalProperties:false
+      }}},
+      messages:[{role:'user',content:`약 "${name}"에 대해 일반적으로 알려진 정보를 알려줘. 이 사람은 임신을 준비 중이야.
+${others.length?`함께 먹는 다른 약: ${others.join(', ')}`:''}
+${supps.length?`함께 먹는 영양제: ${supps.join(', ')}`:''}
+
+pregnancy 분류:
+- safe: 임신 준비·임신 중 일반적으로 안전하다고 알려진 것
+- caution: 주의가 필요하거나 의사와 상의가 권장되는 것
+- avoid: 임신 준비·임신 중 일반적으로 권장되지 않는 것
+- unknown: 어떤 약인지 특정하기 어렵거나 정보가 불확실한 것
+
+caution에는 임신 준비 관점의 주의점이나 위에 나열된 약·영양제와의 상호작용을 적어줘.
+중요: 복용을 중단하라거나 용량을 바꾸라고 말하지 말고, 주의가 필요하면 "의사와 상의하세요"로 안내해줘.
+확실하지 않으면 unknown으로 하고 추측하지 마.`}]
+    })
+  });
+  if(!res.ok){
+    let msg='HTTP '+res.status;
+    try{const e=await res.json();if(e?.error?.message)msg=e.error.message}catch(_){}
+    if(res.status===401)msg='API 키가 올바르지 않아요';
+    if(res.status===429)msg='요청이 많아요. 잠시 후 다시 시도해주세요';
+    throw new Error(msg);
+  }
+  const data=await res.json();
+  const b=data.content.find(x=>x.type==='text');
+  if(!b)throw new Error('분석 결과가 비었어요');
+  return JSON.parse(b.text);
+}
+const PREG_KO={safe:'임신 준비 중 일반적으로 안전',caution:'임신 준비 중 주의 — 의사와 상의하세요',
+  avoid:'임신 준비 중 권장되지 않음 — 반드시 의사와 상의하세요',unknown:'안전성 정보 불확실 — 의사와 상의하세요'};
+async function aiClassifyMed(item){
+  const others=(S.settings.meds||[]).filter(m=>m.id!==item.id).map(m=>m.name);
+  const supps=(S.settings.supplements||[]).map(s=>s.name);
+  const r=await analyzeMed(item.name,others,supps);
+  item.note=[r.what,r.timing].filter(Boolean).join(' · ');
+  item.preg=r.pregnancy;
+  const pc=r.pregnancy!=='safe'?PREG_KO[r.pregnancy]:'';
+  item.caution=[pc,r.caution].filter(Boolean).join(' ');
+  item.ai=true; delete item.analyzing;
   save();
 }
 
@@ -1190,6 +1266,7 @@ let cycView='cal';
 
 /* ---------- TODAY 렌더 ---------- */
 function loadForm(){
+  if(typeof flushAutoSave==='function')flushAutoSave();   // 다른 날짜로 넘어가기 전에 미저장분 확정
   const d=S.days[selDate]||{};
   form={
     temp:d.temp?d.temp.value:36.50,
@@ -1373,6 +1450,7 @@ function renderStatuses(){
   const n=core.filter(s=>s.done).length;
   $('#pnum').textContent=n+'/'+core.length;
   $('#pbar').innerHTML=core.map(s=>`<i class="${s.done?'on':''}"></i>`).join('');
+  autoSave();
   renderSaveBar();
 }
 function renderWeek(){
@@ -1567,7 +1645,31 @@ function renderStats(){
 }
 
 /* ---------- LOG 렌더 ---------- */
-let logView='all', logQ='';
+let logView='all', logQ='', logMonth=null;   // logMonth=null 이면 전체
+/* 그 달의 기록만 남김 */
+function byMonth(ks){
+  if(!logMonth)return ks;
+  const p=`${logMonth.y}-${pad(logMonth.m+1)}`;
+  return ks.filter(k=>k.startsWith(p));
+}
+function renderLogMonth(){
+  $('#logMonth').textContent=logMonth?`${logMonth.y}. ${MON_KO[logMonth.m]}`:'전체 기간';
+}
+function shiftMonth(dir){
+  if(!logMonth){                               // 전체 → 가장 최근 기록이 있는 달부터
+    const ks=days();
+    const base=ks.length?parseKey(ks[ks.length-1]):new Date();
+    logMonth={y:base.getFullYear(),m:base.getMonth()};
+  }else{
+    logMonth.m+=dir;
+    if(logMonth.m<0){logMonth.m=11;logMonth.y--}
+    if(logMonth.m>11){logMonth.m=0;logMonth.y++}
+    // 미래로 너무 가면 전체로 되돌림
+    const now=new Date();
+    if(logMonth.y>now.getFullYear()||(logMonth.y===now.getFullYear()&&logMonth.m>now.getMonth()))logMonth=null;
+  }
+  renderLogMonth();renderLog();
+}
 /* 그날 기록을 검색용 텍스트 한 줄로 */
 function dayText(k){
   const d=S.days[k],t=[k];
@@ -1596,7 +1698,7 @@ function hl(s,q){
 /* 병원 기록만 모아보기 */
 function renderHosp(){
   const q=logQ.trim().toLowerCase();
-  let ks=days().filter(k=>{const h=S.days[k].hospital;return h&&(h.name||h.type||h.note)}).reverse();
+  let ks=byMonth(days()).filter(k=>{const h=S.days[k].hospital;return h&&(h.name||h.type||h.note)}).reverse();
   if(q)ks=ks.filter(k=>dayText(k).includes(q));
   $('#logCount').textContent=ks.length?'병원 '+ks.length+'회':(q?'검색 결과 없음':'');
   const box=$('#hosplist');
@@ -1626,7 +1728,7 @@ function renderHosp(){
 /* 식단만 모아보기 */
 function renderMealList(){
   const q=logQ.trim().toLowerCase();
-  let ks=days().filter(k=>(S.days[k].meals||[]).length).reverse();
+  let ks=byMonth(days()).filter(k=>(S.days[k].meals||[]).length).reverse();
   if(q)ks=ks.filter(k=>dayText(k).includes(q));
   const total=ks.reduce((a,k)=>a+S.days[k].meals.length,0);
   $('#logCount').textContent=total?`${ks.length}일 · ${total}끼`:(q?'검색 결과 없음':'');
@@ -1746,11 +1848,11 @@ function renderLog(){
   if(logView==='hosp')return renderHosp();
   if(logView==='meal')return renderMealList();
   const q=logQ.trim().toLowerCase();
-  let ks=days().reverse();
+  let ks=byMonth(days()).reverse();
   if(q)ks=ks.filter(k=>dayText(k).includes(q));
-  $('#logCount').textContent=q?(ks.length?'검색 '+ks.length+'일':'검색 결과 없음'):(days().length?'총 '+days().length+'일':'');
+  $('#logCount').textContent=q?(ks.length?'검색 '+ks.length+'일':'검색 결과 없음'):(ks.length?'총 '+ks.length+'일':'');
   const box=$('#loglist');
-  if(!ks.length){box.innerHTML=`<div class="empty">${q?'검색 결과가 없어요.':'아직 기록이 없어요.<br>TODAY 탭에서 시작하세요.'}</div>`;return}
+  if(!ks.length){box.innerHTML=`<div class="empty">${q?'검색 결과가 없어요.':logMonth?'이 달에는 기록이 없어요.':'아직 기록이 없어요.<br>TODAY 탭에서 시작하세요.'}</div>`;return}
   box.innerHTML=ks.slice(0,90).map(k=>{
     const d=S.days[k],tags=[];
     if(d.period)tags.push('<span class="rd">생리 시작</span>');
@@ -1778,18 +1880,94 @@ function renderLog(){
   });
 }
 
+/* ---------- 영양제·약 수정 ---------- */
+let _editing=null;
+function itemById(id){
+  return (S.settings.supplements||[]).find(x=>x.id===id)||(S.settings.meds||[]).find(x=>x.id===id);
+}
+function editForm(it,kind){
+  const times=it.times||[];
+  return `<div class="efrm" data-eid="${it.id}">
+    <label>이름</label><input id="ef-name" value="${esc(it.name)}">
+    <div class="r2">
+      <div><label>하루 횟수</label><input id="ef-dose" type="number" min="1" max="6" inputmode="numeric" value="${it.dose||1}"></div>
+      ${kind==='med'?`<div><label>시작일</label><input id="ef-start" type="date" value="${it.start||''}"></div>`:'<div></div>'}
+    </div>
+    ${kind==='med'?`<label>종료일 (비우면 계속)</label><input id="ef-end" type="date" value="${it.end||''}">`:''}
+    <label>복용 시간 (알림·표시용)</label>
+    <div class="tchips" id="ef-times">
+      ${times.map((t,i)=>`<span class="tchip">${t} <b data-rm="${i}">✕</b></span>`).join('')}
+      <span class="tchip add" id="ef-addt">+ 시간 추가</span>
+    </div>
+    <input id="ef-newt" type="time" style="display:none">
+    <div class="acts">
+      <button data-cancel>취소</button>
+      <button class="ok" data-ok>저장</button>
+    </div>
+  </div>`;
+}
+/* rootSel로 범위를 좁혀야 함 — 안 그러면 영양제 폼을 약 바인딩이 덮어써서 저장이 깨진다 */
+function bindEditForm(kind,rootSel){
+  const root=document.querySelector(rootSel);if(!root)return;
+  const frm=root.querySelector('.efrm');if(!frm)return;
+  const it=itemById(frm.dataset.eid);if(!it)return;
+  let times=[...(it.times||[])];
+  const redraw=()=>{
+    const box=frm.querySelector('#ef-times');
+    box.innerHTML=times.map((t,i)=>`<span class="tchip">${t} <b data-rm="${i}">✕</b></span>`).join('')
+      +'<span class="tchip add" id="ef-addt">+ 시간 추가</span>';
+    bindTimes();
+  };
+  const bindTimes=()=>{
+    frm.querySelectorAll('[data-rm]').forEach(b=>b.onclick=()=>{times.splice(+b.dataset.rm,1);redraw()});
+    const add=frm.querySelector('#ef-addt');
+    if(add)add.onclick=()=>{
+      const inp=frm.querySelector('#ef-newt');
+      inp.style.display='block';inp.focus();
+      if(inp.showPicker)try{inp.showPicker()}catch(e){}
+      inp.onchange=()=>{
+        if(inp.value&&!times.includes(inp.value)){times.push(inp.value);times.sort()}
+        inp.style.display='none';inp.value='';redraw();
+      };
+    };
+  };
+  bindTimes();
+  frm.querySelector('[data-cancel]').onclick=()=>{_editing=null;renderMy()};
+  frm.querySelector('[data-ok]').onclick=()=>{
+    const nm=frm.querySelector('#ef-name').value.trim();
+    const ds=parseInt(frm.querySelector('#ef-dose').value,10);
+    if(!nm){toast('이름을 넣어주세요');return}
+    if(isNaN(ds)||ds<1||ds>6){toast('하루 횟수는 1~6 사이로');return}
+    const renamed=nm!==it.name;
+    it.name=nm;it.dose=ds;it.times=times;
+    if(kind==='med'){
+      const st=frm.querySelector('#ef-start').value, en=frm.querySelector('#ef-end').value;
+      if(en&&st&&en<st){toast('종료일이 시작일보다 빠를 수 없어요');return}
+      it.start=st||toKey(new Date());it.end=en||'';
+    }
+    if(renamed&&it.ai){delete it.ai;delete it.slot;delete it.note;delete it.caution}  // 이름 바뀌면 분석 결과 무효
+    _editing=null;save();renderMy();renderSuppCheck();renderMedCheck();renderStatuses();
+    toast(renamed&&S.settings.apiKey?'수정됨 · 이름이 바뀌어 AI 분석을 다시 하면 좋아요':'수정했어요');
+  };
+}
+
 /* ---------- MY 렌더 ---------- */
 function renderMy(){
   const box=$('#slist');const list=S.settings.supplements;
   box.innerHTML=list.length?list.map(s=>{
     const c=classify(s);
+    if(_editing===s.id)return editForm(s,'supp');
     return `<div class="srow">
       <span class="snm">${esc(s.name)}${(s.dose||1)>1?' ×'+s.dose:''}
         <span class="tm">${s.analyzing?'AI 분석 중...':esc(c.note)}${c.ai?' <b class="aib">AI</b>':''}</span>
+        ${(s.times||[]).length?`<span class="tms">${s.times.join(' · ')}</span>`:''}
         ${c.caution?`<span class="warn">! ${esc(c.caution)}</span>`:''}</span>
       <span class="slot">${SLOT_SHORT[c.slot]}</span>
+      <button class="sedit" data-id="${s.id}">수정</button>
       <button class="sdel" data-id="${s.id}">삭제</button>
     </div>`}).join(''):'<div class="myhint" style="margin:0">아직 등록한 영양제가 없어요. 아래에서 추가하세요.</div>';
+  $$('#slist .sedit').forEach(b=>b.onclick=()=>{_editing=b.dataset.id;renderMy()});
+  bindEditForm('supp','#slist');
   $$('#slist .sdel').forEach(b=>b.onclick=()=>{
     if(!confirm('이 영양제를 목록에서 삭제할까요? (과거 복용 기록은 남아요)'))return;
     S.settings.supplements=S.settings.supplements.filter(s=>s.id!==b.dataset.id);
@@ -1847,18 +2025,30 @@ function renderSnaps(){
 function renderMedList(){
   const box=$('#mlist'),list=S.settings.meds||[],today=toKey(new Date());
   box.innerHTML=list.length?list.map(m=>{
+    if(_editing===m.id)return editForm(m,'med');
     const on=(!m.start||today>=m.start)&&(!m.end||today<=m.end);
     const per=m.end?`${m.start.slice(5).replace('-','/')} ~ ${m.end.slice(5).replace('-','/')}`:`${m.start.slice(5).replace('-','/')} ~ 계속`;
     return`<div class="srow">
-      <span class="snm">${esc(m.name)}${m.dose>1?' ×'+m.dose:''}<span class="tm">${per}</span></span>
+      <span class="snm">${esc(m.name)}${m.dose>1?' ×'+m.dose:''}
+        <span class="tm">${m.analyzing?'AI 분석 중...':per}${m.ai?' <b class="aib">AI</b>':''}</span>
+        ${(m.times||[]).length?`<span class="tms">${m.times.join(' · ')}</span>`:''}
+        ${m.note?`<span class="tm">${esc(m.note)}</span>`:''}
+        ${m.caution?`<span class="warn">! ${esc(m.caution)}</span>`:''}</span>
       <span class="slot" style="${on?'background:var(--orange);border-color:var(--orange);color:#fff':'color:var(--mut)'}">${on?'복용중':'종료'}</span>
+      <button class="sedit" data-id="${m.id}">수정</button>
       <button class="sdel" data-id="${m.id}">삭제</button>
     </div>`}).join(''):'<div class="myhint" style="margin:0">등록한 약이 없어요. 아래에서 추가하세요.</div>';
+  $$('#mlist .sedit').forEach(b=>b.onclick=()=>{_editing=b.dataset.id;renderMy()});
+  bindEditForm('med','#mlist');
   $$('#mlist .sdel').forEach(b=>b.onclick=()=>{
     if(!confirm('이 약을 목록에서 삭제할까요? (과거 복용 기록은 남아요)'))return;
     S.settings.meds=S.settings.meds.filter(m=>m.id!==b.dataset.id);
     save();renderMedList();renderMedCheck();renderStatuses();
   });
+  // 약 AI 분석 버튼
+  const un=list.filter(m=>!m.ai).length, rb=$('#medAiBtn');
+  if(!S.settings.apiKey||!list.length){rb.style.display='none'}
+  else{rb.style.display='block';rb.textContent=un?`AI로 분석하기 (${un}개 남음)`:'전체 다시 분석하기'}
 }
 function renderNoti(){
   const st=$('#notiStat'),btn=$('#notiBtn');
@@ -2074,6 +2264,7 @@ function renderReport(){
   const appt=nextAppt();
   if(appt&&appt.inDays<=7)al+=`<div class="ralert" style="background:var(--ink)"><span class="t">병원 예약 — ${esc(appt.name||appt.type||'진료')}</span><span class="dd">${ddText(appt.inDays)}</span></div>`;
   $('#ralerts').innerHTML=al;
+  renderDue();
 
   // 체온
   const tb=$('#rtempbox');
@@ -2198,8 +2389,48 @@ function renderSpark(){
     <div style="font-size:9px;letter-spacing:.1em;color:var(--mut);font-weight:700;text-align:center;margin-top:2px">최근 2주 체온</div>`;
 }
 
+/* ---------- 복용 시간 ---------- */
+/* 시간이 지났는데 아직 체크 안 된 것들 — 앱을 열었을 때 알려준다 */
+function dueNow(){
+  const now=new Date(), hm=pad(now.getHours())+':'+pad(now.getMinutes());
+  const today=toKey(new Date()), d=S.days[today]||{};
+  const out=[];
+  const scan=(list,field)=>{
+    (list||[]).forEach(it=>{
+      const times=(it.times||[]);
+      if(!times.length)return;
+      const taken=(d[field]&&d[field][it.id])||0;
+      const due=times.filter(t=>t<=hm).length;          // 지금까지 먹었어야 할 횟수
+      if(due>taken)out.push({name:it.name,due,taken,at:times[taken]||times[due-1],kind:field});
+    });
+  };
+  scan(activeMeds(today),'meds');
+  scan(S.settings.supplements,'supplements');
+  return out;
+}
+function renderDue(){
+  const box=$('#rdue');if(!box)return;
+  const list=dueNow();
+  if(!list.length){box.innerHTML='';return}
+  box.innerHTML=`<div class="ralert" style="background:var(--olive)">
+    <span class="t">먹을 시간이 지났어요 — ${list.map(x=>esc(x.name)+' '+x.at).join(', ')}</span>
+    <span class="dd">${list.length}</span></div>`;
+}
+
 /* ---------- 알림 ---------- */
 function notifyKey(){return 'bodylog_notified_'+toKey(new Date())}
+/* 복용 시간 알림 — 앱이 열려 있을 때만 동작(웹앱은 꺼진 상태로 폰을 깨울 수 없음) */
+let _doseNotified={};
+function checkDoseAlarm(){
+  if(!('Notification' in window)||Notification.permission!=='granted')return;
+  const today=toKey(new Date());
+  dueNow().forEach(x=>{
+    const k=today+'|'+x.name+'|'+x.at;
+    if(_doseNotified[k])return;
+    _doseNotified[k]=1;
+    try{new Notification('BODY.LOG',{body:`${x.name} 먹을 시간이에요 (${x.at})`,icon:'icon-180.png',tag:k})}catch(e){}
+  });
+}
 function maybeNotify(){
   if(!('Notification' in window)||Notification.permission!=='granted')return;
   if(localStorage.getItem(notifyKey()))return;
@@ -2235,6 +2466,9 @@ $$('#logSeg button').forEach(b=>b.onclick=()=>{
 });
 $('#logQ').oninput=e=>{logQ=e.target.value;renderLog()};
 $('#logQX').onclick=()=>{logQ='';$('#logQ').value='';renderLog();$('#logQ').focus()};
+$('#logPrev').onclick=()=>shiftMonth(-1);
+$('#logNext').onclick=()=>shiftMonth(1);
+$('#logMonth').onclick=()=>{logMonth=null;renderLogMonth();renderLog()};   // 눌러서 전체로
 $('#calPrev').onclick=()=>{calMonth.m--;if(calMonth.m<0){calMonth.m=11;calMonth.y--}renderCalendar()};
 $('#calNext').onclick=()=>{calMonth.m++;if(calMonth.m>11){calMonth.m=0;calMonth.y++}renderCalendar()};
 
@@ -2301,9 +2535,11 @@ $$('#fpain .chip').forEach(b=>b.onclick=()=>{
 $$('#femo .chip').forEach(b=>b.onclick=()=>{
   const v=b.dataset.v,i=form.emos.indexOf(v);i<0?form.emos.push(v):form.emos.splice(i,1);renderForm()});
 
-/* 현재 폼 → 저장할 하루 객체. 저장과 '변경 있음' 판정에서 함께 씀 */
-function buildDay(){
-  const prev=S.days[selDate]||{};
+/* 현재 폼 → 저장할 하루 객체. 저장과 '변경 있음' 판정에서 함께 씀
+   date를 넘기면 그 날짜 기준으로 만든다(자동저장이 날짜 전환과 겹칠 때 필요) */
+function buildDay(date){
+  date=date||selDate;
+  const prev=S.days[date]||{};
   const d={};
   if(prev._demo)d._demo=1;                               // 예시 표시는 유지
   if(tempTouched)d.temp={value:+(+form.temp).toFixed(2),time:form.time};
@@ -2340,41 +2576,49 @@ function stable(v){
     return Object.keys(v).sort().reduce((a,k)=>(a[k]=stable(v[k]),a),{});
   return v;
 }
-function formDirty(){
-  const cur=S.days[selDate]||{};
-  return JSON.stringify(stable(buildDay()))!==JSON.stringify(stable(cur));
+function formDirty(date){
+  date=date||selDate;
+  const cur=S.days[date]||{};
+  return JSON.stringify(stable(buildDay(date)))!==JSON.stringify(stable(cur));
 }
+/* ---------- 자동 저장 ---------- */
+let _autoT=null, _autoDate=null, _savedAt=0;
 function renderSaveBar(){
-  const bar=$('#saveBar'), on=$('#scr-today').classList.contains('on');
-  bar.style.display=on?'block':'none';
-  document.body.classList.toggle('on-today',on);
-  if(!on)return;
-  const btn=$('#btnSave');
-  if(btn.dataset.busy)return;                            // 저장 직후 애니메이션 중이면 건드리지 않음
-  const dirty=formDirty();
-  btn.classList.toggle('dirty',dirty);
-  btn.innerHTML=dirty
-    ? '저장하기 <span class="badge">변경됨</span>'
-    : 'SAVE — 기록 저장';
+  const el=$('#asave');if(!el)return;
+  if(_autoT){el.className='asave wait';el.textContent='저장 중';return}
+  if(formDirty()){el.className='asave wait';el.textContent='저장 중';return}
+  if(Date.now()-_savedAt<2500){el.className='asave on';el.textContent='저장됨 ✓';return}
+  el.className='asave';el.textContent='자동 저장';
 }
-$('#btnSave').onclick=()=>{
-  const prev=S.days[selDate]||{};
-  const d=buildDay();
-  snapshot('기록 저장');                                  // 저장 직전 상태를 스냅샷
+/* 변경이 있으면 잠시 뒤 자동 저장. 날짜를 바꾸기 전엔 flushAutoSave()로 먼저 확정한다 */
+function autoSave(){
+  if(!formDirty())return;
+  _autoDate=selDate;
+  clearTimeout(_autoT);
+  _autoT=setTimeout(()=>{_autoT=null;commitDay(_autoDate)},700);
+  renderSaveBar();
+}
+function flushAutoSave(){
+  if(_autoT){clearTimeout(_autoT);_autoT=null;commitDay(_autoDate)}
+}
+/* 폼을 그 날짜에 확정 저장. date는 예약 당시의 날짜(폼은 아직 그 날 것) */
+function commitDay(date){
+  date=date||selDate;
+  if(!formDirty(date))return;
+  const prev=S.days[date]||{};
+  const d=buildDay(date);
+  snapshot('기록 저장');
   const wasPeriod=!!prev.period;
-  if(Object.keys(d).length)S.days[selDate]=d;else delete S.days[selDate];
-  // 생리 시작일을 새로 체크 → 이후 며칠 자동으로 생리 중 표시
+  if(Object.keys(d).length)S.days[date]=d;else delete S.days[date];
   let auto=0;
-  if(form.period&&!wasPeriod)auto=autoFillPeriod(selDate);
-  if(!form.period&&wasPeriod)auto=-clearAutoPeriod(selDate);
-  save();renderToday();renderReport();
-  const btn=$('#btnSave');
-  btn.dataset.busy='1';
-  btn.textContent='저장됨 ✓';btn.classList.remove('dirty');btn.classList.add('saved');
-  setTimeout(()=>{btn.classList.remove('saved');delete btn.dataset.busy;renderSaveBar()},1100);
+  if(form.period&&!wasPeriod)auto=autoFillPeriod(date);
+  if(!form.period&&wasPeriod)auto=-clearAutoPeriod(date);
+  save();
+  _savedAt=Date.now();
+  renderWeek();renderCycle();renderStatuses();renderReport();
   if(auto>0)toast(`생리 시작일 저장 · 이후 ${auto}일을 자동으로 표시했어요`);
   else if(auto<0)toast(`생리 시작일 해제 · 자동 표시 ${-auto}일을 지웠어요`);
-};
+}
 
 /* 영양제 추가 */
 $$('#doseSeg button').forEach(b=>b.onclick=()=>{
@@ -2433,13 +2677,40 @@ $$('#mdoseSeg button').forEach(b=>b.onclick=()=>{
   newMedDose=+b.dataset.d;
   $$('#mdoseSeg button').forEach(x=>x.classList.toggle('on',x===b));
 });
-$('#madd').onclick=()=>{
+$('#madd').onclick=async()=>{
   const v=$('#mnew').value.trim();if(!v){alert('약 이름을 입력해주세요.');return}
   const st=$('#mstart').value||toKey(new Date()), en=$('#mend').value||'';
   if(en&&en<st){alert('종료일이 시작일보다 빠를 수 없어요.');return}
-  S.settings.meds.push({id:'m'+Date.now(),name:v,dose:newMedDose,start:st,end:en});
+  const item={id:'m'+Date.now(),name:v,dose:newMedDose,start:st,end:en};
+  if(S.settings.apiKey)item.analyzing=true;
+  S.settings.meds.push(item);
   $('#mnew').value='';$('#mstart').value='';$('#mend').value='';
   save();renderMy();renderMedCheck();renderStatuses();
+  if(!S.settings.apiKey)return;
+  try{await aiClassifyMed(item)}
+  catch(e){delete item.analyzing;save();
+    $('#medAiStat').className='mealstat err';$('#medAiStat').textContent='AI 분석 실패: '+e.message}
+  renderMy();renderMedCheck();
+};
+/* 약 전체 AI 분석 */
+$('#medAiBtn').onclick=async()=>{
+  const list=S.settings.meds||[];
+  if(!list.length||!S.settings.apiKey)return;
+  const todo=list.filter(m=>!m.ai), target=todo.length?todo:list;
+  const btn=$('#medAiBtn'),stat=$('#medAiStat');
+  btn.disabled=true;stat.className='mealstat';
+  let ok=0,fail=0;
+  for(let i=0;i<target.length;i++){
+    stat.textContent=`분석 중... ${i+1}/${target.length} — ${target[i].name}`;
+    target[i].analyzing=true;renderMy();
+    try{await aiClassifyMed(target[i]);ok++}
+    catch(e){delete target[i].analyzing;fail++;
+      if(e.message.includes('키')){stat.className='mealstat err';stat.textContent='AI 분석 실패: '+e.message;break}}
+    save();renderMy();
+  }
+  if(!stat.className.includes('err'))
+    stat.textContent=fail?`${ok}개 완료 · ${fail}개 실패`:`${ok}개 분석 완료 — 주의 표시는 참고용이며 의사 지시가 우선이에요`;
+  btn.disabled=false;renderMy();renderMedCheck();
 };
 $('#mnew').onkeydown=e=>{if(e.key==='Enter')$('#madd').click()};
 
@@ -2719,10 +2990,19 @@ function renderAll(){
   if($('#scr-log').classList.contains('on'))renderLog();
   if($('#scr-my').classList.contains('on'))renderMy();
 }
+/* 앱을 닫거나 배경으로 보낼 때 미저장분 확정 */
+window.addEventListener('pagehide',flushAutoSave);
+document.addEventListener('visibilitychange',()=>{if(document.hidden)flushAutoSave()});
+
 seedDemo();
 loadForm();
 renderAll();
 maybeNotify();
+checkDoseAlarm();
+setInterval(()=>{                                   // 앱이 열려 있는 동안 복용 시간 확인
+  checkDoseAlarm();
+  if($('#scr-report').classList.contains('on'))renderDue();
+},60000);
 initFb();
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
