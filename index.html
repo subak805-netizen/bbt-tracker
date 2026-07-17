@@ -236,6 +236,74 @@ textarea{width:100%;margin-top:12px;font-family:var(--mono);font-size:14px;paddi
 .banner button{border:var(--b1) solid var(--ink);background:var(--ink);color:var(--paper);font-weight:800;font-size:11.5px;padding:7px 12px}
 .note{font-size:11px;color:var(--mut);text-align:center;margin:24px 0 8px;line-height:1.8;font-weight:700}
 
+/* ---------- 캘린더 ---------- */
+.calnav{display:flex;align-items:center;border:var(--b2) solid var(--ink);background:var(--panel)}
+.calnav button{border:none;background:transparent;font-size:17px;font-weight:800;padding:11px 16px}
+.calnav button+button{border-left:var(--b1) solid var(--ink)}
+.calnav .mlab{flex:1;text-align:center;font-family:var(--dot);font-weight:900;font-size:17px}
+.caldow{display:flex;border:var(--b2) solid var(--ink);border-top:none;background:var(--dim)}
+.caldow div{flex:1;text-align:center;padding:6px 0;font-size:9.5px;letter-spacing:.1em;font-weight:800;color:var(--mut)}
+.caldow div:first-child{color:var(--wine)}
+.calgrid{display:flex;flex-wrap:wrap;border:var(--b2) solid var(--ink);border-top:none;background:#fff}
+.cell{width:14.2857%;aspect-ratio:1/1.1;border-right:var(--b1) solid var(--dim);border-bottom:var(--b1) solid var(--dim);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;position:relative;cursor:pointer}
+.cell:nth-child(7n){border-right:none}
+.cell.pad{background:var(--panel);cursor:default}
+.cell .dn{font-size:13px;font-weight:800;line-height:1}
+.cell .mk{width:4px;height:4px;background:var(--ink);opacity:.45}
+.cell .mk.hide{visibility:hidden}
+.cell.fert{background:#FBE3D6}
+.cell.f1{background:#EFCBD2}.cell.f2{background:#D99AA8}.cell.f3{background:#B45A6E;color:#fff}
+.cell.f4{background:var(--wine);color:#fff}
+.cell.f1 .mk,.cell.f2 .mk{background:var(--wine)}
+.cell.f3 .mk,.cell.f4 .mk{background:#fff}
+.cell.ovu::after{content:"";position:absolute;inset:3px;border:2px solid var(--orange);pointer-events:none}
+.cell.pnext::after{content:"";position:absolute;inset:3px;border:2px dashed var(--wine);pointer-events:none}
+.cell.today .dn{background:var(--ink);color:var(--yellow);width:21px;height:21px;display:grid;place-items:center}
+.cell.sel{box-shadow:inset 0 0 0 2.5px var(--ink)}
+.callg{display:flex;flex-wrap:wrap;gap:10px;border:var(--b2) solid var(--ink);border-top:none;
+  padding:10px 12px;background:var(--panel);font-size:11px;font-weight:700}
+.callg b{display:inline-block;width:11px;height:11px;margin-right:5px;vertical-align:-1px}
+
+/* 주기 히스토리 */
+.chist{border:var(--b2) solid var(--ink);background:var(--panel);margin-top:24px}
+.chist .hh{padding:11px 13px;border-bottom:var(--b2) solid var(--ink);background:var(--dim);
+  display:flex;justify-content:space-between;align-items:center}
+.chist .hh .ko{font-size:13.5px;font-weight:800}
+.chist .hr{display:flex;align-items:center;gap:11px;padding:10px 13px}
+.chist .hr+.hr{border-top:var(--b1) solid var(--dim)}
+.chist .hd{font-size:12px;font-weight:800;width:96px;flex:0 0 auto}
+.chist .hb{flex:1;height:9px;background:var(--dim);position:relative}
+.chist .hb i{display:block;height:100%;background:var(--olive)}
+.chist .hb i.odd{background:var(--orange)}
+.chist .hn{font-family:var(--dot);font-weight:900;font-size:15px;width:42px;text-align:right;flex:0 0 auto}
+.chist .sum{padding:11px 13px;border-top:var(--b1) solid var(--ink);font-size:12px;font-weight:700;
+  color:var(--mut);line-height:1.7;background:#fff}
+.chist .sum b{color:var(--ink)}
+
+/* 약 · 병원 */
+.medbox{border:var(--b2) solid var(--ink)}
+.medrow{display:flex;align-items:center;gap:11px;padding:11px 13px;cursor:pointer;background:#fff}
+.medrow+.medrow{border-top:var(--b1) solid var(--ink)}
+.medrow .nm{flex:1;min-width:0;font-size:14.5px;font-weight:800}
+.medrow .nm .sub{display:block;font-size:10.5px;color:var(--mut);font-weight:700;margin-top:1px}
+.medrow.full .nm>span:first-child{text-decoration:line-through;text-decoration-thickness:2px;color:var(--mut)}
+.medrow .dboxes{display:flex;gap:5px;flex:0 0 auto}
+.medrow .dbx{width:22px;height:22px;border:var(--b2) solid var(--orange);display:grid;place-items:center;
+  font-size:13px;font-weight:900;color:#fff}
+.medrow .dbx.on{background:var(--orange)}
+.medbox .empty{padding:14px;font-size:13px;color:var(--mut);font-weight:700}
+.hosprow{display:flex;gap:9px;margin-top:12px}
+.hosprow .f{flex:1;min-width:0}
+.hosprow label{display:block;font-size:10.5px;letter-spacing:.14em;color:var(--mut);font-weight:700;margin-bottom:5px}
+.hosprow input{width:100%;font-family:var(--mono);font-size:14px;font-weight:700;
+  padding:10px 11px;border:var(--b1) solid var(--ink);background:#fff;color:var(--ink);-webkit-appearance:none}
+.mdate{display:flex;gap:8px;margin-top:8px}
+.mdate .f{flex:1;min-width:0}
+.mdate label{display:block;font-size:10px;letter-spacing:.13em;color:var(--mut);font-weight:700;margin-bottom:4px}
+.mdate input{width:100%;font-family:var(--mono);font-size:13px;font-weight:700;padding:9px 10px;
+  border:var(--b1) solid var(--ink);background:#fff;color:var(--ink);-webkit-appearance:none}
+
 /* ---------- REPORT 대시보드 ---------- */
 .rhero{border:var(--b2) solid var(--ink);background:var(--yellow)}
 .rhero .rtop{display:flex;align-items:stretch}
@@ -361,10 +429,22 @@ textarea{width:100%;margin-top:12px;font-family:var(--mono);font-size:14px;paddi
       <div class="cb rsupp" id="rsuppbox"></div>
     </div>
 
+    <div class="rcard" id="rmedcard">
+      <div class="ch"><span class="sw" style="background:var(--orange)"></span>
+        <span class="ko">약</span><span class="en" style="text-align:right" id="rmedcnt"></span></div>
+      <div class="cb rsupp" id="rmedbox"></div>
+    </div>
+
     <div class="rcard">
       <div class="ch"><span class="sw" style="background:var(--orange)"></span>
         <span class="ko">식단</span><span class="en" style="text-align:right" id="rmealcnt"></span></div>
       <div class="cb" id="rmealbox"></div>
+    </div>
+
+    <div class="rcard" id="rhospcard">
+      <div class="ch"><span class="sw" style="background:var(--wine)"></span>
+        <span class="ko">병원</span><span class="en" style="text-align:right">HOSPITAL</span></div>
+      <div class="cb" id="rhospbox"></div>
     </div>
 
     <div class="rcard">
@@ -413,15 +493,39 @@ textarea{width:100%;margin-top:12px;font-family:var(--mono);font-size:14px;paddi
           <div class="f"><label>DATE</label><input type="date" id="fdate"></div>
           <div class="f"><label>TIME</label><input type="time" id="ftime"></div>
         </div>
-        <div class="chips" style="margin-top:14px">
+      </div>
+    </div>
+
+    <div class="sec" id="s8">
+      <div class="head" data-tg>
+        <span class="idx">02</span>
+        <span class="ttl"><span class="en">PERIOD</span><span class="ko">생리</span></span>
+        <span class="st" id="st8">미기록</span><span class="arrow">▾</span>
+      </div>
+      <div class="body">
+        <div class="chips">
           <button class="chip red" id="fperiod">생리 시작일</button>
         </div>
+        <div class="grouplab">이 날 생리 중이면 — 양</div>
+        <div class="chips" id="fflow">
+          <button class="chip" data-v="spotting">점상</button>
+          <button class="chip" data-v="light">적음</button>
+          <button class="chip" data-v="medium">보통</button>
+          <button class="chip" data-v="heavy">많음</button>
+        </div>
+        <div class="grouplab">생리통</div>
+        <div class="chips" id="fcramp">
+          <button class="chip" data-v="1">약함</button>
+          <button class="chip" data-v="2">보통</button>
+          <button class="chip" data-v="3">심함</button>
+        </div>
+        <div class="myhint" style="margin-top:12px">첫날은 <b>생리 시작일</b>을 꼭 체크하세요 — 주기·배란 예측의 기준점이에요. 이후 날은 양만 기록하면 캘린더에 자동으로 이어져요.</div>
       </div>
     </div>
 
     <div class="sec" id="s2">
       <div class="head" data-tg>
-        <span class="idx">02</span>
+        <span class="idx">03</span>
         <span class="ttl"><span class="en">CONDITION</span><span class="ko">몸 상태</span></span>
         <span class="st" id="st2">미기록</span><span class="arrow">▾</span>
       </div>
@@ -435,7 +539,7 @@ textarea{width:100%;margin-top:12px;font-family:var(--mono);font-size:14px;paddi
 
     <div class="sec" id="s3">
       <div class="head" data-tg>
-        <span class="idx">03</span>
+        <span class="idx">04</span>
         <span class="ttl"><span class="en">OVULATION TEST</span><span class="ko">배란테스트기</span></span>
         <span class="st" id="st3">미기록</span><span class="arrow">▾</span>
       </div>
@@ -457,7 +561,7 @@ textarea{width:100%;margin-top:12px;font-family:var(--mono);font-size:14px;paddi
 
     <div class="sec" id="s4">
       <div class="head" data-tg>
-        <span class="idx">04</span>
+        <span class="idx">05</span>
         <span class="ttl"><span class="en">PREGNANCY TEST</span><span class="ko">임신테스트기</span></span>
         <span class="st" id="st4">미기록</span><span class="arrow">▾</span>
       </div>
@@ -472,16 +576,25 @@ textarea{width:100%;margin-top:12px;font-family:var(--mono);font-size:14px;paddi
 
     <div class="sec" id="s5">
       <div class="head" data-tg>
-        <span class="idx">05</span>
+        <span class="idx">06</span>
         <span class="ttl"><span class="en">SUPPLEMENTS</span><span class="ko">영양제</span></span>
         <span class="st" id="st5">미기록</span><span class="arrow">▾</span>
       </div>
       <div class="body"><div class="supp" id="fsupp"></div></div>
     </div>
 
+    <div class="sec" id="s9">
+      <div class="head" data-tg>
+        <span class="idx">07</span>
+        <span class="ttl"><span class="en">MEDICATION</span><span class="ko">약</span></span>
+        <span class="st" id="st9">미기록</span><span class="arrow">▾</span>
+      </div>
+      <div class="body"><div class="medbox" id="fmed"></div></div>
+    </div>
+
     <div class="sec" id="s6">
       <div class="head" data-tg>
-        <span class="idx">06</span>
+        <span class="idx">08</span>
         <span class="ttl"><span class="en">SYMPTOMS</span><span class="ko">신체 증상</span></span>
         <span class="st" id="st6">미기록</span><span class="arrow">▾</span>
       </div>
@@ -506,9 +619,9 @@ textarea{width:100%;margin-top:12px;font-family:var(--mono);font-size:14px;paddi
       </div>
     </div>
 
-    <div class="sec last" id="s7">
+    <div class="sec" id="s7">
       <div class="head" data-tg>
-        <span class="idx">07</span>
+        <span class="idx">09</span>
         <span class="ttl"><span class="en">MEAL — AI 분석</span><span class="ko">식단</span></span>
         <span class="st" id="st7">미기록</span><span class="arrow">▾</span>
       </div>
@@ -520,14 +633,67 @@ textarea{width:100%;margin-top:12px;font-family:var(--mono);font-size:14px;paddi
       </div>
     </div>
 
+    <div class="sec last" id="s10">
+      <div class="head" data-tg>
+        <span class="idx">10</span>
+        <span class="ttl"><span class="en">HOSPITAL</span><span class="ko">병원 방문</span></span>
+        <span class="st" id="st10">미기록</span><span class="arrow">▾</span>
+      </div>
+      <div class="body">
+        <div class="grouplab">진료과</div>
+        <div class="chips" id="fhtype">
+          <button class="chip" data-v="산부인과">산부인과</button>
+          <button class="chip" data-v="난임센터">난임센터</button>
+          <button class="chip" data-v="한의원">한의원</button>
+          <button class="chip" data-v="기타">기타</button>
+        </div>
+        <div class="hosprow">
+          <div class="f"><label>병원 이름</label><input id="fhname" placeholder="예: OO여성의원"></div>
+        </div>
+        <textarea rows="3" id="fhnote" placeholder="진료 내용 — 검사·처방·의사 소견 등"></textarea>
+        <div class="hosprow">
+          <div class="f"><label>다음 예약일 (선택)</label><input type="date" id="fhnext"></div>
+        </div>
+        <div class="myhint" style="margin-top:10px">다음 예약일을 넣으면 REPORT 화면에 D-day로 알려드려요.</div>
+      </div>
+    </div>
+
     <button class="save" id="btnSave">SAVE — 기록 저장</button>
     <div class="banner" id="demoBanner" style="display:none">
       <span>예시 데이터로 미리보는 중</span><button id="clearDemo">내 기록 시작</button>
     </div>
   </section>
 
-  <!-- ============ CHART ============ -->
+  <!-- ============ CYCLE (달력 + 곡선) ============ -->
   <section class="screen" id="scr-chart">
+    <div class="seg" id="viewSeg" style="margin-bottom:16px">
+      <button class="on" data-v="cal">달력</button>
+      <button data-v="curve">체온 곡선</button>
+    </div>
+
+    <div id="calView">
+      <div class="calnav">
+        <button id="calPrev">‹</button>
+        <div class="mlab" id="calLab">—</div>
+        <button id="calNext">›</button>
+      </div>
+      <div class="caldow"><div>일</div><div>월</div><div>화</div><div>수</div><div>목</div><div>금</div><div>토</div></div>
+      <div class="calgrid" id="calGrid"></div>
+      <div class="callg">
+        <span><b style="background:var(--wine)"></b>생리</span>
+        <span><b style="background:#FBE3D6"></b>가임기</span>
+        <span><b style="border:2px solid var(--orange);background:#fff"></b>배란 예정</span>
+        <span><b style="border:2px dashed var(--wine);background:#fff"></b>생리 예정</span>
+        <span><b style="background:var(--ink);opacity:.45"></b>기록 있음</span>
+      </div>
+      <div class="chist">
+        <div class="hh"><span class="ko">주기 히스토리</span><span class="cap" id="chistCnt"></span></div>
+        <div id="chistRows"></div>
+        <div class="sum" id="chistSum"></div>
+      </div>
+    </div>
+
+    <div id="curveView" style="display:none">
     <div class="phead"><span class="en">TEMP CURVE</span><span class="cap">°C</span></div>
     <div class="seg" id="rangeSeg">
       <button class="on" data-r="cycle">이번 주기</button>
@@ -551,6 +717,7 @@ textarea{width:100%;margin-top:12px;font-family:var(--mono);font-size:14px;paddi
         <div class="cell"><span class="cap">AVG CYCLE</span><div class="v" id="stAvg">—</div></div>
         <div class="cell"><span class="cap">PHASE</span><div class="v ko" id="stPh">—</div></div>
       </div>
+    </div>
     </div>
     <div class="note">예측은 통계 기반 참고용이며 의학적 진단이 아닙니다.</div>
   </section>
@@ -576,6 +743,25 @@ textarea{width:100%;margin-top:12px;font-family:var(--mono);font-size:14px;paddi
           <button class="add" id="sadd">추가</button>
         </div>
         <div class="myhint">이름을 인식해 최적 복용 시간대로 자동 분류해요. 철분·유산균=아침 공복, 종합비타민·오메가3·비타민D=식후, 칼슘·마그네슘=저녁·취침 전.</div>
+      </div>
+    </div>
+
+    <div class="mycard">
+      <div class="mh"><span class="ko">복용 중인 약</span><span class="cap">MEDICATION</span></div>
+      <div class="mb">
+        <div class="slist" id="mlist"></div>
+        <div class="addrow">
+          <input id="mnew" placeholder="약 이름 (예: 페마라)">
+          <div class="doseseg" id="mdoseSeg">
+            <button data-d="1" class="on">1회</button><button data-d="2">2회</button><button data-d="3">3회</button>
+          </div>
+        </div>
+        <div class="mdate">
+          <div class="f"><label>시작일</label><input type="date" id="mstart"></div>
+          <div class="f"><label>종료일 (선택)</label><input type="date" id="mend"></div>
+        </div>
+        <button class="mybtn" id="madd" style="background:var(--ink);color:var(--paper);border-color:var(--ink)">약 추가</button>
+        <div class="myhint">처방 기간을 넣으면 그 기간에만 TODAY 07번에 나타나고, 끝나면 자동으로 사라져요. 종료일을 비우면 계속 복용으로 봅니다. 영양제와 달리 시간대 자동분류는 하지 않아요 — 처방 지시를 따르세요.</div>
       </div>
     </div>
 
@@ -618,7 +804,7 @@ textarea{width:100%;margin-top:12px;font-family:var(--mono);font-size:14px;paddi
 <div class="nav">
   <a class="on" data-tab="report">REPORT</a>
   <a data-tab="today">TODAY</a>
-  <a data-tab="chart">CHART</a>
+  <a data-tab="chart">CYCLE</a>
   <a data-tab="log">LOG</a>
   <a data-tab="my">MY</a>
 </div>
@@ -672,6 +858,7 @@ function loadStore(){
       }
     }catch(e){}
   }
+  if(!s.settings.meds)s.settings.meds=[];
   // v2 내부 마이그레이션: 복용횟수(dose), 체크 boolean→count
   (s.settings.supplements||[]).forEach(p=>{if(!p.dose)p.dose=1});
   for(const k in s.days){const d=s.days[k];
@@ -697,6 +884,7 @@ function seedDemo(){
     if(cd>=base.length)continue;
     const d={temp:{value:+(base[cd]+(i%2?0:0.01)).toFixed(2),time:'07:'+pad(5+(i%25))}};
     if(i===34||i===6)d.period=true;
+    if(cd<=4){d.flow=['medium','heavy','medium','light','spotting'][cd];if(cd<=1)d.cramp=cd===0?2:1}
     if(i%2===0)d.condition={score:3+(i%3),memo:i%6===0?'몸이 가볍고 컨디션 좋음':''};
     if(cd>=7&&cd<=10)d.ovulation={result:cd===9?'positive':cd===10?'peak':'negative',ratio:cd===10?1.2:0.6};
     d.supplements={p1:1,p2:i%3?1:0,p3:i%2?1:0,p4:1};
@@ -740,7 +928,9 @@ let selDate=toKey(new Date());
 let range='cycle';
 let form={};
 let tempTouched=false;
-let newDose=1;
+let newDose=1, newMedDose=1;
+let calMonth=(()=>{const d=new Date();return{y:d.getFullYear(),m:d.getMonth()}})();
+let cycView='cal';
 
 /* ---------- TODAY 렌더 ---------- */
 function loadForm(){
@@ -755,11 +945,22 @@ function loadForm(){
     ovratio:d.ovulation&&d.ovulation.ratio!=null?d.ovulation.ratio:null,
     preg:d.pregnancy?d.pregnancy.result:'',
     supp:Object.assign({},d.supplements||{}),
+    meds:Object.assign({},d.meds||{}),
+    flow:d.flow||'',
+    cramp:d.cramp||0,
+    htype:d.hospital?d.hospital.type||'':'',
+    hname:d.hospital?d.hospital.name||'':'',
+    hnote:d.hospital?d.hospital.note||'':'',
+    hnext:d.hospital?d.hospital.next||'':'',
     dis:d.symptoms?d.symptoms.discharge||'':'',
     pains:d.symptoms?[...(d.symptoms.pains||[])]:[],
     emos:d.symptoms?[...(d.symptoms.emotions||[])]:[],
   };
   tempTouched=!!d.temp;
+}
+function activeMeds(date){
+  return (S.settings.meds||[]).filter(m=>
+    (!m.start||date>=m.start) && (!m.end||date<=m.end));
 }
 function renderForm(){
   $('#tv').innerHTML=(+form.temp).toFixed(2)+'<small> °C</small>';
@@ -771,7 +972,11 @@ function renderForm(){
   $$('#fovres .chip').forEach(b=>b.classList.toggle('on',b.dataset.v===form.ovres));
   $('#ov').textContent=form.ovratio==null?'—':form.ovratio.toFixed(1);
   $$('#fpreg .chip').forEach(b=>b.classList.toggle('on',b.dataset.v===form.preg));
-  renderSuppCheck();
+  $$('#fflow .chip').forEach(b=>b.classList.toggle('on',b.dataset.v===form.flow));
+  $$('#fcramp .chip').forEach(b=>b.classList.toggle('on',+b.dataset.v===form.cramp));
+  $$('#fhtype .chip').forEach(b=>b.classList.toggle('on',b.dataset.v===form.htype));
+  $('#fhname').value=form.hname;$('#fhnote').value=form.hnote;$('#fhnext').value=form.hnext;
+  renderSuppCheck();renderMedCheck();
   $$('#fdis .chip').forEach(b=>b.classList.toggle('on',b.dataset.v===form.dis));
   $$('#fpain .chip').forEach(b=>b.classList.toggle('on',form.pains.includes(b.dataset.v)));
   $$('#femo .chip').forEach(b=>b.classList.toggle('on',form.emos.includes(b.dataset.v)));
@@ -831,31 +1036,59 @@ function renderMeals(){
   $('#mealStat').className='mealstat';
   $('#mealStat').textContent=hasKey?'':'MY 탭에서 Claude API 키를 등록하면 사용할 수 있어요.';
 }
+function renderMedCheck(){
+  const box=$('#fmed');const list=activeMeds(selDate);
+  if(!(S.settings.meds||[]).length){box.innerHTML='<div class="empty">MY 탭에서 복용 중인 약을 등록하세요.</div>';return}
+  if(!list.length){box.innerHTML='<div class="empty">이 날짜에 복용 기간인 약이 없어요.</div>';return}
+  box.innerHTML=list.map(m=>{
+    const taken=form.meds[m.id]||0,dose=m.dose||1;
+    let boxes='';for(let i=0;i<dose;i++)boxes+=`<span class="dbx ${i<taken?'on':''}">✓</span>`;
+    const per=m.end?`${m.start.slice(5).replace('-','/')} ~ ${m.end.slice(5).replace('-','/')}`:`${m.start.slice(5).replace('-','/')} ~ 계속`;
+    return`<div class="medrow ${taken>=dose?'full':''}" data-mid="${m.id}">
+      <span class="nm"><span>${esc(m.name)}</span><span class="sub">${per} · 하루 ${dose}회</span></span>
+      <span class="dboxes">${boxes}</span></div>`;
+  }).join('');
+  $$('#fmed .medrow').forEach(r=>r.onclick=()=>{
+    const m=S.settings.meds.find(x=>x.id===r.dataset.mid);
+    form.meds[m.id]=((form.meds[m.id]||0)+1)%((m.dose||1)+1);
+    renderMedCheck();renderStatuses();
+  });
+}
 function sectionStates(){
   const sup=S.settings.supplements;
   const doseTotal=sup.reduce((a,s)=>a+(s.dose||1),0);
   const takenTotal=sup.reduce((a,s)=>a+Math.min(form.supp[s.id]||0,s.dose||1),0);
+  const meds=activeMeds(selDate);
+  const mTotal=meds.reduce((a,m)=>a+(m.dose||1),0);
+  const mTaken=meds.reduce((a,m)=>a+Math.min(form.meds[m.id]||0,m.dose||1),0);
   const symN=(form.dis?1:0)+form.pains.length+form.emos.length;
   const mealN=((S.days[selDate]&&S.days[selDate].meals)||[]).length;
-  return[
-    {done:tempTouched,st:tempTouched?(+form.temp).toFixed(2)+' · '+form.time:'미기록'},
-    {done:form.cond>0,st:form.cond>0?form.cond+'/5':'미기록'},
-    {done:!!form.ovres,st:form.ovres?({negative:'음성',positive:'양성',peak:'피크'})[form.ovres]:'미기록'},
-    {done:!!form.preg,st:form.preg?({none:'한 줄',faint:'미세선',strong:'두 줄'})[form.preg]:'미기록'},
-    {done:takenTotal>0,st:sup.length?takenTotal+'/'+doseTotal:'미등록'},
-    {done:symN>0,st:symN>0?symN+'개 선택':'미기록'},
-    {done:mealN>0,st:mealN>0?mealN+'끼 기록':'미기록'},
-  ];
+  const FLOW_KO={spotting:'점상',light:'적음',medium:'보통',heavy:'많음'};
+  const pd=[];if(form.period)pd.push('시작일');if(form.flow)pd.push(FLOW_KO[form.flow]);
+  if(form.cramp)pd.push('통증'+form.cramp);
+  return{
+    s1:{done:tempTouched,st:tempTouched?(+form.temp).toFixed(2)+' · '+form.time:'미기록',core:1},
+    s8:{done:pd.length>0,st:pd.length?pd.join(' · '):'미기록',core:0},
+    s2:{done:form.cond>0,st:form.cond>0?form.cond+'/5':'미기록',core:1},
+    s3:{done:!!form.ovres,st:form.ovres?({negative:'음성',positive:'양성',peak:'피크'})[form.ovres]:'미기록',core:1},
+    s4:{done:!!form.preg,st:form.preg?({none:'한 줄',faint:'미세선',strong:'두 줄'})[form.preg]:'미기록',core:1},
+    s5:{done:takenTotal>0,st:sup.length?takenTotal+'/'+doseTotal:'미등록',core:1},
+    s9:{done:mTaken>0,st:meds.length?mTaken+'/'+mTotal:'없음',core:meds.length?1:0},
+    s6:{done:symN>0,st:symN>0?symN+'개 선택':'미기록',core:1},
+    s7:{done:mealN>0,st:mealN>0?mealN+'끼 기록':'미기록',core:1},
+    s10:{done:!!(form.htype||form.hname),st:form.hname?esc(form.hname):form.htype?form.htype:'미기록',core:0},
+  };
 }
 function renderStatuses(){
   const sts=sectionStates();
-  sts.forEach((s,i)=>{
-    $('#st'+(i+1)).textContent=s.st;
-    $('#s'+(i+1)).classList.toggle('done',s.done);
+  Object.keys(sts).forEach(k=>{
+    $('#st'+k.slice(1)).textContent=sts[k].st;
+    $('#'+k).classList.toggle('done',sts[k].done);
   });
-  const n=sts.filter(s=>s.done).length;
-  $('#pnum').textContent=n+'/7';
-  $('#pbar').innerHTML=sts.map(s=>`<i class="${s.done?'on':''}"></i>`).join('');
+  const core=Object.values(sts).filter(s=>s.core);
+  const n=core.filter(s=>s.done).length;
+  $('#pnum').textContent=n+'/'+core.length;
+  $('#pbar').innerHTML=core.map(s=>`<i class="${s.done?'on':''}"></i>`).join('');
 }
 function renderWeek(){
   const w=$('#week');w.innerHTML='';
@@ -1052,6 +1285,9 @@ function renderLog(){
   box.innerHTML=ks.slice(0,90).map(k=>{
     const d=S.days[k],tags=[];
     if(d.period)tags.push('<span class="rd">생리 시작</span>');
+    else if(d.flow)tags.push('<span class="rd">생리 '+FLOW_KO[d.flow]+'</span>');
+    if(d.hospital&&(d.hospital.name||d.hospital.type))tags.push('병원 '+esc(d.hospital.name||d.hospital.type));
+    if(d.meds){const n=Object.values(d.meds).reduce((a,v)=>a+(v||0),0);if(n)tags.push('약 '+n)}
     if(d.condition&&d.condition.score)tags.push('컨디션'+d.condition.score);
     if(d.ovulation)tags.push('배테기 '+({negative:'음성',positive:'양성',peak:'피크'})[d.ovulation.result]);
     if(d.pregnancy)tags.push('임테기 '+({none:'한줄',faint:'미세선',strong:'두줄'})[d.pregnancy.result]);
@@ -1088,7 +1324,23 @@ function renderMy(){
     S.settings.supplements=S.settings.supplements.filter(s=>s.id!==b.dataset.id);
     save();renderMy();renderSuppCheck();renderStatuses();
   });
-  renderKey();renderNoti();
+  renderMedList();renderKey();renderNoti();
+}
+function renderMedList(){
+  const box=$('#mlist'),list=S.settings.meds||[],today=toKey(new Date());
+  box.innerHTML=list.length?list.map(m=>{
+    const on=(!m.start||today>=m.start)&&(!m.end||today<=m.end);
+    const per=m.end?`${m.start.slice(5).replace('-','/')} ~ ${m.end.slice(5).replace('-','/')}`:`${m.start.slice(5).replace('-','/')} ~ 계속`;
+    return`<div class="srow">
+      <span class="snm">${esc(m.name)}${m.dose>1?' ×'+m.dose:''}<span class="tm">${per}</span></span>
+      <span class="slot" style="${on?'background:var(--orange);border-color:var(--orange);color:#fff':'color:var(--mut)'}">${on?'복용중':'종료'}</span>
+      <button class="sdel" data-id="${m.id}">삭제</button>
+    </div>`}).join(''):'<div class="myhint" style="margin:0">등록한 약이 없어요. 아래에서 추가하세요.</div>';
+  $$('#mlist .sdel').forEach(b=>b.onclick=()=>{
+    if(!confirm('이 약을 목록에서 삭제할까요? (과거 복용 기록은 남아요)'))return;
+    S.settings.meds=S.settings.meds.filter(m=>m.id!==b.dataset.id);
+    save();renderMedList();renderMedCheck();renderStatuses();
+  });
 }
 function renderNoti(){
   const st=$('#notiStat'),btn=$('#notiBtn');
@@ -1109,6 +1361,96 @@ function renderKey(){
   $('#keyInput').value='';
 }
 
+/* ---------- 캘린더 ---------- */
+const FLOW_LV={spotting:1,light:2,medium:3,heavy:4};
+const FLOW_KO={spotting:'점상',light:'적음',medium:'보통',heavy:'많음'};
+const MON_KO=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+// 실제 감지 배란 + 예측 배란을 모아 배란일 집합 생성
+function ovulationDates(){
+  const set={};
+  periodStarts().forEach(p=>{
+    const an=analyzeCycle(cycleEntriesFor(p));
+    if(an.ovulation)set[an.ovulation]='real';
+  });
+  const pr=predict();
+  if(pr&&!set[pr.no])set[pr.no]='pred';
+  return set;
+}
+function renderCalendar(){
+  $('#calLab').textContent=`${calMonth.y}. ${MON_KO[calMonth.m]}`;
+  const first=new Date(calMonth.y,calMonth.m,1);
+  const startPad=first.getDay();
+  const dim=new Date(calMonth.y,calMonth.m+1,0).getDate();
+  const today=toKey(new Date());
+  const ovus=ovulationDates();
+  const pr=predict();
+  // 가임기: 배란일 -5 ~ +1
+  const fert={};
+  Object.keys(ovus).forEach(o=>{for(let i=-5;i<=1;i++)fert[addDays(o,i)]=1});
+  // 예상 생리 (다음 1주기)
+  const pnext={};
+  if(pr)for(let i=0;i<5;i++)pnext[addDays(pr.np,i)]=1;
+
+  let h='';
+  for(let i=0;i<startPad;i++)h+='<div class="cell pad"></div>';
+  for(let dd=1;dd<=dim;dd++){
+    const k=`${calMonth.y}-${pad(calMonth.m+1)}-${pad(dd)}`;
+    const d=S.days[k]||{};
+    const cls=['cell'];
+    const lv=d.flow?FLOW_LV[d.flow]:(d.period?2:0);
+    if(lv)cls.push('f'+lv);
+    else if(fert[k])cls.push('fert');
+    if(ovus[k])cls.push('ovu');
+    else if(pnext[k]&&!lv)cls.push('pnext');
+    if(k===today)cls.push('today');
+    if(k===selDate)cls.push('sel');
+    const has=Object.keys(d).length>0;
+    h+=`<div class="${cls.join(' ')}" data-k="${k}">
+      <span class="dn">${dd}</span><span class="mk ${has?'':'hide'}"></span></div>`;
+  }
+  const rem=(startPad+dim)%7;
+  if(rem)for(let i=rem;i<7;i++)h+='<div class="cell pad"></div>';
+  $('#calGrid').innerHTML=h;
+  $$('#calGrid .cell[data-k]').forEach(c=>c.onclick=()=>{
+    selDate=c.dataset.k;loadForm();renderToday();showTab('today');
+  });
+  renderHist();
+}
+function renderHist(){
+  const p=periodStarts();
+  const rows=[];
+  for(let i=p.length-1;i>0;i--){
+    const len=dayDiff(p[i],p[i-1]);
+    if(len>=15&&len<=60)rows.push({start:p[i-1],end:p[i],len});
+  }
+  $('#chistCnt').textContent=rows.length?rows.length+'주기':'';
+  if(!rows.length){
+    $('#chistRows').innerHTML='<div class="sum" style="border-top:none">생리 시작일을 2번 이상 기록하면 주기 히스토리가 쌓여요.</div>';
+    $('#chistSum').textContent='';return;
+  }
+  const lens=rows.map(r=>r.len);
+  const avg=Math.round(lens.reduce((a,b)=>a+b,0)/lens.length);
+  const mn=Math.min(...lens),mx=Math.max(...lens);
+  const span=mx-mn;
+  $('#chistRows').innerHTML=rows.slice(0,8).map(r=>{
+    const odd=Math.abs(r.len-avg)>=4;
+    const w=Math.max(6,Math.min(100,(r.len/45)*100));
+    return`<div class="hr">
+      <span class="hd">${r.start.slice(5).replace('-','/')} → ${r.end.slice(5).replace('-','/')}</span>
+      <span class="hb"><i class="${odd?'odd':''}" style="width:${w}%"></i></span>
+      <span class="hn">${r.len}일</span></div>`;
+  }).join('');
+  const reg=span<=4?'규칙적이에요':span<=7?'대체로 규칙적이에요':'변동이 큰 편이에요';
+  $('#chistSum').innerHTML=`평균 <b>${avg}일</b> · 최단 <b>${mn}일</b> · 최장 <b>${mx}일</b> (편차 ${span}일)<br>주기가 ${reg}.${span>7?' 편차가 크면 예측이 부정확할 수 있어요.':''}`;
+}
+function showCycView(v){
+  cycView=v;
+  $('#calView').style.display=v==='cal'?'block':'none';
+  $('#curveView').style.display=v==='curve'?'block':'none';
+  $$('#viewSeg button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));
+  if(v==='cal')renderCalendar();else renderChart();
+}
+
 /* ---------- REPORT 대시보드 ---------- */
 const DIS_KO={dry:'건조',sticky:'끈적',creamy:'크림',eggwhite:'계란흰자',watery:'물 같음'};
 function predict(){
@@ -1118,6 +1460,17 @@ function predict(){
   return{avg,lp,np,no,pIn:dayDiff(np,today),oIn:dayDiff(no,today)};
 }
 function ddText(n){return n>0?'D-'+n:n===0?'D-DAY':'D+'+(-n)}
+function nextAppt(){
+  const today=toKey(new Date());
+  let best=null;
+  days().forEach(k=>{
+    const h=S.days[k].hospital;
+    if(h&&h.next&&h.next>=today&&(!best||h.next<best.date))
+      best={date:h.next,name:h.name,type:h.type,from:k.slice(5).replace('-','/')};
+  });
+  if(best)best.inDays=dayDiff(best.date,today);
+  return best;
+}
 function renderReport(){
   const today=toKey(new Date()), d=S.days[today]||{};
   const lp=lastPeriod(today), pr=predict();
@@ -1143,11 +1496,14 @@ function renderReport(){
   const doseTotal=sup.reduce((a,s)=>a+(s.dose||1),0);
   const taken=sup.reduce((a,s)=>a+Math.min((d.supplements&&d.supplements[s.id])||0,s.dose||1),0);
   const meals=d.meals||[];
+  const medsToday=activeMeds(today);
+  const medTaken=medsToday.reduce((a,m)=>a+Math.min((d.meds&&d.meds[m.id])||0,m.dose||1),0);
   const items=[
     {k:'체온',ok:!!d.temp},{k:'컨디션',ok:!!(d.condition&&d.condition.score)},
     {k:'배테기',ok:!!d.ovulation},{k:'임테기',ok:!!d.pregnancy},
     {k:'영양제',ok:taken>0},{k:'증상',ok:!!d.symptoms},{k:'식단',ok:meals.length>0}
   ];
+  if(medsToday.length)items.push({k:'약',ok:medTaken>0});
   const done=items.filter(i=>i.ok).length, pct=done/items.length;
   const C=2*Math.PI*21;
   $('#rring').innerHTML=`<circle cx="26" cy="26" r="21" fill="none" stroke="#E6DFCC" stroke-width="7"/>
@@ -1165,6 +1521,8 @@ function renderReport(){
     if(pr.pIn>=0&&pr.pIn<=3)al+=`<div class="ralert w"><span class="t">생리 예정일이 다가와요</span><span class="dd">${ddText(pr.pIn)}</span></div>`;
     if(pr.pIn<0&&!d.pregnancy)al+=`<div class="ralert w"><span class="t">생리 예정일이 ${-pr.pIn}일 지났어요. 임신테스트를 해보세요</span><span class="dd">${ddText(pr.pIn)}</span></div>`;
   }
+  const appt=nextAppt();
+  if(appt&&appt.inDays<=7)al+=`<div class="ralert" style="background:var(--ink)"><span class="t">병원 예약 — ${esc(appt.name||appt.type||'진료')}</span><span class="dd">${ddText(appt.inDays)}</span></div>`;
   $('#ralerts').innerHTML=al;
 
   // 체온
@@ -1201,6 +1559,37 @@ function renderReport(){
     sb.innerHTML=h;
   }
 
+  // 약
+  const meds=activeMeds(today);
+  $('#rmedcard').style.display=meds.length?'block':'none';
+  if(meds.length){
+    const mT=meds.reduce((a,m)=>a+(m.dose||1),0);
+    const mK=meds.reduce((a,m)=>a+Math.min((d.meds&&d.meds[m.id])||0,m.dose||1),0);
+    $('#rmedcnt').textContent=mK+'/'+mT;
+    $('#rmedbox').innerHTML=meds.map(m=>{
+      const t=Math.min((d.meds&&d.meds[m.id])||0,m.dose||1),full=t>=(m.dose||1);
+      return`<div class="srw ${full?'':'miss'}">
+        <span class="dot ${full?'on':''}" style="border-color:var(--orange);${full?'background:var(--orange)':''}"></span>
+        <span class="nm">${esc(m.name)}</span><span class="ct">${t}/${m.dose||1}</span></div>`;
+    }).join('');
+  }
+
+  // 병원
+  const hb=$('#rhospbox');
+  const todayH=d.hospital;
+  if(todayH&&(todayH.name||todayH.type)){
+    hb.innerHTML=`<div class="rtags"><span class="rtag w">${esc(todayH.type||'진료')}</span>
+      ${todayH.name?`<span class="rtag">${esc(todayH.name)}</span>`:''}</div>
+      ${todayH.note?`<div class="rmemo">${esc(todayH.note)}</div>`:''}
+      ${todayH.next?`<div style="font-size:12px;font-weight:700;color:var(--mut);margin-top:9px">다음 예약 ${todayH.next.slice(5).replace('-','/')}</div>`:''}`;
+    $('#rhospcard').style.display='block';
+  }else if(appt){
+    hb.innerHTML=`<div class="rkcal"><span class="n">${ddText(appt.inDays)}</span>
+      <span class="m">${appt.date.slice(5).replace('-','/')} · ${esc(appt.name||appt.type||'진료')}</span></div>
+      <div class="rmenu">${esc(appt.from)} 방문 때 잡은 예약이에요.</div>`;
+    $('#rhospcard').style.display='block';
+  }else $('#rhospcard').style.display='none';
+
   // 식단
   $('#rmealcnt').textContent=meals.length?meals.length+'끼':'';
   const mb=$('#rmealbox');
@@ -1221,6 +1610,8 @@ function renderReport(){
   const yb=$('#rsymbox');
   const tags=[];
   if(d.period)tags.push({t:'생리 시작',w:1});
+  if(d.flow)tags.push({t:'생리 '+FLOW_KO[d.flow],w:1});
+  if(d.cramp)tags.push({t:'생리통 '+['','약함','보통','심함'][d.cramp],w:1});
   if(d.condition&&d.condition.score)tags.push({t:'컨디션 '+d.condition.score+'/5'});
   if(d.ovulation)tags.push({t:'배테기 '+({negative:'음성',positive:'양성',peak:'피크'})[d.ovulation.result]});
   if(d.pregnancy)tags.push({t:'임테기 '+({none:'한 줄',faint:'미세선',strong:'두 줄'})[d.pregnancy.result]});
@@ -1277,11 +1668,14 @@ function showTab(name){
   $('#scr-'+name).classList.add('on');
   $$('.nav a').forEach(a=>a.classList.toggle('on',a.dataset.tab===name));
   if(name==='report')renderReport();
-  if(name==='chart')renderChart();
+  if(name==='chart')showCycView(cycView);
   if(name==='log')renderLog();
   if(name==='my')renderMy();
   window.scrollTo(0,0);
 }
+$$('#viewSeg button').forEach(b=>b.onclick=()=>showCycView(b.dataset.v));
+$('#calPrev').onclick=()=>{calMonth.m--;if(calMonth.m<0){calMonth.m=11;calMonth.y--}renderCalendar()};
+$('#calNext').onclick=()=>{calMonth.m++;if(calMonth.m>11){calMonth.m=0;calMonth.y++}renderCalendar()};
 
 /* ---------- 이벤트 ---------- */
 $$('.nav a').forEach(a=>a.onclick=()=>showTab(a.dataset.tab));
@@ -1297,6 +1691,12 @@ $$('#fovres .chip').forEach(b=>b.onclick=()=>{form.ovres=form.ovres===b.dataset.
 $('#ominus').onclick=()=>{form.ovratio=Math.max(0,+((form.ovratio==null?0.5:form.ovratio)-0.1).toFixed(1));renderForm()};
 $('#oplus').onclick=()=>{form.ovratio=Math.min(5,+((form.ovratio==null?0.4:form.ovratio)+0.1).toFixed(1));renderForm()};
 $$('#fpreg .chip').forEach(b=>b.onclick=()=>{form.preg=form.preg===b.dataset.v?'':b.dataset.v;renderForm()});
+$$('#fflow .chip').forEach(b=>b.onclick=()=>{form.flow=form.flow===b.dataset.v?'':b.dataset.v;renderForm()});
+$$('#fcramp .chip').forEach(b=>b.onclick=()=>{form.cramp=form.cramp===+b.dataset.v?0:+b.dataset.v;renderForm()});
+$$('#fhtype .chip').forEach(b=>b.onclick=()=>{form.htype=form.htype===b.dataset.v?'':b.dataset.v;renderForm()});
+$('#fhname').oninput=e=>{form.hname=e.target.value;renderStatuses()};
+$('#fhnote').oninput=e=>form.hnote=e.target.value;
+$('#fhnext').onchange=e=>form.hnext=e.target.value;
 $$('#fdis .chip').forEach(b=>b.onclick=()=>{form.dis=form.dis===b.dataset.v?'':b.dataset.v;renderForm()});
 $$('#fpain .chip').forEach(b=>b.onclick=()=>{
   const v=b.dataset.v,i=form.pains.indexOf(v);i<0?form.pains.push(v):form.pains.splice(i,1);renderForm()});
@@ -1308,11 +1708,22 @@ $('#btnSave').onclick=()=>{
   const d={};
   if(tempTouched)d.temp={value:+(+form.temp).toFixed(2),time:form.time};
   if(form.period)d.period=true;
+  if(form.flow)d.flow=form.flow;
+  if(form.cramp)d.cramp=form.cramp;
   if(form.cond>0||form.memo)d.condition={score:form.cond,memo:form.memo};
   if(form.ovres)d.ovulation=Object.assign({result:form.ovres},form.ovratio!=null?{ratio:form.ovratio}:{});
   if(form.preg)d.pregnancy={result:form.preg};
   const checked={};S.settings.supplements.forEach(s=>{if(form.supp[s.id])checked[s.id]=form.supp[s.id]});
   if(Object.keys(checked).length)d.supplements=checked;
+  const mchecked={};(S.settings.meds||[]).forEach(m=>{if(form.meds[m.id])mchecked[m.id]=form.meds[m.id]});
+  if(Object.keys(mchecked).length)d.meds=mchecked;
+  if(form.htype||form.hname||form.hnote||form.hnext){
+    d.hospital={};
+    if(form.htype)d.hospital.type=form.htype;
+    if(form.hname)d.hospital.name=form.hname;
+    if(form.hnote)d.hospital.note=form.hnote;
+    if(form.hnext)d.hospital.next=form.hnext;
+  }
   const sym={};
   if(form.dis)sym.discharge=form.dis;
   if(form.pains.length)sym.pains=[...form.pains];
@@ -1336,6 +1747,21 @@ $('#sadd').onclick=()=>{
   $('#snew').value='';save();renderMy();renderSuppCheck();renderStatuses();
 };
 $('#snew').onkeydown=e=>{if(e.key==='Enter')$('#sadd').click()};
+
+/* 약 추가 */
+$$('#mdoseSeg button').forEach(b=>b.onclick=()=>{
+  newMedDose=+b.dataset.d;
+  $$('#mdoseSeg button').forEach(x=>x.classList.toggle('on',x===b));
+});
+$('#madd').onclick=()=>{
+  const v=$('#mnew').value.trim();if(!v){alert('약 이름을 입력해주세요.');return}
+  const st=$('#mstart').value||toKey(new Date()), en=$('#mend').value||'';
+  if(en&&en<st){alert('종료일이 시작일보다 빠를 수 없어요.');return}
+  S.settings.meds.push({id:'m'+Date.now(),name:v,dose:newMedDose,start:st,end:en});
+  $('#mnew').value='';$('#mstart').value='';$('#mend').value='';
+  save();renderMy();renderMedCheck();renderStatuses();
+};
+$('#mnew').onkeydown=e=>{if(e.key==='Enter')$('#madd').click()};
 
 /* 알림 */
 $('#notiBtn').onclick=async()=>{
@@ -1389,12 +1815,12 @@ $('#fileImport').onchange=e=>{
 $('#btnWipe').onclick=()=>{
   if(!confirm('모든 기록과 영양제 목록을 삭제할까요? 되돌릴 수 없어요.'))return;
   if(!confirm('정말 삭제합니다. 백업하셨나요?'))return;
-  S={version:2,settings:{supplements:[],apiKey:S.settings.apiKey},days:{}};
+  S={version:2,settings:{supplements:[],meds:[],apiKey:S.settings.apiKey},days:{}};
   save();localStorage.setItem(DEMO,'cleared');loadForm();renderAll();
 };
 $('#clearDemo').onclick=()=>{
   if(!confirm('예시 데이터를 지우고 새로 시작할까요?'))return;
-  S={version:2,settings:{supplements:S.settings.supplements,apiKey:S.settings.apiKey},days:{}};
+  S={version:2,settings:{supplements:S.settings.supplements,meds:S.settings.meds||[],apiKey:S.settings.apiKey},days:{}};
   save();localStorage.setItem(DEMO,'cleared');loadForm();renderAll();
 };
 
