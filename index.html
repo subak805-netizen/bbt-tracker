@@ -210,6 +210,32 @@ textarea{width:100%;margin-top:12px;font-family:var(--mono);font-size:14px;paddi
 .srch button{border:none;border-left:var(--b1) solid var(--ink);background:var(--dim);
   font-size:13px;font-weight:800;padding:0 14px;color:var(--mut)}
 
+/* 탭에서 바로 추가 */
+.qa{border:var(--b2) solid var(--ink);background:var(--panel);margin-bottom:16px}
+.qa .qat{width:100%;border:none;background:var(--yellow);padding:13px;font-size:14px;font-weight:800;
+  letter-spacing:.06em;border-bottom:var(--b2) solid var(--ink)}
+.qa .qat.open{background:var(--ink);color:var(--yellow)}
+.qa .qab{padding:14px}
+.qa .qab label{display:block;font-size:10.5px;letter-spacing:.14em;color:var(--mut);font-weight:700;margin-bottom:5px}
+.qa .qab input,.qa .qab textarea{width:100%;font-family:var(--mono);font-size:14px;font-weight:700;
+  padding:10px 11px;border:var(--b1) solid var(--ink);background:#fff;color:var(--ink);
+  -webkit-appearance:none;margin-bottom:10px;resize:none}
+.qa .qab .row2{display:flex;gap:9px}
+.qa .qab .row2>div{flex:1;min-width:0}
+
+/* 식단 목록 */
+.mday{border:var(--b2) solid var(--ink);background:var(--panel);margin-bottom:12px}
+.mday .mh2{display:flex;align-items:baseline;gap:10px;padding:10px 13px;border-bottom:var(--b1) solid var(--ink);background:var(--dim)}
+.mday .mh2 .dt{font-family:var(--dot);font-weight:900;font-size:15px}
+.mday .mh2 .kc{flex:1;text-align:right;font-family:var(--dot);font-weight:900;font-size:15px}
+.mday .mh2 .kc small{font-family:var(--mono);font-size:10px;font-weight:700;color:var(--mut)}
+.mday .mi{padding:11px 13px;border-top:var(--b1) solid var(--dim)}
+.mday .mi:first-of-type{border-top:none}
+.mday .mi .tm2{font-size:10.5px;color:var(--mut);font-weight:700}
+.mday .mi .mn{font-size:13.5px;font-weight:800;margin-top:2px}
+.mday .mi .mac{font-size:11px;color:var(--mut);font-weight:700;margin-top:4px}
+.mday mark{background:var(--yellow);color:var(--ink);font-weight:800}
+
 /* 병원 기록 카드 */
 .hcard{border:var(--b2) solid var(--ink);background:var(--panel);margin-bottom:12px}
 .hcard .hh{display:flex;align-items:center;gap:9px;padding:11px 13px;border-bottom:var(--b1) solid var(--ink);background:var(--dim)}
@@ -775,13 +801,19 @@ textarea{width:100%;margin-top:12px;font-family:var(--mono);font-size:14px;paddi
   <section class="screen" id="scr-log">
     <div class="phead"><span class="en">LOG</span><span class="cap" id="logCount"></span></div>
     <div class="seg" id="logSeg">
-      <button class="on" data-l="all">전체 기록</button>
+      <button class="on" data-l="all">전체</button>
       <button data-l="hosp">병원</button>
+      <button data-l="meal">식단</button>
     </div>
     <div class="srch"><input id="logQ" type="search" placeholder="검색 — 병원·증상·메모·식단"><button id="logQX">✕</button></div>
+
+    <!-- 병원·식단은 여기서 바로 추가할 수 있게 -->
+    <div id="quickAdd"></div>
+
     <div class="log" id="loglist"></div>
     <div id="hosplist"></div>
-    <div class="note">행을 누르면 그날 기록을 수정할 수 있어요.</div>
+    <div id="meallist"></div>
+    <div class="note" id="logNote">행을 누르면 그날 기록을 수정할 수 있어요.</div>
   </section>
 
   <!-- ============ MY ============ -->
@@ -1407,34 +1439,39 @@ async function analyzeMeal(b64){
   if(!block)throw new Error('분석 결과가 비어 있어요. 다시 시도해주세요.');
   return JSON.parse(block.text);
 }
+/* 사진 → 분석 → 지정한 날짜에 저장. TODAY와 LOG 양쪽에서 공용 */
+async function addMealPhoto(file,date,statEl,btnEl){
+  statEl.className='mealstat';
+  statEl.textContent='사진 분석 중... (10초 정도 걸려요)';
+  if(btnEl)btnEl.disabled=true;
+  try{
+    const b64=await resizeToB64(file);
+    const r=await analyzeMeal(b64);
+    const now=new Date();
+    if(!S.days[date])S.days[date]={};
+    if(!S.days[date].meals)S.days[date].meals=[];
+    S.days[date].meals.push({
+      time:`${pad(now.getHours())}:${pad(now.getMinutes())}`,
+      menu:r.menu,kcal:r.kcal,carb_g:r.carb_g,protein_g:r.protein_g,fat_g:r.fat_g,comment:r.comment
+    });
+    save();
+    statEl.textContent=`분석 완료 · ${r.kcal}kcal — ${date===toKey(new Date())?'오늘':date.slice(5).replace('-','/')}에 저장했어요`;
+    return true;
+  }catch(err){
+    statEl.className='mealstat err';
+    statEl.textContent='분석 실패: '+err.message;
+    return false;
+  }finally{
+    if(btnEl)btnEl.disabled=!S.settings.apiKey;
+  }
+}
 $('#mealBtn').onclick=()=>$('#mealFile').click();
 $('#mealFile').onchange=async e=>{
   const file=e.target.files[0];
   e.target.value='';
   if(!file)return;
-  const stat=$('#mealStat');
-  stat.className='mealstat';
-  stat.textContent='사진 분석 중... (10초 정도 걸려요)';
-  $('#mealBtn').disabled=true;
-  try{
-    const b64=await resizeToB64(file);
-    const r=await analyzeMeal(b64);
-    const now=new Date();
-    if(!S.days[selDate])S.days[selDate]={};
-    if(!S.days[selDate].meals)S.days[selDate].meals=[];
-    S.days[selDate].meals.push({
-      time:`${pad(now.getHours())}:${pad(now.getMinutes())}`,
-      menu:r.menu,kcal:r.kcal,carb_g:r.carb_g,protein_g:r.protein_g,fat_g:r.fat_g,comment:r.comment
-    });
-    save();
-    stat.textContent='분석 완료. 자동 저장됐어요.';
-    renderMeals();renderStatuses();
-  }catch(err){
-    stat.className='mealstat err';
-    stat.textContent='분석 실패: '+err.message;
-    renderMeals();
-  }
-  $('#mealBtn').disabled=!S.settings.apiKey;
+  await addMealPhoto(file,selDate,$('#mealStat'),$('#mealBtn'));
+  renderMeals();renderStatuses();
 };
 
 /* ---------- CHART 렌더 ---------- */
@@ -1551,10 +1588,128 @@ function renderHosp(){
     $('#s10').classList.add('open');$('#s10').scrollIntoView({block:'center'});
   });
 }
+/* 식단만 모아보기 */
+function renderMealList(){
+  const q=logQ.trim().toLowerCase();
+  let ks=days().filter(k=>(S.days[k].meals||[]).length).reverse();
+  if(q)ks=ks.filter(k=>dayText(k).includes(q));
+  const total=ks.reduce((a,k)=>a+S.days[k].meals.length,0);
+  $('#logCount').textContent=total?`${ks.length}일 · ${total}끼`:(q?'검색 결과 없음':'');
+  const box=$('#meallist');
+  if(!ks.length){
+    box.innerHTML=`<div class="hempty">${q?'검색 결과가 없어요.':'식단 기록이 없어요.<br>위에서 밥 사진을 올려보세요.'}</div>`;
+    return;
+  }
+  box.innerHTML=ks.map(k=>{
+    const ms=S.days[k].meals, d=parseKey(k);
+    const kc=ms.reduce((a,m)=>a+(m.kcal||0),0);
+    return`<div class="mday" data-d="${k}">
+      <div class="mh2"><span class="dt">${d.getFullYear()%100}.${pad(d.getMonth()+1)}.${pad(d.getDate())}</span>
+        <span style="font-size:11px;font-weight:700;color:var(--mut)">${ms.length}끼</span>
+        <span class="kc">${kc}<small> kcal</small></span></div>
+      ${ms.map(m=>`<div class="mi">
+        <div class="tm2">${esc(m.time||'')}</div>
+        <div class="mn">${hl((m.menu||[]).join(' · '),q)}</div>
+        <div class="mac">탄 ${m.carb_g||0}g · 단 ${m.protein_g||0}g · 지 ${m.fat_g||0}g</div>
+        ${m.comment?`<div class="mac">${hl(m.comment,q)}</div>`:''}
+      </div>`).join('')}
+    </div>`;
+  }).join('');
+  $$('#meallist .mday').forEach(c=>c.onclick=()=>{
+    selDate=c.dataset.d;loadForm();renderToday();showTab('today');
+    $('#s7').classList.add('open');$('#s7').scrollIntoView({block:'center'});
+  });
+}
+/* 병원·식단 탭에서 바로 추가하는 영역 */
+function renderQuickAdd(){
+  const box=$('#quickAdd');
+  if(logView==='hosp'){
+    box.innerHTML=`<div class="qa">
+      <button class="qat" id="qaT">+ 병원 방문 기록하기</button>
+      <div class="qab" id="qaB" style="display:none">
+        <label>방문 날짜</label><input type="date" id="qaDate">
+        <label>진료과</label>
+        <div class="chips" id="qaType" style="margin-bottom:11px">
+          <button class="chip" data-v="산부인과">산부인과</button>
+          <button class="chip" data-v="난임센터">난임센터</button>
+          <button class="chip" data-v="한의원">한의원</button>
+          <button class="chip" data-v="기타">기타</button>
+        </div>
+        <label>병원 이름</label><input id="qaName" placeholder="예: OO여성의원">
+        <label>진료 내용</label><textarea id="qaNote" rows="3" placeholder="검사·처방·의사 소견 등"></textarea>
+        <label>다음 예약일 (선택)</label><input type="date" id="qaNext">
+        <button class="mybtn" id="qaSave" style="margin-top:2px;background:var(--ink);color:var(--paper);border-color:var(--ink)">저장</button>
+        <div class="mealstat" id="qaStat"></div>
+      </div>
+    </div>`;
+    $('#qaDate').value=toKey(new Date());
+    let qaType='';
+    $$('#qaType .chip').forEach(b=>b.onclick=()=>{
+      qaType=qaType===b.dataset.v?'':b.dataset.v;
+      $$('#qaType .chip').forEach(x=>x.classList.toggle('on',x.dataset.v===qaType));
+    });
+    $('#qaT').onclick=()=>{
+      const b=$('#qaB'),open=b.style.display==='none';
+      b.style.display=open?'block':'none';
+      $('#qaT').classList.toggle('open',open);
+      $('#qaT').textContent=open?'× 닫기':'+ 병원 방문 기록하기';
+    };
+    $('#qaSave').onclick=()=>{
+      const dt=$('#qaDate').value, nm=$('#qaName').value.trim(), nt=$('#qaNote').value.trim(), nx=$('#qaNext').value;
+      if(!dt){toast('방문 날짜를 골라주세요');return}
+      if(!qaType&&!nm){toast('진료과나 병원 이름 중 하나는 넣어주세요');return}
+      snapshot('병원 기록 추가');
+      const d=S.days[dt]||{};
+      if(d.hospital&&!confirm(`${dt.slice(5).replace('-','/')}에 이미 병원 기록이 있어요.\n덮어쓸까요?`))return;
+      d.hospital={};
+      if(qaType)d.hospital.type=qaType;
+      if(nm)d.hospital.name=nm;
+      if(nt)d.hospital.note=nt;
+      if(nx)d.hospital.next=nx;
+      S.days[dt]=d;save();
+      if(selDate===dt)loadForm();
+      $('#qaName').value='';$('#qaNote').value='';$('#qaNext').value='';
+      qaType='';$$('#qaType .chip').forEach(x=>x.classList.remove('on'));
+      $('#qaT').click();                       // 폼 닫기
+      renderLog();renderReport();
+      toast('병원 기록을 저장했어요');
+    };
+  }else if(logView==='meal'){
+    const hasKey=!!S.settings.apiKey;
+    box.innerHTML=`<div class="qa">
+      <div class="qab">
+        <div class="row2">
+          <div><label>날짜</label><input type="date" id="qmDate"></div>
+          <div style="display:flex;align-items:flex-end">
+            <button class="mybtn" id="qmBtn" style="margin-top:0;margin-bottom:10px;background:var(--orange);color:#fff;border-color:var(--orange)">밥 사진 분석</button>
+          </div>
+        </div>
+        <input type="file" id="qmFile" accept="image/*" style="display:none">
+        <div class="mealstat" id="qmStat" style="margin-top:0">${hasKey?'':'MY 탭에서 Claude API 키를 등록하면 사용할 수 있어요.'}</div>
+      </div>
+    </div>`;
+    $('#qmDate').value=toKey(new Date());
+    $('#qmBtn').disabled=!hasKey;
+    $('#qmBtn').onclick=()=>$('#qmFile').click();
+    $('#qmFile').onchange=async e=>{
+      const f=e.target.files[0];e.target.value='';
+      if(!f)return;
+      const dt=$('#qmDate').value||toKey(new Date());
+      const ok=await addMealPhoto(f,dt,$('#qmStat'),$('#qmBtn'));
+      if(ok){renderLog();renderReport();if(selDate===dt){loadForm();renderToday()}}
+    };
+  }else box.innerHTML='';
+}
 function renderLog(){
   $('#loglist').style.display=logView==='all'?'block':'none';
   $('#hosplist').style.display=logView==='hosp'?'block':'none';
+  $('#meallist').style.display=logView==='meal'?'block':'none';
+  $('#logNote').textContent=logView==='all'?'행을 누르면 그날 기록을 수정할 수 있어요.'
+    :logView==='hosp'?'카드를 누르면 그날 기록으로 이동해요.'
+    :'날짜 카드를 누르면 그날 식단으로 이동해요.';
+  renderQuickAdd();
   if(logView==='hosp')return renderHosp();
+  if(logView==='meal')return renderMealList();
   const q=logQ.trim().toLowerCase();
   let ks=days().reverse();
   if(q)ks=ks.filter(k=>dayText(k).includes(q));
@@ -2038,7 +2193,8 @@ $$('#viewSeg button').forEach(b=>b.onclick=()=>showCycView(b.dataset.v));
 $$('#logSeg button').forEach(b=>b.onclick=()=>{
   logView=b.dataset.l;
   $$('#logSeg button').forEach(x=>x.classList.toggle('on',x===b));
-  $('#logQ').placeholder=logView==='hosp'?'검색 — 병원 이름·진료 내용':'검색 — 병원·증상·메모·식단';
+  $('#logQ').placeholder=logView==='hosp'?'검색 — 병원 이름·진료 내용'
+    :logView==='meal'?'검색 — 메뉴·코멘트':'검색 — 병원·증상·메모·식단';
   renderLog();
 });
 $('#logQ').oninput=e=>{logQ=e.target.value;renderLog()};
@@ -2329,6 +2485,8 @@ $('#clearDemo').onclick=()=>{
 /* ---------- Firebase 동기화 (fpf-manager 프로젝트 재사용) ---------- */
 const FB_CONFIG={apiKey:"AIzaSyCx84fnTSZl9_eTMaUkts0VCyIx4qrql2I",authDomain:"fpf-manager.firebaseapp.com",projectId:"fpf-manager",storageBucket:"fpf-manager.firebasestorage.app",messagingSenderId:"415966666310",appId:"1:415966666310:web:9c4bb75cd2594cc744b447"};
 let fbUser=null,fbDB=null,fbAuth=null,_unsub=null,_pushT=null,_pushedTs='',_synced=false;
+let _applying=false;   // 클라우드에서 받아 반영하는 중 — 이때 다시 올려보내면 기기끼리 무한 핑퐁이 남
+let _dirty=false;      // 내 변경이 아직 클라우드에 못 올라감 — 이때 받은 건 내 것보다 오래됨
 let _toastT=null;
 function toast(msg){
   const t=$('#toast');t.textContent=msg;t.classList.add('on');
@@ -2359,11 +2517,15 @@ function cloudPayload(){
 }
 function cloudPush(){
   if(!fbUser||!fbDB||!_synced)return;               // 첫 동기화 전엔 절대 올리지 않음(예시가 실기록 덮는 사고 방지)
+  if(_applying)return;                              // 방금 클라우드에서 받은 걸 되돌려 보내지 않음(핑퐁 차단)
+  _dirty=true;                                      // 올라가기 전까지는 내 데이터가 최신
   clearTimeout(_pushT);
   _pushT=setTimeout(()=>{
     const ts=Date.now()+'_'+Math.floor(Math.random()*100000);_pushedTs=ts;
     cloudRef().set({value:JSON.stringify(cloudPayload()),ts,at:new Date().toISOString()})
+      .then(()=>{_dirty=false})
       .catch(e=>{
+        _dirty=false;                               // 실패해도 풀어줘야 다른 기기 변경을 받을 수 있음
         console.warn('push',e);
         if(e.code==='permission-denied')toast('동기화 권한 오류 — 규칙 확인 필요');
       });
@@ -2385,6 +2547,7 @@ function startSync(){
     if(d.ts&&d.ts===_pushedTs){_synced=true;first=false;return}   // 내가 방금 올린 것
     let data;try{data=JSON.parse(d.value)}catch(e){return}
     if(!data||!data.days)return;
+    if(_dirty){_synced=true;first=false;return}     // 내 변경이 아직 안 올라감 — 내 게 더 최신이므로 덮어쓰지 않음
     if(isBusy()){setTimeout(()=>{if(!isBusy())applyCloud(data,!first)},1200);_synced=true;first=false;return}
     applyCloud(data,!first);
     _synced=true;first=false;
@@ -2400,11 +2563,17 @@ function applyCloud(data,notify){
   const incoming=Object.keys(data.days||{}).length;
   snapshot('클라우드 반영 전');                       // 덮어쓰기 전 항상 스냅샷
   const key=S.settings.apiKey;                      // 키는 기기 것 유지
-  S=data;
-  if(!S.settings)S.settings={supplements:[],meds:[]};
-  if(!S.settings.meds)S.settings.meds=[];
-  if(key)S.settings.apiKey=key;
-  save();loadForm();renderAll();
+  _applying=true;                                   // 이 구간의 save()는 클라우드로 올리지 않음
+  try{
+    S=data;
+    if(!S.settings)S.settings={supplements:[],meds:[]};
+    if(!S.settings.meds)S.settings.meds=[];
+    if(!S.settings.cycleLen)S.settings.cycleLen=28;
+    if(!S.settings.periodLen)S.settings.periodLen=5;
+    if(!S.settings.lutealLen)S.settings.lutealLen=14;
+    if(key)S.settings.apiKey=key;
+    save();loadForm();renderAll();
+  }finally{_applying=false}
   if(notify)toast(`다른 기기 변경 반영 (${incoming}일)`);
   else if(mine&&incoming)toast(`클라우드 기록 ${incoming}일을 불러왔어요`);
 }
