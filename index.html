@@ -33,7 +33,14 @@
 html,body{margin:0;padding:0}
 body{font-family:var(--mono);background:var(--paper);color:var(--ink);
   -webkit-font-smoothing:antialiased;font-size:15px;line-height:1.5;
-  padding-bottom:calc(76px + env(safe-area-inset-bottom))}
+  padding-bottom:calc(76px + env(safe-area-inset-bottom));
+  /* 탭할 때 글자가 선택돼 파란 블록이 생기는 것 방지 */
+  -webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+/* 입력칸과 복사할 만한 글은 선택 가능하게 되돌림 */
+input,textarea,select,[contenteditable]{-webkit-user-select:text;user-select:text}
+.rmemo,.rmenu,.hcard .nt,.mday .mi,.meal .cmt,.meal .menu,.note,.myhint,
+.supp .nm .warn,.slist .warn,.chist .sum{-webkit-user-select:text;user-select:text}
+svg,img{-webkit-user-drag:none;user-drag:none}
 .wrap{max-width:430px;margin:0 auto;padding:0 14px}
 .cap{font-size:10.5px;letter-spacing:.16em;color:var(--mut);text-transform:uppercase;font-weight:700}
 button{font-family:var(--mono);cursor:pointer;color:var(--ink)}
