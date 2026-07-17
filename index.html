@@ -2203,9 +2203,12 @@ function renderSync(){
         <button class="mybtn" id="sgIn" style="margin-top:0;background:var(--ink);color:var(--paper);border-color:var(--ink)">로그인</button>
         <button class="mybtn" id="sgUp" style="margin-top:0">새 계정 만들기</button>
       </div>
-      <div class="myhint">FPF 앱과 같은 계정을 쓰시면 돼요. 내 기록은 내 계정으로만 잠깁니다.</div>`;
+      <button class="mybtn" id="sgReset" style="border-color:var(--mut);color:var(--mut)">비밀번호를 잊었어요 — 재설정 메일 받기</button>
+      <div class="mealstat" id="sgStat"></div>
+      <div class="myhint"><b>FPF 앱과 같은 계정</b>을 쓰시면 돼요. 이메일이 기억 안 나면 FPF 앱 → 클라우드 설정에서 <b>"로그인됨: ..."</b> 초록 박스를 확인하세요. 내 기록은 내 계정으로만 잠깁니다.</div>`;
     $('#sgIn').onclick=()=>doAuth(false);
     $('#sgUp').onclick=()=>doAuth(true);
+    $('#sgReset').onclick=doReset;
   }
 }
 function doAuth(isNew){
@@ -2216,6 +2219,19 @@ function doAuth(isNew){
   const fn=isNew?'createUserWithEmailAndPassword':'signInWithEmailAndPassword';
   fbAuth[fn](e,p).then(()=>toast(isNew?'계정 생성·동기화 시작':'로그인됨 · 동기화 시작'))
     .catch(err=>toast(authMsg(err)));
+}
+/* 비밀번호 재설정 메일 — FPF와 같은 Firebase 계정이라 여기서 보내도 됨 */
+function doReset(){
+  const e=$('#sgEmail').value.trim(), st=$('#sgStat');
+  if(!e){st.className='mealstat err';st.textContent='먼저 이메일을 입력해주세요.';return}
+  if(!fbAuth){toast('연결 준비 중 — 잠시 후 다시');return}
+  st.className='mealstat';st.textContent='메일 보내는 중...';
+  fbAuth.sendPasswordResetEmail(e).then(()=>{
+    // 보안상 없는 계정에도 성공으로 응답하므로, 안 오면 이메일이 다르다는 뜻임을 명시
+    st.innerHTML=`<b>${esc(e)}</b> 로 재설정 메일을 요청했어요.<br>메일함·스팸함을 확인해주세요.<br>5분 안에 안 오면 <b>가입할 때 쓴 이메일이 아닌</b> 거예요 — 다른 주소로 다시 시도해보세요.`;
+  }).catch(err=>{
+    st.className='mealstat err';st.textContent=authMsg(err);
+  });
 }
 function authMsg(err){
   const c=(err&&err.code)||'';
