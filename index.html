@@ -798,7 +798,15 @@ textarea{width:100%;margin-top:12px;font-family:var(--mono);font-size:14px;paddi
         <button class="mybtn" id="btnImport">백업 불러오기</button>
         <input type="file" id="fileImport" accept=".json" style="display:none">
         <button class="mybtn warn" id="btnWipe">모든 기록 삭제</button>
-        <div class="myhint">기록은 이 기기 브라우저에만 저장됩니다. 기기를 바꾸기 전에 꼭 내보내기로 백업하세요.</div>
+        <div class="myhint">기록은 <b>이 주소·이 기기</b>에만 저장돼요. 홈화면 앱과 사파리도 저장소가 다를 수 있어요. 기기를 바꾸거나 다른 곳에서 열 때는 꼭 내보내기 → 불러오기로 옮기세요.</div>
+      </div>
+    </div>
+
+    <div class="mycard">
+      <div class="mh"><span class="ko">자동 백업</span><span class="cap">SNAPSHOTS</span></div>
+      <div class="mb">
+        <div class="slist" id="snapList"></div>
+        <div class="myhint">저장할 때마다 자동으로 스냅샷을 남겨요 (최근 10개). 실수로 지웠을 때 여기서 되살릴 수 있어요.</div>
       </div>
     </div>
     <div class="note">BODY.LOG — 예측·분석은 참고용이며 의학적 진단이 아닙니다.</div>
@@ -936,6 +944,25 @@ function loadStore(){
   }
   return s;
 }
+/* 자동 백업 — 저장할 때마다 스냅샷을 남겨 실수로 지워도 되살릴 수 있게 */
+const SNAP='bodylog_snapshots';
+function snapshot(reason){
+  try{
+    const cur=localStorage.getItem(KEY);
+    if(!cur)return;
+    const n=Object.keys(JSON.parse(cur).days||{}).length;
+    if(!n)return;                                   // 빈 데이터는 스냅샷 안 함
+    let list=[];try{list=JSON.parse(localStorage.getItem(SNAP))||[]}catch(e){}
+    const last=list[0];
+    if(last&&last.data===cur)return;                // 변경 없으면 skip
+    list.unshift({at:new Date().toISOString(),reason:reason||'auto',days:n,data:cur});
+    list=list.slice(0,10);                          // 최근 10개 보관
+    try{localStorage.setItem(SNAP,JSON.stringify(list))}
+    catch(e){                                       // 용량 초과 시 개수 줄여 재시도
+      try{localStorage.setItem(SNAP,JSON.stringify(list.slice(0,3)))}catch(_){}
+    }
+  }catch(e){}
+}
 function save(){localStorage.setItem(KEY,JSON.stringify(S))}
 function days(){return Object.keys(S.days).sort()}
 
@@ -949,7 +976,7 @@ function seedDemo(){
     const dk=addDays(today,-i);
     const cd=i<=6?(6-i):(34-i);
     if(cd>=base.length)continue;
-    const d={temp:{value:+(base[cd]+(i%2?0:0.01)).toFixed(2),time:'07:'+pad(5+(i%25))}};
+    const d={_demo:1,temp:{value:+(base[cd]+(i%2?0:0.01)).toFixed(2),time:'07:'+pad(5+(i%25))}};
     if(i===34||i===6)d.period=true;
     if(cd<=4){d.flow=['medium','heavy','medium','light','spotting'][cd];if(cd<=1)d.cramp=cd===0?2:1}
     if(i%2===0)d.condition={score:3+(i%3),memo:i%6===0?'몸이 가볍고 컨디션 좋음':''};
@@ -1406,7 +1433,31 @@ function renderMy(){
     rb.textContent=un?`AI로 분석하기 (${un}개 남음)`:'전체 다시 분석하기';
     $('#suppHint').innerHTML='영양제를 추가하면 AI가 자동으로 성분·복용시간·상호작용을 분석해요. <b>한 번 분석하면 저장돼서</b> 다시 호출하지 않아요 (1개당 약 1원).';
   }
-  renderMedList();renderKey();renderNoti();
+  renderMedList();renderKey();renderNoti();renderSnaps();
+}
+function renderSnaps(){
+  let list=[];try{list=JSON.parse(localStorage.getItem(SNAP))||[]}catch(e){}
+  const box=$('#snapList');
+  if(!list.length){box.innerHTML='<div class="myhint" style="margin:0">아직 백업이 없어요. 기록을 저장하면 자동으로 쌓여요.</div>';return}
+  box.innerHTML=list.map((s,i)=>{
+    const d=new Date(s.at);
+    const when=`${d.getMonth()+1}/${d.getDate()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    return`<div class="srow">
+      <span class="snm">${s.days}일치 기록<span class="tm">${when} · ${esc(s.reason)}</span></span>
+      <button class="sdel" data-i="${i}" style="border-color:var(--olive);color:var(--olive)">되살리기</button>
+    </div>`}).join('');
+  $$('#snapList .sdel').forEach(b=>b.onclick=()=>{
+    const s=list[+b.dataset.i];
+    if(!confirm(`${s.days}일치 기록(${new Date(s.at).toLocaleString('ko-KR')})으로 되돌릴까요?\n\n지금 데이터는 되살리기 전에 자동 백업돼요.`))return;
+    snapshot('되살리기 전');
+    try{
+      const v=JSON.parse(s.data);
+      const key=S.settings.apiKey;
+      S=v; if(key&&!S.settings.apiKey)S.settings.apiKey=key;
+      save();loadForm();renderAll();renderSnaps();
+      alert('되살렸어요. 바로 MY탭에서 "기록 내보내기"로 파일 백업도 해두세요.');
+    }catch(e){alert('백업을 읽지 못했어요.')}
+  });
 }
 function renderMedList(){
   const box=$('#mlist'),list=S.settings.meds||[],today=toKey(new Date());
@@ -1812,6 +1863,7 @@ $('#btnSave').onclick=()=>{
   if(form.emos.length)sym.emotions=[...form.emos];
   if(Object.keys(sym).length)d.symptoms=sym;
   if(prev.meals&&prev.meals.length)d.meals=prev.meals;   // 식단은 자동저장분 유지
+  snapshot('기록 저장');                                  // 저장 직전 상태를 스냅샷
   if(Object.keys(d).length)S.days[selDate]=d;else delete S.days[selDate];
   save();renderToday();renderReport();
   const btn=$('#btnSave');btn.textContent='SAVED';btn.classList.add('flash');
@@ -1915,23 +1967,37 @@ $('#fileImport').onchange=e=>{
   r.onload=()=>{try{
     const v=JSON.parse(r.result);
     if(!v||!v.days)throw 0;
-    if(!confirm('백업으로 현재 기록을 덮어쓸까요?'))return;
+    const n=Object.keys(v.days).length, cur=days().length;
+    if(!confirm(`백업 ${n}일치를 불러옵니다.${cur?`\n지금 있는 ${cur}일 기록은 덮어써져요 (자동 백업에 남아요).`:''}\n\n계속할까요?`))return;
+    snapshot('불러오기 전');
     const key=S.settings.apiKey;
-    S=v;if(key)S.settings.apiKey=key;
-    save();localStorage.removeItem(DEMO);loadForm();renderAll();alert('불러오기 완료');
+    S=v;if(key&&!S.settings.apiKey)S.settings.apiKey=key;
+    save();localStorage.removeItem(DEMO);loadForm();renderAll();renderSnaps();
+    alert(`${n}일치 기록을 불러왔어요.`);
   }catch(err){alert('올바른 백업 파일이 아니에요.')}};
   r.readAsText(f);
 };
 $('#btnWipe').onclick=()=>{
-  if(!confirm('모든 기록과 영양제 목록을 삭제할까요? 되돌릴 수 없어요.'))return;
-  if(!confirm('정말 삭제합니다. 백업하셨나요?'))return;
+  const n=days().length;
+  if(!confirm(`기록 ${n}일과 영양제·약 목록을 모두 삭제합니다.\n\n자동 백업에 스냅샷이 남아서 되살릴 수는 있어요.\n계속할까요?`))return;
+  snapshot('전체 삭제 전');
   S={version:2,settings:{supplements:[],meds:[],apiKey:S.settings.apiKey},days:{}};
-  save();localStorage.setItem(DEMO,'cleared');loadForm();renderAll();
+  save();localStorage.setItem(DEMO,'cleared');loadForm();renderAll();renderSnaps();
 };
+/* 예시 데이터만 골라서 삭제 — 내가 쓴 기록은 보존 */
 $('#clearDemo').onclick=()=>{
-  if(!confirm('예시 데이터를 지우고 새로 시작할까요?'))return;
-  S={version:2,settings:{supplements:S.settings.supplements,meds:S.settings.meds||[],apiKey:S.settings.apiKey},days:{}};
-  save();localStorage.setItem(DEMO,'cleared');loadForm();renderAll();
+  const all=days();
+  const demo=all.filter(k=>S.days[k]._demo);
+  const mine=all.filter(k=>!S.days[k]._demo);
+  snapshot('예시 삭제 전');
+  if(!demo.length){
+    if(!confirm(`이 데이터는 예시와 내 기록을 구분할 수 없는 옛 버전이에요.\n\n계속하면 ${all.length}일 기록이 모두 지워집니다.\n(자동 백업으로 되살릴 수는 있어요)\n\n계속할까요?`))return;
+    S.days={};
+  }else{
+    if(!confirm(`예시 ${demo.length}일을 지웁니다.${mine.length?`\n내가 쓴 ${mine.length}일 기록은 그대로 남아요.`:''}\n\n계속할까요?`))return;
+    demo.forEach(k=>delete S.days[k]);
+  }
+  save();localStorage.setItem(DEMO,'cleared');loadForm();renderAll();renderSnaps();
 };
 
 /* ---------- 초기화 ---------- */
