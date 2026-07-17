@@ -1,0 +1,17 @@
+{
+  "name": "BODY.LOG",
+  "short_name": "BODY.LOG",
+  "description": "기초체온·영양제·식단을 매일 기록하는 임신 준비 트래커",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F2EDE0",
+  "theme_color": "#F2EDE0",
+  "lang": "ko",
+  "icons": [
+    { "src": "icon-180.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

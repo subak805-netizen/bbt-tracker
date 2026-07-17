@@ -6,14 +6,22 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="BODY.LOG">
-<meta name="theme-color" content="#EDEAE1">
+<meta name="theme-color" content="#F2EDE0">
 <title>BODY.LOG</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-180.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Doto:wght@700;900&display=swap" rel="stylesheet">
 <style>
 :root{
-  --paper:#EDEAE1; --panel:#F7F5EF; --dim:#E1DDD1;
-  --ink:#141310; --mut:#6B6759; --red:#DF2B1C;
+  --paper:#F2EDE0; --panel:#FAF7EF; --dim:#E6DFCC;
+  --ink:#141310; --mut:#6B6759;
+  --yellow:#F5D02F;   /* 머스터드 — 강조 헤더 */
+  --orange:#E8551E;   /* 오렌지레드 — 액션·배란 */
+  --olive:#6B7231;    /* 올리브 — 저온기·영양제 */
+  --wine:#7B2233;     /* 와인 — 생리 */
+  --red:#E8551E;
   --mono:ui-monospace,'SF Mono',Menlo,'Courier New',monospace;
   --dot:'Doto',ui-monospace,monospace;
   --b1:1px; --b2:2px;
@@ -61,11 +69,11 @@ button{font-family:var(--mono);cursor:pointer;color:var(--ink)}
 .week .dn{font-size:17px;font-weight:800;margin-top:2px}
 .week .d .mk{display:block;width:5px;height:5px;background:transparent;margin:3px auto 0}
 .week .d.rec .mk{background:var(--ink)}
-.week .d.pd .mk{background:var(--red)}
+.week .d.pd .mk{background:var(--wine)}
 .week .d.sel{background:var(--ink);color:var(--paper)}
 .week .d.sel .dw{color:#B9B4A5}
-.week .d.sel.rec .mk{background:var(--paper)}
-.week .d.sel.pd .mk{background:var(--red)}
+.week .d.sel.rec .mk{background:var(--yellow)}
+.week .d.sel.pd .mk{background:var(--wine)}
 
 /* 진행률 */
 .prog{display:flex;align-items:center;gap:12px;margin:20px 0 10px}
@@ -117,7 +125,7 @@ textarea{width:100%;margin-top:12px;font-family:var(--mono);font-size:14px;paddi
 .chips{display:flex;flex-wrap:wrap;gap:9px}
 .chip{border:var(--b1) solid var(--ink);background:#fff;padding:9px 13px;font-size:13.5px;font-weight:800}
 .chip.on{background:var(--ink);color:var(--paper)}
-.chip.red.on{background:var(--red);border-color:var(--red);color:#fff}
+.chip.red.on{background:var(--wine);border-color:var(--wine);color:#fff}
 .grouplab{font-size:10.5px;letter-spacing:.16em;color:var(--mut);font-weight:700;margin:16px 0 7px}
 .grouplab:first-child{margin-top:0}
 
@@ -190,7 +198,7 @@ textarea{width:100%;margin-top:12px;font-family:var(--mono);font-size:14px;paddi
 .log .t{font-weight:800;width:60px;font-size:15px;flex:0 0 auto}
 .log .t.no{color:var(--mut);font-weight:700}
 .log .tags{flex:1;font-size:12px;color:var(--mut);font-weight:700;line-height:1.6}
-.log .tags .rd{color:var(--red);font-weight:800}
+.log .tags .rd{color:var(--wine);font-weight:800}
 .log .del{border:none;background:transparent;color:var(--mut);font-size:11.5px;font-weight:700;padding:2px 4px;flex:0 0 auto}
 .log .empty{padding:30px 16px;text-align:center;font-size:13px;color:var(--mut);font-weight:700;line-height:1.8}
 
@@ -228,12 +236,88 @@ textarea{width:100%;margin-top:12px;font-family:var(--mono);font-size:14px;paddi
 .banner button{border:var(--b1) solid var(--ink);background:var(--ink);color:var(--paper);font-weight:800;font-size:11.5px;padding:7px 12px}
 .note{font-size:11px;color:var(--mut);text-align:center;margin:24px 0 8px;line-height:1.8;font-weight:700}
 
+/* ---------- REPORT 대시보드 ---------- */
+.rhero{border:var(--b2) solid var(--ink);background:var(--yellow)}
+.rhero .rtop{display:flex;align-items:stretch}
+.rhero .rday{flex:1;padding:15px 16px 12px}
+.rhero .rday .n{font-family:var(--dot);font-weight:900;font-size:54px;line-height:.95}
+.rhero .rday .n small{font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:.1em}
+.rhero .rph{width:130px;border-left:var(--b2) solid var(--ink);display:flex;flex-direction:column;
+  justify-content:center;align-items:center;gap:3px;padding:10px}
+.rhero .rph .big{font-size:17px;font-weight:800}
+.rhero .rph .dd{font-family:var(--dot);font-weight:900;font-size:15px}
+.rhero .rbar{border-top:var(--b2) solid var(--ink);display:flex;background:var(--ink);color:var(--paper)}
+.rhero .rbar>div{flex:1;padding:9px 12px;font-size:11.5px;font-weight:800}
+.rhero .rbar>div+div{border-left:var(--b1) solid var(--paper)}
+.rhero .rbar .ac{color:var(--yellow)}
+
+/* 완성도 링 */
+.rdone{display:flex;align-items:center;gap:14px;border:var(--b2) solid var(--ink);border-top:none;
+  background:var(--panel);padding:13px 14px}
+.rdone .ring{flex:0 0 auto}
+.rdone .rt{flex:1;min-width:0}
+.rdone .rt .k{font-size:13px;font-weight:800}
+.rdone .rt .s{font-size:11.5px;color:var(--mut);font-weight:700;margin-top:2px;line-height:1.5}
+
+/* 카드 */
+.rcard{border:var(--b2) solid var(--ink);background:var(--panel);margin-top:16px}
+.rcard .ch{display:flex;align-items:center;gap:9px;padding:11px 13px;border-bottom:var(--b2) solid var(--ink);background:var(--dim)}
+.rcard .ch .sw{width:11px;height:11px;flex:0 0 auto}
+.rcard .ch .en{flex:1;font-size:10px;letter-spacing:.16em;font-weight:800;color:var(--mut)}
+.rcard .ch .ko{font-size:13.5px;font-weight:800}
+.rcard .cb{padding:13px}
+.rcard .none{font-size:12.5px;color:var(--mut);font-weight:700;padding:4px 0}
+
+/* 체온 카드 */
+.rtemp{display:flex;align-items:center;gap:12px}
+.rtemp .big{font-family:var(--dot);font-weight:900;font-size:40px;line-height:1}
+.rtemp .big small{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--mut)}
+.rtemp .side{flex:1;min-width:0;font-size:11.5px;font-weight:700;color:var(--mut);line-height:1.7}
+.rspark{margin-top:11px;border:var(--b1) solid var(--ink);background:#fff;padding:7px 5px 3px}
+
+/* 영양제 카드 */
+.rsupp .srw{display:flex;align-items:center;gap:9px;padding:7px 0;font-size:13px;font-weight:800}
+.rsupp .srw+.srw{border-top:var(--b1) solid var(--dim)}
+.rsupp .dot{width:9px;height:9px;flex:0 0 auto;border:var(--b1) solid var(--olive)}
+.rsupp .dot.on{background:var(--olive)}
+.rsupp .nm{flex:1;min-width:0}
+.rsupp .ct{font-size:11px;color:var(--mut);font-weight:700;flex:0 0 auto}
+.rsupp .srw.miss .nm{color:var(--mut)}
+.rslot{font-size:9.5px;letter-spacing:.13em;font-weight:800;color:var(--mut);margin:11px 0 3px}
+.rslot:first-child{margin-top:0}
+
+/* 식단 카드 */
+.rkcal{display:flex;align-items:baseline;gap:8px}
+.rkcal .n{font-family:var(--dot);font-weight:900;font-size:36px;line-height:1}
+.rkcal .u{font-size:12px;font-weight:800;color:var(--mut)}
+.rkcal .m{flex:1;text-align:right;font-size:11.5px;font-weight:700;color:var(--mut)}
+.rmacro{display:flex;border:var(--b1) solid var(--ink);margin-top:11px;background:#fff}
+.rmacro>div{flex:1;text-align:center;padding:8px 0}
+.rmacro>div+div{border-left:var(--b1) solid var(--ink)}
+.rmacro .g{font-family:var(--dot);font-weight:900;font-size:17px}
+.rmacro .l{font-size:9px;letter-spacing:.1em;color:var(--mut);font-weight:700}
+.rmenu{font-size:12px;font-weight:700;color:var(--mut);margin-top:10px;line-height:1.6}
+
+/* 증상 카드 */
+.rtags{display:flex;flex-wrap:wrap;gap:7px}
+.rtag{font-size:11.5px;font-weight:800;border:var(--b1) solid var(--ink);padding:5px 9px;background:#fff}
+.rtag.w{background:var(--wine);border-color:var(--wine);color:#fff}
+.rmemo{font-size:12.5px;font-weight:700;color:var(--mut);margin-top:10px;line-height:1.7;
+  border-left:3px solid var(--yellow);padding-left:9px}
+
+/* 알림 배너 */
+.ralert{border:var(--b2) solid var(--ink);background:var(--orange);color:#fff;padding:12px 13px;
+  display:flex;align-items:center;gap:10px;margin-top:16px}
+.ralert.w{background:var(--wine)}
+.ralert .t{flex:1;font-size:12.5px;font-weight:800;line-height:1.5}
+.ralert .dd{font-family:var(--dot);font-weight:900;font-size:19px;flex:0 0 auto}
+
 /* 하단 탭 */
 .nav{position:fixed;left:0;right:0;bottom:0;background:var(--paper);border-top:var(--b2) solid var(--ink);
   display:flex;z-index:50;padding-bottom:env(safe-area-inset-bottom)}
-.nav a{flex:1;text-align:center;padding:15px 0 13px;font-size:11.5px;letter-spacing:.18em;font-weight:800;color:var(--mut);cursor:pointer}
+.nav a{flex:1;text-align:center;padding:15px 0 13px;font-size:10px;letter-spacing:.1em;font-weight:800;color:var(--mut);cursor:pointer}
 .nav a+a{border-left:var(--b1) solid var(--ink)}
-.nav a.on{background:var(--ink);color:var(--paper)}
+.nav a.on{background:var(--ink);color:var(--yellow)}
 </style>
 </head>
 <body>
@@ -243,8 +327,57 @@ textarea{width:100%;margin-top:12px;font-family:var(--mono);font-size:14px;paddi
     <div class="date" id="hdate"></div>
   </div>
 
+  <!-- ============ REPORT ============ -->
+  <section class="screen on" id="scr-report">
+    <div class="rhero">
+      <div class="rtop">
+        <div class="rday"><div class="cap" id="rdlab">CYCLE DAY</div><div class="n" id="rday">—</div></div>
+        <div class="rph">
+          <span class="cap">PHASE</span>
+          <span class="big" id="rphase">—</span>
+          <span class="dd" id="rphdd">—</span>
+        </div>
+      </div>
+      <div class="rbar">
+        <div>다음 생리 <span class="ac" id="rnp">—</span></div>
+        <div>다음 배란 <span class="ac" id="rno">—</span></div>
+      </div>
+    </div>
+    <div class="rdone">
+      <svg class="ring" id="rring" width="52" height="52" viewBox="0 0 52 52"></svg>
+      <div class="rt"><div class="k" id="rdonek">—</div><div class="s" id="rdones">—</div></div>
+    </div>
+    <div id="ralerts"></div>
+
+    <div class="rcard">
+      <div class="ch"><span class="sw" style="background:var(--olive)"></span>
+        <span class="ko">기초체온</span><span class="en" style="text-align:right">BBT</span></div>
+      <div class="cb" id="rtempbox"></div>
+    </div>
+
+    <div class="rcard">
+      <div class="ch"><span class="sw" style="background:var(--olive)"></span>
+        <span class="ko">영양제</span><span class="en" style="text-align:right" id="rsuppcnt"></span></div>
+      <div class="cb rsupp" id="rsuppbox"></div>
+    </div>
+
+    <div class="rcard">
+      <div class="ch"><span class="sw" style="background:var(--orange)"></span>
+        <span class="ko">식단</span><span class="en" style="text-align:right" id="rmealcnt"></span></div>
+      <div class="cb" id="rmealbox"></div>
+    </div>
+
+    <div class="rcard">
+      <div class="ch"><span class="sw" style="background:var(--wine)"></span>
+        <span class="ko">몸 상태 · 증상</span><span class="en" style="text-align:right">BODY</span></div>
+      <div class="cb" id="rsymbox"></div>
+    </div>
+
+    <div class="note">예측·분석은 통계 기반 참고용이며 의학적 진단이 아닙니다.</div>
+  </section>
+
   <!-- ============ TODAY ============ -->
-  <section class="screen on" id="scr-today">
+  <section class="screen" id="scr-today">
     <div class="cycle">
       <div class="main">
         <div class="day"><div class="cap">CYCLE DAY</div><div class="n" id="cday">—</div></div>
@@ -403,11 +536,11 @@ textarea{width:100%;margin-top:12px;font-family:var(--mono);font-size:14px;paddi
     </div>
     <div class="chart" id="chartbox"></div>
     <div class="legend">
-      <span><b style="background:#fff;border:2px solid var(--ink)"></b>저온기</span>
+      <span><b style="background:#fff;border:2px solid var(--olive)"></b>저온기</span>
       <span><b style="background:var(--ink)"></b>고온기</span>
-      <span><b style="background:var(--red)"></b>생리</span>
+      <span><b style="background:var(--wine)"></b>생리</span>
       <span><b style="background:#fff;border-top:2px dashed var(--ink);width:16px;height:0"></b>커버라인</span>
-      <span>▲ 배테기 양성</span>
+      <span style="color:var(--orange)">▲ 배테기 양성</span>
     </div>
     <div class="stats">
       <div class="row">
@@ -460,6 +593,15 @@ textarea{width:100%;margin-top:12px;font-family:var(--mono);font-size:14px;paddi
     </div>
 
     <div class="mycard">
+      <div class="mh"><span class="ko">알림</span><span class="cap">NOTIFICATION</span></div>
+      <div class="mb">
+        <div class="keystat" id="notiStat"></div>
+        <button class="mybtn" id="notiBtn">생리·배란 알림 켜기</button>
+        <div class="myhint">앱을 열 때 예정일이 2일 이내면 알려드려요. 아이폰은 <b>홈 화면에 추가</b>한 뒤에만 알림이 동작해요. 앱을 켜지 않아도 오는 백그라운드 알림은 별도 서버가 필요해서 지금은 지원하지 않아요 — REPORT 탭 상단 배너로도 항상 확인할 수 있어요.</div>
+      </div>
+    </div>
+
+    <div class="mycard">
       <div class="mh"><span class="ko">데이터</span><span class="cap">DATA</span></div>
       <div class="mb">
         <button class="mybtn" id="btnExport">기록 내보내기 (JSON 백업)</button>
@@ -474,7 +616,8 @@ textarea{width:100%;margin-top:12px;font-family:var(--mono);font-size:14px;paddi
 </div>
 
 <div class="nav">
-  <a class="on" data-tab="today">TODAY</a>
+  <a class="on" data-tab="report">REPORT</a>
+  <a data-tab="today">TODAY</a>
   <a data-tab="chart">CHART</a>
   <a data-tab="log">LOG</a>
   <a data-tab="my">MY</a>
@@ -873,12 +1016,12 @@ function renderChart(){
   s+=`<path d="${p}" fill="none" stroke="#141310" stroke-width="2.5" stroke-linejoin="round"/>`;
   data.forEach((d,i)=>{
     const x=X(i),y=Y(d.temp),day=S.days[d.date];
-    if(day&&day.period)s+=`<circle cx="${x}" cy="${y}" r="5" fill="#DF2B1C" stroke="#fff" stroke-width="1.5"/>`;
+    if(day&&day.period)s+=`<circle cx="${x}" cy="${y}" r="5" fill="#7B2233" stroke="#fff" stroke-width="1.5"/>`;
     else if(riseKey&&d.date>=riseKey)s+=`<circle cx="${x}" cy="${y}" r="4.4" fill="#141310" stroke="#fff" stroke-width="1.5"/>`;
-    else s+=`<circle cx="${x}" cy="${y}" r="4.4" fill="#fff" stroke="#141310" stroke-width="2"/>`;
+    else s+=`<circle cx="${x}" cy="${y}" r="4.4" fill="#fff" stroke="#6B7231" stroke-width="2"/>`;
     if(d.date===selDate)s+=`<circle cx="${x}" cy="${y}" r="8" fill="none" stroke="#141310" stroke-width="1" stroke-dasharray="2 2"/>`;
     if(day&&day.ovulation&&(day.ovulation.result==='positive'||day.ovulation.result==='peak'))
-      s+=`<path d="M ${x-5} ${y+17} L ${x+5} ${y+17} L ${x} ${y+8} Z" fill="#141310"/>`;
+      s+=`<path d="M ${x-5} ${y+17} L ${x+5} ${y+17} L ${x} ${y+8} Z" fill="#E8551E"/>`;
   });
   const step=Math.max(1,Math.ceil(data.length/5));
   data.forEach((d,i)=>{if(i%step===0||i===data.length-1){
@@ -945,7 +1088,17 @@ function renderMy(){
     S.settings.supplements=S.settings.supplements.filter(s=>s.id!==b.dataset.id);
     save();renderMy();renderSuppCheck();renderStatuses();
   });
-  renderKey();
+  renderKey();renderNoti();
+}
+function renderNoti(){
+  const st=$('#notiStat'),btn=$('#notiBtn');
+  if(!('Notification' in window)){
+    st.textContent='이 브라우저는 알림을 지원하지 않아요';btn.style.display='none';return;
+  }
+  const p=Notification.permission;
+  st.innerHTML=p==='granted'?'<span class="okd">알림 켜짐</span>'
+    :p==='denied'?'알림이 차단됨 — 사파리 설정에서 허용해주세요':'알림 꺼짐';
+  btn.style.display=p==='granted'?'none':'block';
 }
 function renderKey(){
   const k=S.settings.apiKey;
@@ -956,11 +1109,174 @@ function renderKey(){
   $('#keyInput').value='';
 }
 
+/* ---------- REPORT 대시보드 ---------- */
+const DIS_KO={dry:'건조',sticky:'끈적',creamy:'크림',eggwhite:'계란흰자',watery:'물 같음'};
+function predict(){
+  const avg=avgCycle(),lp=lastPeriod(toKey(new Date()));
+  if(!avg||!lp)return null;
+  const np=addDays(lp,avg),no=addDays(np,-14),today=toKey(new Date());
+  return{avg,lp,np,no,pIn:dayDiff(np,today),oIn:dayDiff(no,today)};
+}
+function ddText(n){return n>0?'D-'+n:n===0?'D-DAY':'D+'+(-n)}
+function renderReport(){
+  const today=toKey(new Date()), d=S.days[today]||{};
+  const lp=lastPeriod(today), pr=predict();
+
+  // 히어로
+  if(lp){
+    const cd=dayDiff(today,lp)+1;
+    $('#rday').innerHTML=pad(cd)+(pr?`<small> /${pr.avg}일</small>`:'');
+    $('#rdlab').textContent='CYCLE DAY · '+lp.slice(5).replace('-','/')+' 시작';
+  }else{$('#rday').textContent='—';$('#rdlab').textContent='생리 시작일을 기록하세요'}
+  const an=analyzeCycle(cycleEntriesFor(today));
+  let ph='기록 전',phdd='';
+  if(d.period){ph='생리 중'}
+  else if(an.ovulation&&today>=an.ovulation){ph='고온기';phdd='배란 +'+dayDiff(today,an.ovulation)+'일'}
+  else if(lp){ph='저온기'}
+  $('#rphase').textContent=ph;
+  $('#rphdd').textContent=phdd||(pr?ddText(pr.oIn)+' 배란':'');
+  $('#rnp').textContent=pr?`${+pr.np.slice(5,7)}/${+pr.np.slice(8)} ${ddText(pr.pIn)}`:'기록 부족';
+  $('#rno').textContent=pr?`${+pr.no.slice(5,7)}/${+pr.no.slice(8)} ${ddText(pr.oIn)}`:'기록 부족';
+
+  // 완성도 링
+  const sup=S.settings.supplements;
+  const doseTotal=sup.reduce((a,s)=>a+(s.dose||1),0);
+  const taken=sup.reduce((a,s)=>a+Math.min((d.supplements&&d.supplements[s.id])||0,s.dose||1),0);
+  const meals=d.meals||[];
+  const items=[
+    {k:'체온',ok:!!d.temp},{k:'컨디션',ok:!!(d.condition&&d.condition.score)},
+    {k:'배테기',ok:!!d.ovulation},{k:'임테기',ok:!!d.pregnancy},
+    {k:'영양제',ok:taken>0},{k:'증상',ok:!!d.symptoms},{k:'식단',ok:meals.length>0}
+  ];
+  const done=items.filter(i=>i.ok).length, pct=done/items.length;
+  const C=2*Math.PI*21;
+  $('#rring').innerHTML=`<circle cx="26" cy="26" r="21" fill="none" stroke="#E6DFCC" stroke-width="7"/>
+    <circle cx="26" cy="26" r="21" fill="none" stroke="#141310" stroke-width="7"
+      stroke-dasharray="${(C*pct).toFixed(1)} ${C}" transform="rotate(-90 26 26)"/>
+    <text x="26" y="30" text-anchor="middle" font-family="Doto,monospace" font-weight="900" font-size="15" fill="#141310">${done}</text>`;
+  $('#rdonek').textContent=`오늘 기록 ${done}/${items.length}`;
+  const miss=items.filter(i=>!i.ok).map(i=>i.k);
+  $('#rdones').textContent=miss.length?'남은 항목 — '+miss.join(', '):'오늘 기록을 모두 마쳤어요.';
+
+  // 알림 배너
+  let al='';
+  if(pr){
+    if(pr.oIn>=0&&pr.oIn<=3)al+=`<div class="ralert"><span class="t">배란 예정일이 다가와요${pr.oIn<=1?' — 지금이 가임기예요':''}</span><span class="dd">${ddText(pr.oIn)}</span></div>`;
+    if(pr.pIn>=0&&pr.pIn<=3)al+=`<div class="ralert w"><span class="t">생리 예정일이 다가와요</span><span class="dd">${ddText(pr.pIn)}</span></div>`;
+    if(pr.pIn<0&&!d.pregnancy)al+=`<div class="ralert w"><span class="t">생리 예정일이 ${-pr.pIn}일 지났어요. 임신테스트를 해보세요</span><span class="dd">${ddText(pr.pIn)}</span></div>`;
+  }
+  $('#ralerts').innerHTML=al;
+
+  // 체온
+  const tb=$('#rtempbox');
+  if(d.temp){
+    const cyc=cycleEntriesFor(today);
+    const lows=cyc.filter(e=>!an.ovulation||e.date<an.ovulation).map(e=>e.temp);
+    const base=lows.length?(lows.reduce((a,b)=>a+b,0)/lows.length):null;
+    const diff=base?(d.temp.value-base):null;
+    tb.innerHTML=`<div class="rtemp">
+      <div class="big">${d.temp.value.toFixed(2)}<small> °C</small></div>
+      <div class="side">측정 ${esc(d.temp.time||'—')}<br>${base?`저온기 평균 ${base.toFixed(2)} 대비 <b style="color:${diff>=0.1?'var(--orange)':'var(--olive)'}">${diff>=0?'+':''}${diff.toFixed(2)}</b>`:'저온기 평균 계산 전'}</div>
+    </div><div class="rspark" id="rspark"></div>`;
+    renderSpark();
+  }else tb.innerHTML='<div class="none">오늘 체온이 아직 기록되지 않았어요.</div>';
+
+  // 영양제
+  $('#rsuppcnt').textContent=sup.length?taken+'/'+doseTotal:'';
+  const sb=$('#rsuppbox');
+  if(!sup.length)sb.innerHTML='<div class="none">MY 탭에서 영양제를 등록해보세요.</div>';
+  else{
+    const groups={fasting:[],meal:[],night:[]};
+    sup.forEach(s=>groups[classify(s.name).slot].push(s));
+    let h='';
+    for(const k of ['fasting','meal','night']){
+      if(!groups[k].length)continue;
+      h+=`<div class="rslot">${SLOTS[k]}</div>`;
+      h+=groups[k].map(s=>{
+        const t=Math.min((d.supplements&&d.supplements[s.id])||0,s.dose||1),full=t>=(s.dose||1);
+        return`<div class="srw ${full?'':'miss'}"><span class="dot ${full?'on':''}"></span>
+          <span class="nm">${esc(s.name)}</span><span class="ct">${t}/${s.dose||1}</span></div>`;
+      }).join('');
+    }
+    sb.innerHTML=h;
+  }
+
+  // 식단
+  $('#rmealcnt').textContent=meals.length?meals.length+'끼':'';
+  const mb=$('#rmealbox');
+  if(!meals.length)mb.innerHTML='<div class="none">오늘 식단 기록이 없어요. TODAY 탭에서 사진을 찍어보세요.</div>';
+  else{
+    const sum=k=>meals.reduce((a,m)=>a+(m[k]||0),0);
+    mb.innerHTML=`<div class="rkcal"><span class="n">${sum('kcal')}</span><span class="u">kcal</span>
+      <span class="m">${meals.length}끼 합계</span></div>
+      <div class="rmacro">
+        <div><div class="g">${sum('carb_g')}g</div><div class="l">탄수화물</div></div>
+        <div><div class="g">${sum('protein_g')}g</div><div class="l">단백질</div></div>
+        <div><div class="g">${sum('fat_g')}g</div><div class="l">지방</div></div>
+      </div>
+      <div class="rmenu">${meals.map(m=>esc((m.menu||[]).join(' · '))).join('<br>')}</div>`;
+  }
+
+  // 증상
+  const yb=$('#rsymbox');
+  const tags=[];
+  if(d.period)tags.push({t:'생리 시작',w:1});
+  if(d.condition&&d.condition.score)tags.push({t:'컨디션 '+d.condition.score+'/5'});
+  if(d.ovulation)tags.push({t:'배테기 '+({negative:'음성',positive:'양성',peak:'피크'})[d.ovulation.result]});
+  if(d.pregnancy)tags.push({t:'임테기 '+({none:'한 줄',faint:'미세선',strong:'두 줄'})[d.pregnancy.result]});
+  if(d.symptoms){
+    if(d.symptoms.discharge)tags.push({t:'분비물 '+DIS_KO[d.symptoms.discharge]});
+    (d.symptoms.pains||[]).forEach(p=>tags.push({t:p}));
+    (d.symptoms.emotions||[]).forEach(e=>tags.push({t:e}));
+  }
+  yb.innerHTML=(tags.length
+    ?`<div class="rtags">${tags.map(x=>`<span class="rtag ${x.w?'w':''}">${esc(x.t)}</span>`).join('')}</div>`
+    :'<div class="none">오늘 몸 상태 기록이 없어요.</div>')
+    +(d.condition&&d.condition.memo?`<div class="rmemo">${esc(d.condition.memo)}</div>`:'');
+}
+function renderSpark(){
+  const box=$('#rspark');if(!box)return;
+  const cut=addDays(toKey(new Date()),-13);
+  const data=tempEntries().filter(e=>e.date>=cut);
+  if(data.length<2){box.innerHTML='<div style="font-size:11px;color:var(--mut);font-weight:700;text-align:center;padding:8px 0">최근 2주 그래프 — 기록이 더 필요해요</div>';return}
+  const W=340,H=54,P=4;
+  const ts=data.map(d=>d.temp);
+  let lo=Math.min(...ts)-0.05,hi=Math.max(...ts)+0.05;
+  if(hi-lo<0.4){const m=(hi+lo)/2;lo=m-0.2;hi=m+0.2}
+  const X=i=>P+(i/(data.length-1))*(W-P*2), Y=v=>P+(1-(v-lo)/(hi-lo))*(H-P*2);
+  let p='M',dots='';
+  data.forEach((d,i)=>{
+    p+=` ${X(i).toFixed(1)} ${Y(d.temp).toFixed(1)}${i<data.length-1?' L':''}`;
+    const day=S.days[d.date];
+    let c=day&&day.period?'#7B2233':'#141310';
+    if(d.date===toKey(new Date()))dots+=`<circle cx="${X(i)}" cy="${Y(d.temp)}" r="4" fill="${c}" stroke="#fff" stroke-width="1.5"/>`;
+    else if(day&&day.period)dots+=`<circle cx="${X(i)}" cy="${Y(d.temp)}" r="2.6" fill="#7B2233"/>`;
+  });
+  box.innerHTML=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;display:block">
+    <path d="${p}" fill="none" stroke="#6B7231" stroke-width="2" stroke-linejoin="round"/>${dots}</svg>
+    <div style="font-size:9px;letter-spacing:.1em;color:var(--mut);font-weight:700;text-align:center;margin-top:2px">최근 2주 체온</div>`;
+}
+
+/* ---------- 알림 ---------- */
+function notifyKey(){return 'bodylog_notified_'+toKey(new Date())}
+function maybeNotify(){
+  if(!('Notification' in window)||Notification.permission!=='granted')return;
+  if(localStorage.getItem(notifyKey()))return;
+  const pr=predict();if(!pr)return;
+  let msg=null;
+  if(pr.oIn>=0&&pr.oIn<=2)msg=`배란 예정일 ${ddText(pr.oIn)} — 가임기가 다가와요`;
+  else if(pr.pIn>=0&&pr.pIn<=2)msg=`생리 예정일 ${ddText(pr.pIn)}`;
+  else if(pr.pIn<0&&pr.pIn>=-14&&!(S.days[toKey(new Date())]||{}).pregnancy)msg=`생리 예정일이 ${-pr.pIn}일 지났어요`;
+  if(!msg)return;
+  try{new Notification('BODY.LOG',{body:msg,icon:'icon-180.png'});localStorage.setItem(notifyKey(),'1')}catch(e){}
+}
+
 /* ---------- 탭 ---------- */
 function showTab(name){
   $$('.screen').forEach(s=>s.classList.remove('on'));
   $('#scr-'+name).classList.add('on');
   $$('.nav a').forEach(a=>a.classList.toggle('on',a.dataset.tab===name));
+  if(name==='report')renderReport();
   if(name==='chart')renderChart();
   if(name==='log')renderLog();
   if(name==='my')renderMy();
@@ -1004,7 +1320,7 @@ $('#btnSave').onclick=()=>{
   if(Object.keys(sym).length)d.symptoms=sym;
   if(prev.meals&&prev.meals.length)d.meals=prev.meals;   // 식단은 자동저장분 유지
   if(Object.keys(d).length)S.days[selDate]=d;else delete S.days[selDate];
-  save();renderToday();
+  save();renderToday();renderReport();
   const btn=$('#btnSave');btn.textContent='SAVED';btn.classList.add('flash');
   setTimeout(()=>{btn.textContent='SAVE — 기록 저장';btn.classList.remove('flash')},900);
 };
@@ -1020,6 +1336,18 @@ $('#sadd').onclick=()=>{
   $('#snew').value='';save();renderMy();renderSuppCheck();renderStatuses();
 };
 $('#snew').onkeydown=e=>{if(e.key==='Enter')$('#sadd').click()};
+
+/* 알림 */
+$('#notiBtn').onclick=async()=>{
+  if(!('Notification' in window))return;
+  const p=await Notification.requestPermission();
+  renderNoti();
+  if(p==='granted'){
+    try{new Notification('BODY.LOG',{body:'알림이 켜졌어요. 생리·배란 예정일이 다가오면 알려드릴게요.',icon:'icon-180.png'})}catch(e){}
+  }else if(p==='denied'){
+    alert('알림이 차단됐어요. 아이폰은 홈 화면에 추가한 뒤 설정 > 알림에서 허용할 수 있어요.');
+  }
+};
 
 /* API 키 */
 $('#keySave').onclick=()=>{
@@ -1076,6 +1404,7 @@ function renderAll(){
   $('#hdate').innerHTML=`${now.getFullYear()}.${pad(now.getMonth()+1)}.${pad(now.getDate())} ${DOW[now.getDay()]}<b>CYCLE TRACKING</b>`;
   $('#demoBanner').style.display=localStorage.getItem(DEMO)==='on'?'flex':'none';
   renderToday();
+  if($('#scr-report').classList.contains('on'))renderReport();
   if($('#scr-chart').classList.contains('on'))renderChart();
   if($('#scr-log').classList.contains('on'))renderLog();
   if($('#scr-my').classList.contains('on'))renderMy();
@@ -1083,6 +1412,8 @@ function renderAll(){
 seedDemo();
 loadForm();
 renderAll();
+maybeNotify();
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
 </body>
 </html>
