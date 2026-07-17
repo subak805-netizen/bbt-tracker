@@ -13,6 +13,9 @@
 <link rel="icon" href="icon-180.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Doto:wght@700;900&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 <style>
 :root{
   --paper:#F2EDE0; --panel:#FAF7EF; --dim:#E6DFCC;
@@ -382,6 +385,20 @@ textarea{width:100%;margin-top:12px;font-family:var(--mono);font-size:14px;paddi
 .ralert .t{flex:1;font-size:12.5px;font-weight:800;line-height:1.5}
 .ralert .dd{font-family:var(--dot);font-weight:900;font-size:19px;flex:0 0 auto}
 
+/* 토스트 */
+.toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom));transform:translateX(-50%);
+  background:var(--ink);color:var(--yellow);border:var(--b2) solid var(--ink);padding:11px 16px;
+  font-size:12.5px;font-weight:800;z-index:90;max-width:88%;text-align:center;
+  opacity:0;pointer-events:none;transition:opacity .2s}
+.toast.on{opacity:1}
+
+/* 동기화 */
+.syncrow{display:flex;gap:8px;margin-top:10px}
+.syncrow input{flex:1;min-width:0;font-family:var(--mono);font-size:14px;font-weight:700;padding:11px 12px;
+  border:var(--b1) solid var(--ink);background:#fff;color:var(--ink)}
+.synced{display:flex;align-items:center;gap:9px;font-size:13px;font-weight:800;padding:2px 0 4px}
+.synced .dotg{width:9px;height:9px;background:var(--olive);flex:0 0 auto}
+
 /* 하단 탭 */
 .nav{position:fixed;left:0;right:0;bottom:0;background:var(--paper);border-top:var(--b2) solid var(--ink);
   display:flex;z-index:50;padding-bottom:env(safe-area-inset-bottom)}
@@ -734,6 +751,13 @@ textarea{width:100%;margin-top:12px;font-family:var(--mono);font-size:14px;paddi
   <!-- ============ MY ============ -->
   <section class="screen" id="scr-my">
     <div class="mycard">
+      <div class="mh"><span class="ko">기기 간 동기화</span><span class="cap">SYNC</span></div>
+      <div class="mb">
+        <div id="syncBody"></div>
+      </div>
+    </div>
+
+    <div class="mycard">
       <div class="mh"><span class="ko">내 영양제</span><span class="cap">SUPPLEMENTS</span></div>
       <div class="mb">
         <div class="slist" id="slist"></div>
@@ -815,6 +839,8 @@ textarea{width:100%;margin-top:12px;font-family:var(--mono);font-size:14px;paddi
     <div class="note">BODY.LOG — 예측·분석은 참고용이며 의학적 진단이 아닙니다.</div>
   </section>
 </div>
+
+<div class="toast" id="toast"></div>
 
 <div class="nav">
   <a class="on" data-tab="report">REPORT</a>
@@ -966,7 +992,10 @@ function snapshot(reason){
     }
   }catch(e){}
 }
-function save(){localStorage.setItem(KEY,JSON.stringify(S))}
+function save(){
+  localStorage.setItem(KEY,JSON.stringify(S));
+  if(typeof cloudPush==='function')cloudPush();     // 로그인 상태면 클라우드에도 자동 반영
+}
 function days(){return Object.keys(S.days).sort()}
 
 /* ---------- 예시 데이터 ---------- */
@@ -1436,7 +1465,7 @@ function renderMy(){
     rb.textContent=un?`AI로 분석하기 (${un}개 남음)`:'전체 다시 분석하기';
     $('#suppHint').innerHTML='영양제를 추가하면 AI가 자동으로 성분·복용시간·상호작용을 분석해요. <b>한 번 분석하면 저장돼서</b> 다시 호출하지 않아요 (1개당 약 1원).';
   }
-  renderMedList();renderKey();renderNoti();renderSnaps();
+  renderMedList();renderKey();renderNoti();renderSnaps();renderSync();
 }
 function renderSnaps(){
   let list=[];try{list=JSON.parse(localStorage.getItem(SNAP))||[]}catch(e){}
@@ -2026,6 +2055,134 @@ $('#clearDemo').onclick=()=>{
   save();localStorage.setItem(DEMO,'cleared');loadForm();renderAll();renderSnaps();
 };
 
+/* ---------- Firebase 동기화 (fpf-manager 프로젝트 재사용) ---------- */
+const FB_CONFIG={apiKey:"AIzaSyCx84fnTSZl9_eTMaUkts0VCyIx4qrql2I",authDomain:"fpf-manager.firebaseapp.com",projectId:"fpf-manager",storageBucket:"fpf-manager.firebasestorage.app",messagingSenderId:"415966666310",appId:"1:415966666310:web:9c4bb75cd2594cc744b447"};
+let fbUser=null,fbDB=null,fbAuth=null,_unsub=null,_pushT=null,_pushedTs='',_synced=false;
+let _toastT=null;
+function toast(msg){
+  const t=$('#toast');t.textContent=msg;t.classList.add('on');
+  clearTimeout(_toastT);_toastT=setTimeout(()=>t.classList.remove('on'),2600);
+}
+function initFb(att){
+  att=att||0;
+  if(typeof firebase==='undefined'){
+    if(att<40)return setTimeout(()=>initFb(att+1),150);
+    return;                                        // 오프라인이면 조용히 포기 (로컬은 그대로 동작)
+  }
+  try{
+    firebase.initializeApp(FB_CONFIG);fbAuth=firebase.auth();fbDB=firebase.firestore();
+    fbAuth.onAuthStateChanged(u=>{
+      fbUser=u;_synced=false;_pushedTs='';         // 계정이 바뀌면 "내가 올린 것" 표시를 초기화
+      clearTimeout(_pushT);                        // 이전 계정으로 향하던 예약 push 취소
+      renderSync();
+      if(u)startSync();else stopSync();
+    });
+  }catch(e){console.warn('Firebase init',e)}
+}
+function cloudRef(){return fbDB.collection('users').doc(fbUser.uid).collection('data').doc('bodylog')}
+/* 클라우드로 보낼 데이터 — API 키는 기기에만 두고 올리지 않음 */
+function cloudPayload(){
+  const c=JSON.parse(JSON.stringify(S));
+  if(c.settings)delete c.settings.apiKey;
+  return c;
+}
+function cloudPush(){
+  if(!fbUser||!fbDB||!_synced)return;               // 첫 동기화 전엔 절대 올리지 않음(예시가 실기록 덮는 사고 방지)
+  clearTimeout(_pushT);
+  _pushT=setTimeout(()=>{
+    const ts=Date.now()+'_'+Math.floor(Math.random()*100000);_pushedTs=ts;
+    cloudRef().set({value:JSON.stringify(cloudPayload()),ts,at:new Date().toISOString()})
+      .catch(e=>{
+        console.warn('push',e);
+        if(e.code==='permission-denied')toast('동기화 권한 오류 — 규칙 확인 필요');
+      });
+  },700);
+}
+function startSync(){
+  if(!fbUser||!fbDB)return;
+  stopSync();
+  let first=true;
+  _unsub=cloudRef().onSnapshot(snap=>{
+    if(snap.metadata&&snap.metadata.hasPendingWrites)return;
+    if(!snap.exists){                               // 클라우드가 비었으면 내 데이터를 올림
+      _synced=true;
+      if(days().length){cloudPush();toast('이 기기 기록을 클라우드에 올렸어요')}
+      first=false;return;
+    }
+    const d=snap.data();
+    if(!d||!d.value){_synced=true;first=false;return}
+    if(d.ts&&d.ts===_pushedTs){_synced=true;first=false;return}   // 내가 방금 올린 것
+    let data;try{data=JSON.parse(d.value)}catch(e){return}
+    if(!data||!data.days)return;
+    if(isBusy()){setTimeout(()=>{if(!isBusy())applyCloud(data,!first)},1200);_synced=true;first=false;return}
+    applyCloud(data,!first);
+    _synced=true;first=false;
+  },e=>{
+    console.warn('onSnapshot',e);
+    if(e.code==='permission-denied')toast('동기화 권한 오류 — 규칙 확인 필요');
+  });
+}
+function stopSync(){if(_unsub){try{_unsub()}catch(e){}_unsub=null}}
+function isBusy(){const a=document.activeElement;return !!(a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))}
+function applyCloud(data,notify){
+  const mine=days().filter(k=>!S.days[k]._demo).length;
+  const incoming=Object.keys(data.days||{}).length;
+  snapshot('클라우드 반영 전');                       // 덮어쓰기 전 항상 스냅샷
+  const key=S.settings.apiKey;                      // 키는 기기 것 유지
+  S=data;
+  if(!S.settings)S.settings={supplements:[],meds:[]};
+  if(!S.settings.meds)S.settings.meds=[];
+  if(key)S.settings.apiKey=key;
+  save();loadForm();renderAll();
+  if(notify)toast(`다른 기기 변경 반영 (${incoming}일)`);
+  else if(mine&&incoming)toast(`클라우드 기록 ${incoming}일을 불러왔어요`);
+}
+function renderSync(){
+  const b=$('#syncBody');if(!b)return;
+  if(typeof firebase==='undefined'){
+    b.innerHTML='<div class="myhint" style="margin:0">인터넷이 연결되면 동기화를 쓸 수 있어요.</div>';return;
+  }
+  if(fbUser){
+    b.innerHTML=`<div class="synced"><span class="dotg"></span>${esc(fbUser.email||'로그인됨')}</div>
+      <div class="myhint">아이폰·맥 어디서 열어도 같은 기록으로 이어져요. 기기를 바꿔도 로그인만 하면 그대로예요.</div>
+      <button class="mybtn" id="syncOut">로그아웃</button>`;
+    $('#syncOut').onclick=()=>{
+      if(!confirm('로그아웃할까요? (기록은 이 기기에 그대로 남아요)'))return;
+      fbAuth.signOut();stopSync();toast('로그아웃됨');
+    };
+  }else{
+    b.innerHTML=`<div class="myhint" style="margin:0 0 4px">로그인하면 <b>기록이 클라우드에 자동 저장</b>돼요. 기기를 바꾸거나 저장소가 지워져도 안전하고, 아이폰·맥이 같은 기록으로 이어져요.</div>
+      <div class="syncrow"><input id="sgEmail" type="email" inputmode="email" autocomplete="username" placeholder="이메일"></div>
+      <div class="syncrow"><input id="sgPw" type="password" autocomplete="current-password" placeholder="비밀번호 (6자 이상)"></div>
+      <div class="syncrow">
+        <button class="mybtn" id="sgIn" style="margin-top:0;background:var(--ink);color:var(--paper);border-color:var(--ink)">로그인</button>
+        <button class="mybtn" id="sgUp" style="margin-top:0">새 계정 만들기</button>
+      </div>
+      <div class="myhint">FPF 앱과 같은 계정을 쓰시면 돼요. 내 기록은 내 계정으로만 잠깁니다.</div>`;
+    $('#sgIn').onclick=()=>doAuth(false);
+    $('#sgUp').onclick=()=>doAuth(true);
+  }
+}
+function doAuth(isNew){
+  const e=$('#sgEmail').value.trim(),p=$('#sgPw').value;
+  if(!e||!p){toast('이메일·비밀번호를 입력해주세요');return}
+  if(isNew&&p.length<6){toast('비밀번호는 6자 이상');return}
+  if(!fbAuth){toast('연결 준비 중 — 잠시 후 다시');return}
+  const fn=isNew?'createUserWithEmailAndPassword':'signInWithEmailAndPassword';
+  fbAuth[fn](e,p).then(()=>toast(isNew?'계정 생성·동기화 시작':'로그인됨 · 동기화 시작'))
+    .catch(err=>toast(authMsg(err)));
+}
+function authMsg(err){
+  const c=(err&&err.code)||'';
+  if(/wrong-password|invalid-credential/.test(c))return '비밀번호가 틀려요';
+  if(/user-not-found/.test(c))return '없는 계정이에요 · 새 계정 만들기를 눌러주세요';
+  if(/email-already/.test(c))return '이미 가입된 이메일 · 로그인해주세요';
+  if(/invalid-email/.test(c))return '이메일 형식을 확인해주세요';
+  if(/weak-password/.test(c))return '비밀번호는 6자 이상';
+  if(/network/.test(c))return '인터넷 연결을 확인해주세요';
+  return '오류: '+c;
+}
+
 /* ---------- 초기화 ---------- */
 function renderAll(){
   const now=new Date();
@@ -2041,6 +2198,7 @@ seedDemo();
 loadForm();
 renderAll();
 maybeNotify();
+initFb();
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
 </body>
