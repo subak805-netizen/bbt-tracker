@@ -185,6 +185,17 @@ textarea{width:100%;margin-top:12px;font-family:var(--mono);font-size:14px;paddi
 .save{width:100%;margin:16px 0 0;padding:17px;border:var(--b2) solid var(--ink);
   background:var(--ink);color:var(--paper);font-size:15px;font-weight:800;letter-spacing:.22em}
 .save.flash{background:var(--red);border-color:var(--red)}
+/* 화면 하단 고정 저장바 — 아래까지 스크롤하지 않아도 저장 */
+.savebar{position:fixed;left:0;right:0;z-index:45;pointer-events:none;
+  bottom:calc(47px + env(safe-area-inset-bottom))}
+.savebar .in{max-width:430px;margin:0 auto;padding:0 14px}
+.savebar .save{margin:0;pointer-events:auto;box-shadow:0 -3px 14px rgba(20,19,16,.18);
+  display:flex;align-items:center;justify-content:center;gap:9px}
+.savebar .save .badge{font-size:10px;letter-spacing:.1em;background:var(--yellow);color:var(--ink);padding:3px 7px}
+/* 저장 안 된 변경이 있을 때 */
+.savebar .save.dirty{background:var(--orange);border-color:var(--orange)}
+.savebar .save.saved{background:var(--olive);border-color:var(--olive)}
+body.on-today{padding-bottom:calc(140px + env(safe-area-inset-bottom))}
 
 /* 차트/패널 */
 .panel-t{margin-top:24px}
@@ -740,7 +751,6 @@ textarea{width:100%;margin-top:12px;font-family:var(--mono);font-size:14px;paddi
       </div>
     </div>
 
-    <button class="save" id="btnSave">SAVE — 기록 저장</button>
     <div class="banner" id="demoBanner" style="display:none">
       <span>예시 데이터로 미리보는 중</span><button id="clearDemo">내 기록 시작</button>
     </div>
@@ -932,6 +942,10 @@ textarea{width:100%;margin-top:12px;font-family:var(--mono);font-size:14px;paddi
   </section>
 </div>
 
+<div class="savebar" id="saveBar" style="display:none">
+  <div class="in"><button class="save" id="btnSave">SAVE — 기록 저장</button></div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <div class="nav">
@@ -1065,9 +1079,18 @@ function loadStore(){
   // v2 내부 마이그레이션: 복용횟수(dose), 체크 boolean→count
   (s.settings.supplements||[]).forEach(p=>{if(!p.dose)p.dose=1});
   for(const k in s.days){const d=s.days[k];
-    if(d.supplements)for(const id in d.supplements){
-      if(d.supplements[id]===true)d.supplements[id]=1;
-      if(d.supplements[id]===false)delete d.supplements[id];
+    // 체크 기록 정리: boolean→숫자, 0/false는 아예 제거(저장 형식과 맞춰 '변경됨' 오판 방지)
+    ['supplements','meds'].forEach(f=>{
+      if(!d[f])return;
+      for(const id in d[f]){
+        if(d[f][id]===true)d[f][id]=1;
+        if(!d[f][id])delete d[f][id];
+      }
+      if(!Object.keys(d[f]).length)delete d[f];
+    });
+    if(d.symptoms){                                   // 빈 배열 제거
+      ['pains','emotions'].forEach(f=>{if(d.symptoms[f]&&!d.symptoms[f].length)delete d.symptoms[f]});
+      if(!Object.keys(d.symptoms).length)delete d.symptoms;
     }
   }
   return s;
@@ -1112,9 +1135,13 @@ function seedDemo(){
     if(cd<=4){d.flow=['medium','heavy','medium','light','spotting'][cd];if(cd<=1)d.cramp=cd===0?2:1}
     if(i%2===0)d.condition={score:3+(i%3),memo:i%6===0?'몸이 가볍고 컨디션 좋음':''};
     if(cd>=7&&cd<=10)d.ovulation={result:cd===9?'positive':cd===10?'peak':'negative',ratio:cd===10?1.2:0.6};
-    d.supplements={p1:1,p2:i%3?1:0,p3:i%2?1:0,p4:1};
+    // 저장 로직(buildDay)과 같은 모양이어야 함 — 0이나 빈 배열을 넣으면 '변경됨'으로 오판함
+    const sup={p1:1,p4:1};
+    if(i%3)sup.p2=1;
+    if(i%2)sup.p3=1;
+    d.supplements=sup;
     if(i===34||i===6)d.symptoms={pains:['아랫배'],emotions:['예민']};
-    if(cd===8)d.symptoms={discharge:'eggwhite',pains:[],emotions:['기대감']};
+    if(cd===8)d.symptoms={discharge:'eggwhite',emotions:['기대감']};
     S.days[dk]=d;
   }
   save();localStorage.setItem(DEMO,'on');
@@ -1346,6 +1373,7 @@ function renderStatuses(){
   const n=core.filter(s=>s.done).length;
   $('#pnum').textContent=n+'/'+core.length;
   $('#pbar').innerHTML=core.map(s=>`<i class="${s.done?'on':''}"></i>`).join('');
+  renderSaveBar();
 }
 function renderWeek(){
   const w=$('#week');w.innerHTML='';
@@ -2193,6 +2221,7 @@ function showTab(name){
   if(name==='chart')showCycView(cycView);
   if(name==='log')renderLog();
   if(name==='my')renderMy();
+  renderSaveBar();
   window.scrollTo(0,0);
 }
 $$('#viewSeg button').forEach(b=>b.onclick=()=>showCycView(b.dataset.v));
@@ -2272,9 +2301,11 @@ $$('#fpain .chip').forEach(b=>b.onclick=()=>{
 $$('#femo .chip').forEach(b=>b.onclick=()=>{
   const v=b.dataset.v,i=form.emos.indexOf(v);i<0?form.emos.push(v):form.emos.splice(i,1);renderForm()});
 
-$('#btnSave').onclick=()=>{
+/* 현재 폼 → 저장할 하루 객체. 저장과 '변경 있음' 판정에서 함께 씀 */
+function buildDay(){
   const prev=S.days[selDate]||{};
   const d={};
+  if(prev._demo)d._demo=1;                               // 예시 표시는 유지
   if(tempTouched)d.temp={value:+(+form.temp).toFixed(2),time:form.time};
   if(form.period)d.period=true;
   if(form.flow)d.flow=form.flow;
@@ -2300,6 +2331,35 @@ $('#btnSave').onclick=()=>{
   if(Object.keys(sym).length)d.symptoms=sym;
   if(prev.meals&&prev.meals.length)d.meals=prev.meals;   // 식단은 자동저장분 유지
   if(prev._autoFlow&&d.flow===prev.flow)d._autoFlow=1;   // 자동으로 채운 날, 손 안 댔으면 표시 유지
+  return d;
+}
+/* 저장 안 된 변경이 있는가 — 값만 비교(키 순서 차이는 무시) */
+function stable(v){
+  if(Array.isArray(v))return v.map(stable);
+  if(v&&typeof v==='object')
+    return Object.keys(v).sort().reduce((a,k)=>(a[k]=stable(v[k]),a),{});
+  return v;
+}
+function formDirty(){
+  const cur=S.days[selDate]||{};
+  return JSON.stringify(stable(buildDay()))!==JSON.stringify(stable(cur));
+}
+function renderSaveBar(){
+  const bar=$('#saveBar'), on=$('#scr-today').classList.contains('on');
+  bar.style.display=on?'block':'none';
+  document.body.classList.toggle('on-today',on);
+  if(!on)return;
+  const btn=$('#btnSave');
+  if(btn.dataset.busy)return;                            // 저장 직후 애니메이션 중이면 건드리지 않음
+  const dirty=formDirty();
+  btn.classList.toggle('dirty',dirty);
+  btn.innerHTML=dirty
+    ? '저장하기 <span class="badge">변경됨</span>'
+    : 'SAVE — 기록 저장';
+}
+$('#btnSave').onclick=()=>{
+  const prev=S.days[selDate]||{};
+  const d=buildDay();
   snapshot('기록 저장');                                  // 저장 직전 상태를 스냅샷
   const wasPeriod=!!prev.period;
   if(Object.keys(d).length)S.days[selDate]=d;else delete S.days[selDate];
@@ -2308,8 +2368,10 @@ $('#btnSave').onclick=()=>{
   if(form.period&&!wasPeriod)auto=autoFillPeriod(selDate);
   if(!form.period&&wasPeriod)auto=-clearAutoPeriod(selDate);
   save();renderToday();renderReport();
-  const btn=$('#btnSave');btn.textContent='SAVED';btn.classList.add('flash');
-  setTimeout(()=>{btn.textContent='SAVE — 기록 저장';btn.classList.remove('flash')},900);
+  const btn=$('#btnSave');
+  btn.dataset.busy='1';
+  btn.textContent='저장됨 ✓';btn.classList.remove('dirty');btn.classList.add('saved');
+  setTimeout(()=>{btn.classList.remove('saved');delete btn.dataset.busy;renderSaveBar()},1100);
   if(auto>0)toast(`생리 시작일 저장 · 이후 ${auto}일을 자동으로 표시했어요`);
   else if(auto<0)toast(`생리 시작일 해제 · 자동 표시 ${-auto}일을 지웠어요`);
 };
