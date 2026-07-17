@@ -773,12 +773,15 @@ textarea{width:100%;margin-top:12px;font-family:var(--mono);font-size:14px;paddi
       <div class="mh"><span class="ko">AI 식단 분석</span><span class="cap">CLAUDE API</span></div>
       <div class="mb">
         <div class="keystat" id="keyStat"></div>
+        <button class="mybtn" id="keyFromFpf" style="display:none;background:var(--olive);color:#fff;border-color:var(--olive);margin-top:0;margin-bottom:8px">FPF 앱에 저장된 키 가져오기</button>
         <div class="keyrow">
           <input id="keyInput" type="password" placeholder="sk-ant-api03-..." autocomplete="off">
           <button id="keySave">저장</button>
         </div>
+        <button class="mybtn" id="keyTest" style="display:none">키 테스트 — 실제로 되는지 확인</button>
+        <div class="mealstat" id="keyTestStat"></div>
         <button class="mybtn warn" id="keyDel" style="display:none">API 키 삭제</button>
-        <div class="myhint">console.anthropic.com에서 API 키를 만들어 붙여넣으세요. 키는 이 기기에만 저장되고, 사진은 Anthropic API로만 전송돼요. 비용은 사진 1장에 약 10~20원.</div>
+        <div class="myhint">FPF 앱과 <b>같은 주소라 키를 공유</b>해요 — FPF에 키가 있으면 위 버튼으로 바로 가져올 수 있어요. 직접 넣으려면 console.anthropic.com → API Keys에서 발급. 키는 이 기기에만 저장되고 Anthropic 외에는 전송되지 않아요.</div>
       </div>
     </div>
 
@@ -1485,12 +1488,17 @@ function renderNoti(){
     :p==='denied'?'알림이 차단됨 — 사파리 설정에서 허용해주세요':'알림 꺼짐';
   btn.style.display=p==='granted'?'none':'block';
 }
+/* FPF 앱과 같은 origin이라 localStorage를 공유 — 저장된 키를 그대로 읽을 수 있음 */
+function fpfKey(){try{const k=localStorage.getItem('fpm_apikey');return (k&&k.startsWith('sk-ant-'))?k:''}catch(e){return ''}}
 function renderKey(){
-  const k=S.settings.apiKey;
+  const k=S.settings.apiKey, f=fpfKey();
   $('#keyStat').innerHTML=k
     ?`<span class="okd">등록됨</span> · sk-ant-...${esc(k.slice(-4))}`
-    :'등록된 키 없음';
+    :f?'등록된 키 없음 — <b>FPF 앱의 키를 찾았어요</b>'
+      :'등록된 키 없음';
+  $('#keyFromFpf').style.display=(!k&&f)?'block':'none';
   $('#keyDel').style.display=k?'block':'none';
+  $('#keyTest').style.display=k?'block':'none';
   $('#keyInput').value='';
 }
 
@@ -1945,9 +1953,27 @@ $('#keySave').onclick=()=>{
   S.settings.apiKey=v;save();renderMy();renderMeals();
   alert('API 키가 저장됐어요.\n\n· 09 식단 — 밥 사진 분석\n· 영양제 — AI 성분·복용시간 분석\n\n둘 다 사용할 수 있어요.');
 };
+$('#keyFromFpf').onclick=()=>{
+  const f=fpfKey();
+  if(!f){alert('FPF 앱에 저장된 키를 찾지 못했어요.');renderKey();return}
+  S.settings.apiKey=f;save();renderMy();renderMeals();
+  alert('FPF 앱의 키를 가져왔어요.\n"키 테스트"로 실제로 되는지 확인해보세요.');
+};
+$('#keyTest').onclick=async()=>{
+  const st=$('#keyTestStat'),btn=$('#keyTest');
+  btn.disabled=true;st.className='mealstat';st.textContent='테스트 중...';
+  try{
+    const r=await analyzeSupp('엽산',[]);
+    st.textContent=`정상 작동해요. (테스트 응답: 엽산 → ${({fasting:'아침 공복',meal:'식후',night:'저녁'})[r.slot]})`;
+  }catch(e){
+    st.className='mealstat err';st.textContent='실패: '+e.message;
+  }
+  btn.disabled=false;
+};
 $('#keyDel').onclick=()=>{
   if(!confirm('API 키를 삭제할까요? 식단 분석과 영양제 AI 분석을 쓸 수 없게 돼요. (이미 분석된 영양제 결과는 남아요)'))return;
   delete S.settings.apiKey;save();renderMy();renderMeals();
+  $('#keyTestStat').textContent='';
 };
 
 /* 데이터 */
