@@ -203,6 +203,27 @@ textarea{width:100%;margin-top:12px;font-family:var(--mono);font-size:14px;paddi
 .stats .v small{font-size:12px;font-family:var(--mono);font-weight:700;color:var(--mut)}
 .stats .v.ko{font-family:var(--mono);font-weight:800;font-size:20px}
 
+/* 검색 */
+.srch{display:flex;border:var(--b2) solid var(--ink);border-top:none;background:#fff;margin-bottom:16px}
+.srch input{flex:1;min-width:0;border:none;background:transparent;font-family:var(--mono);
+  font-size:14px;font-weight:700;padding:11px 12px;color:var(--ink);outline:none;-webkit-appearance:none}
+.srch button{border:none;border-left:var(--b1) solid var(--ink);background:var(--dim);
+  font-size:13px;font-weight:800;padding:0 14px;color:var(--mut)}
+
+/* 병원 기록 카드 */
+.hcard{border:var(--b2) solid var(--ink);background:var(--panel);margin-bottom:12px}
+.hcard .hh{display:flex;align-items:center;gap:9px;padding:11px 13px;border-bottom:var(--b1) solid var(--ink);background:var(--dim)}
+.hcard .hh .dt{font-family:var(--dot);font-weight:900;font-size:15px}
+.hcard .hh .ty{font-size:10.5px;font-weight:800;background:var(--wine);color:#fff;padding:3px 8px}
+.hcard .hh .nm{flex:1;min-width:0;font-size:13.5px;font-weight:800;text-align:right}
+.hcard .hb{padding:12px 13px}
+.hcard .nt{font-size:13px;font-weight:700;line-height:1.7;white-space:pre-wrap}
+.hcard .nx{font-size:11.5px;font-weight:800;color:var(--orange);margin-top:9px;
+  border-top:var(--b1) solid var(--dim);padding-top:9px}
+.hcard mark{background:var(--yellow);color:var(--ink);font-weight:800}
+.hempty{border:var(--b2) solid var(--ink);background:var(--panel);padding:30px 16px;text-align:center;
+  font-size:13px;color:var(--mut);font-weight:700;line-height:1.8}
+
 /* 로그 */
 .log{border:var(--b2) solid var(--ink);background:var(--panel)}
 .log .row{display:flex;gap:12px;padding:13px 14px;align-items:baseline;cursor:pointer}
@@ -753,7 +774,13 @@ textarea{width:100%;margin-top:12px;font-family:var(--mono);font-size:14px;paddi
   <!-- ============ LOG ============ -->
   <section class="screen" id="scr-log">
     <div class="phead"><span class="en">LOG</span><span class="cap" id="logCount"></span></div>
+    <div class="seg" id="logSeg">
+      <button class="on" data-l="all">전체 기록</button>
+      <button data-l="hosp">병원</button>
+    </div>
+    <div class="srch"><input id="logQ" type="search" placeholder="검색 — 병원·증상·메모·식단"><button id="logQX">✕</button></div>
     <div class="log" id="loglist"></div>
+    <div id="hosplist"></div>
     <div class="note">행을 누르면 그날 기록을 수정할 수 있어요.</div>
   </section>
 
@@ -763,6 +790,22 @@ textarea{width:100%;margin-top:12px;font-family:var(--mono);font-size:14px;paddi
       <div class="mh"><span class="ko">기기 간 동기화</span><span class="cap">SYNC</span></div>
       <div class="mb">
         <div id="syncBody"></div>
+      </div>
+    </div>
+
+    <div class="mycard">
+      <div class="mh"><span class="ko">내 주기</span><span class="cap">CYCLE</span></div>
+      <div class="mb">
+        <div class="keystat" id="cycStat"></div>
+        <div class="mdate">
+          <div class="f"><label>평균 주기 (일)</label><input type="number" id="cycLen" min="18" max="45" inputmode="numeric"></div>
+          <div class="f"><label>생리 기간 (일)</label><input type="number" id="perLen" min="1" max="10" inputmode="numeric"></div>
+        </div>
+        <div class="mdate">
+          <div class="f"><label>배란 후 황체기 (일)</label><input type="number" id="lutLen" min="10" max="18" inputmode="numeric"></div>
+          <div class="f" style="display:flex;align-items:flex-end"><button class="mybtn" id="cycSave" style="margin-top:0;background:var(--ink);color:var(--paper);border-color:var(--ink)">저장</button></div>
+        </div>
+        <div class="myhint" id="cycHint"></div>
       </div>
     </div>
 
@@ -871,6 +914,10 @@ const parseKey=s=>{const[a,b,c]=s.split('-').map(Number);return new Date(a,b-1,c
 const dayDiff=(a,b)=>Math.round((parseKey(a)-parseKey(b))/86400000);
 const addDays=(s,n)=>{const d=parseKey(s);d.setDate(d.getDate()+n);return toKey(d)};
 const DOW=['SUN','MON','TUE','WED','THU','FRI','SAT'];
+/* 표시용 상수 — 아래 렌더·검색 함수들이 모두 참조하므로 최상단에 둔다 */
+const FLOW_LV={spotting:1,light:2,medium:3,heavy:4};
+const FLOW_KO={spotting:'점상',light:'적음',medium:'보통',heavy:'많음'};
+const DIS_KO={dry:'건조',sticky:'끈적',creamy:'크림',eggwhite:'계란흰자',watery:'물 같음'};
 function esc(t){return String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c])}
 
 /* ---------- 영양제 시간대 분류 ---------- */
@@ -973,6 +1020,9 @@ function loadStore(){
     }catch(e){}
   }
   if(!s.settings.meds)s.settings.meds=[];
+  if(!s.settings.cycleLen)s.settings.cycleLen=28;    // 기록이 부족할 때 쓸 기본 주기
+  if(!s.settings.periodLen)s.settings.periodLen=5;   // 생리 시작일 체크 시 자동으로 채울 일수
+  if(!s.settings.lutealLen)s.settings.lutealLen=14;  // 배란 → 다음 생리까지
   // v2 내부 마이그레이션: 복용횟수(dose), 체크 boolean→count
   (s.settings.supplements||[]).forEach(p=>{if(!p.dose)p.dose=1});
   for(const k in s.days){const d=s.days[k];
@@ -1034,11 +1084,15 @@ function seedDemo(){
 /* ---------- 주기 계산 ---------- */
 function periodStarts(){return days().filter(k=>S.days[k].period)}
 function lastPeriod(before){const p=periodStarts().filter(k=>k<=before);return p.length?p[p.length-1]:null}
-function avgCycle(){
+/* 기록에서 계산한 평균 주기 (2회 이상 기록돼야 나옴) */
+function cycleFromHistory(){
   const p=periodStarts();if(p.length<2)return null;
   let sum=0,n=0;for(let i=1;i<p.length;i++){const g=dayDiff(p[i],p[i-1]);if(g>=18&&g<=45){sum+=g;n++}}
   return n?Math.round(sum/n):null;
 }
+/* 실제로 쓰는 주기 — 기록이 있으면 기록 우선, 없으면 MY탭에서 설정한 값 */
+function avgCycle(){return cycleFromHistory()||S.settings.cycleLen||28}
+function cycleSource(){return cycleFromHistory()?'기록':'설정'}
 function tempEntries(){return days().filter(k=>S.days[k].temp).map(k=>({date:k,temp:S.days[k].temp.value}))}
 function cycleEntriesFor(anchor){
   const p=periodStarts();let start=null,end=null;
@@ -1093,6 +1147,30 @@ function loadForm(){
     emos:d.symptoms?[...(d.symptoms.emotions||[])]:[],
   };
   tempTouched=!!d.temp;
+}
+/* 생리 시작일을 체크하면 설정한 일수만큼 자동으로 '생리 중'으로 채움.
+   이미 뭔가 적어둔 날은 절대 건드리지 않고, 자동으로 채운 날엔 _autoFlow 표시를 남겨
+   나중에 시작일을 취소하면 그 날들만 되돌릴 수 있게 한다. */
+function autoFillPeriod(start){
+  const len=S.settings.periodLen||5;
+  let n=0;
+  for(let i=1;i<len;i++){
+    const k=addDays(start,i), d=S.days[k]||{};
+    if(d.flow||d.period)continue;              // 내가 적은 기록은 보존
+    d.flow='medium'; d._autoFlow=1; S.days[k]=d; n++;
+  }
+  return n;
+}
+function clearAutoPeriod(start){
+  let n=0;
+  for(let i=1;i<=14;i++){                      // 설정을 줄였을 수도 있으니 넉넉히 훑음
+    const k=addDays(start,i), d=S.days[k];
+    if(d&&d._autoFlow){
+      delete d.flow; delete d._autoFlow; n++;
+      if(!Object.keys(d).length)delete S.days[k];
+    }
+  }
+  return n;
 }
 function activeMeds(date){
   return (S.settings.meds||[]).filter(m=>
@@ -1417,11 +1495,72 @@ function renderStats(){
 }
 
 /* ---------- LOG 렌더 ---------- */
+let logView='all', logQ='';
+/* 그날 기록을 검색용 텍스트 한 줄로 */
+function dayText(k){
+  const d=S.days[k],t=[k];
+  if(d.condition){if(d.condition.score)t.push('컨디션'+d.condition.score);if(d.condition.memo)t.push(d.condition.memo)}
+  if(d.hospital){['type','name','note'].forEach(f=>{if(d.hospital[f])t.push(d.hospital[f])})}
+  if(d.symptoms){
+    if(d.symptoms.discharge)t.push(DIS_KO[d.symptoms.discharge]||'');
+    t.push(...(d.symptoms.pains||[]),...(d.symptoms.emotions||[]));
+  }
+  if(d.flow)t.push('생리 '+FLOW_KO[d.flow]);
+  if(d.period)t.push('생리 시작');
+  if(d.ovulation)t.push('배테기 '+({negative:'음성',positive:'양성',peak:'피크'})[d.ovulation.result]);
+  if(d.pregnancy)t.push('임테기 '+({none:'한줄',faint:'미세선',strong:'두줄'})[d.pregnancy.result]);
+  (d.meals||[]).forEach(m=>{t.push(...(m.menu||[]));if(m.comment)t.push(m.comment)});
+  (S.settings.supplements||[]).forEach(s=>{if(d.supplements&&d.supplements[s.id])t.push(s.name)});
+  (S.settings.meds||[]).forEach(m=>{if(d.meds&&d.meds[m.id])t.push(m.name)});
+  if(d.temp)t.push(d.temp.value.toFixed(2));
+  return t.join(' ').toLowerCase();
+}
+function hl(s,q){
+  if(!q||!s)return esc(s||'');
+  const i=s.toLowerCase().indexOf(q.toLowerCase());
+  if(i<0)return esc(s);
+  return esc(s.slice(0,i))+'<mark>'+esc(s.slice(i,i+q.length))+'</mark>'+esc(s.slice(i+q.length));
+}
+/* 병원 기록만 모아보기 */
+function renderHosp(){
+  const q=logQ.trim().toLowerCase();
+  let ks=days().filter(k=>{const h=S.days[k].hospital;return h&&(h.name||h.type||h.note)}).reverse();
+  if(q)ks=ks.filter(k=>dayText(k).includes(q));
+  $('#logCount').textContent=ks.length?'병원 '+ks.length+'회':(q?'검색 결과 없음':'');
+  const box=$('#hosplist');
+  if(!ks.length){
+    box.innerHTML=`<div class="hempty">${q?'검색 결과가 없어요.':'병원 방문 기록이 없어요.<br>TODAY 탭 10번에서 기록하세요.'}</div>`;
+    return;
+  }
+  box.innerHTML=ks.map(k=>{
+    const h=S.days[k].hospital, d=parseKey(k);
+    return`<div class="hcard" data-d="${k}">
+      <div class="hh">
+        <span class="dt">${d.getFullYear()%100}.${pad(d.getMonth()+1)}.${pad(d.getDate())}</span>
+        ${h.type?`<span class="ty">${hl(h.type,q)}</span>`:''}
+        <span class="nm">${hl(h.name||'',q)}</span>
+      </div>
+      ${(h.note||h.next)?`<div class="hb">
+        ${h.note?`<div class="nt">${hl(h.note,q)}</div>`:''}
+        ${h.next?`<div class="nx">다음 예약 ${h.next.slice(5).replace('-','/')}${(()=>{const n=dayDiff(h.next,toKey(new Date()));return n>=0?' · '+ddText(n):' · 지남'})()}</div>`:''}
+      </div>`:''}
+    </div>`;
+  }).join('');
+  $$('#hosplist .hcard').forEach(c=>c.onclick=()=>{
+    selDate=c.dataset.d;loadForm();renderToday();showTab('today');
+    $('#s10').classList.add('open');$('#s10').scrollIntoView({block:'center'});
+  });
+}
 function renderLog(){
-  const ks=days().reverse();
-  $('#logCount').textContent=ks.length?'총 '+ks.length+'일':'';
+  $('#loglist').style.display=logView==='all'?'block':'none';
+  $('#hosplist').style.display=logView==='hosp'?'block':'none';
+  if(logView==='hosp')return renderHosp();
+  const q=logQ.trim().toLowerCase();
+  let ks=days().reverse();
+  if(q)ks=ks.filter(k=>dayText(k).includes(q));
+  $('#logCount').textContent=q?(ks.length?'검색 '+ks.length+'일':'검색 결과 없음'):(days().length?'총 '+days().length+'일':'');
   const box=$('#loglist');
-  if(!ks.length){box.innerHTML='<div class="empty">아직 기록이 없어요.<br>TODAY 탭에서 시작하세요.</div>';return}
+  if(!ks.length){box.innerHTML=`<div class="empty">${q?'검색 결과가 없어요.':'아직 기록이 없어요.<br>TODAY 탭에서 시작하세요.'}</div>`;return}
   box.innerHTML=ks.slice(0,90).map(k=>{
     const d=S.days[k],tags=[];
     if(d.period)tags.push('<span class="rd">생리 시작</span>');
@@ -1477,7 +1616,19 @@ function renderMy(){
     rb.textContent=un?`AI로 분석하기 (${un}개 남음)`:'전체 다시 분석하기';
     $('#suppHint').innerHTML='영양제를 추가하면 AI가 자동으로 성분·복용시간·상호작용을 분석해요. <b>한 번 분석하면 저장돼서</b> 다시 호출하지 않아요 (1개당 약 1원).';
   }
-  renderMedList();renderKey();renderNoti();renderSnaps();renderSync();
+  renderMedList();renderKey();renderNoti();renderSnaps();renderSync();renderCycSet();
+}
+function renderCycSet(){
+  const h=cycleFromHistory();
+  $('#cycLen').value=S.settings.cycleLen||28;
+  $('#perLen').value=S.settings.periodLen||5;
+  $('#lutLen').value=S.settings.lutealLen||14;
+  $('#cycStat').innerHTML=h
+    ? `<span class="okd">기록 ${periodStarts().length}회 기준 평균 ${h}일</span> — 예측에 이 값을 씁니다`
+    : '기록이 부족해서 <b>아래 설정값으로 예측</b>해요 (생리 2회 이상 기록되면 실제 기록으로 자동 전환)';
+  $('#cycHint').innerHTML=h
+    ? '생리를 2회 이상 기록해서 실제 주기를 쓰고 있어요. 아래 값은 기록이 없을 때만 쓰입니다.<br><b>생리 기간</b>은 시작일 체크 시 자동으로 표시할 일수예요.'
+    : '평소 주기를 알면 적어두세요 — 기록이 쌓이기 전에도 배란·생리 예정일을 알려드려요.<br><b>생리 기간</b>은 시작일 체크 시 자동으로 표시할 일수예요.';
 }
 function renderSnaps(){
   let list=[];try{list=JSON.parse(localStorage.getItem(SNAP))||[]}catch(e){}
@@ -1573,8 +1724,6 @@ function renderKey(){
 }
 
 /* ---------- 캘린더 ---------- */
-const FLOW_LV={spotting:1,light:2,medium:3,heavy:4};
-const FLOW_KO={spotting:'점상',light:'적음',medium:'보통',heavy:'많음'};
 const MON_KO=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
 // 실제 감지 배란 + 예측 배란을 모아 배란일 집합 생성
 function ovulationDates(){
@@ -1663,12 +1812,12 @@ function showCycView(v){
 }
 
 /* ---------- REPORT 대시보드 ---------- */
-const DIS_KO={dry:'건조',sticky:'끈적',creamy:'크림',eggwhite:'계란흰자',watery:'물 같음'};
 function predict(){
   const avg=avgCycle(),lp=lastPeriod(toKey(new Date()));
   if(!avg||!lp)return null;
-  const np=addDays(lp,avg),no=addDays(np,-14),today=toKey(new Date());
-  return{avg,lp,np,no,pIn:dayDiff(np,today),oIn:dayDiff(no,today)};
+  const luteal=S.settings.lutealLen||14;
+  const np=addDays(lp,avg),no=addDays(np,-luteal),today=toKey(new Date());
+  return{avg,lp,np,no,pIn:dayDiff(np,today),oIn:dayDiff(no,today),src:cycleSource()};
 }
 function ddText(n){return n>0?'D-'+n:n===0?'D-DAY':'D+'+(-n)}
 function nextAppt(){
@@ -1885,6 +2034,15 @@ function showTab(name){
   window.scrollTo(0,0);
 }
 $$('#viewSeg button').forEach(b=>b.onclick=()=>showCycView(b.dataset.v));
+/* LOG 탭 — 전체/병원 전환 + 검색 */
+$$('#logSeg button').forEach(b=>b.onclick=()=>{
+  logView=b.dataset.l;
+  $$('#logSeg button').forEach(x=>x.classList.toggle('on',x===b));
+  $('#logQ').placeholder=logView==='hosp'?'검색 — 병원 이름·진료 내용':'검색 — 병원·증상·메모·식단';
+  renderLog();
+});
+$('#logQ').oninput=e=>{logQ=e.target.value;renderLog()};
+$('#logQX').onclick=()=>{logQ='';$('#logQ').value='';renderLog();$('#logQ').focus()};
 $('#calPrev').onclick=()=>{calMonth.m--;if(calMonth.m<0){calMonth.m=11;calMonth.y--}renderCalendar()};
 $('#calNext').onclick=()=>{calMonth.m++;if(calMonth.m>11){calMonth.m=0;calMonth.y++}renderCalendar()};
 
@@ -1978,11 +2136,19 @@ $('#btnSave').onclick=()=>{
   if(form.emos.length)sym.emotions=[...form.emos];
   if(Object.keys(sym).length)d.symptoms=sym;
   if(prev.meals&&prev.meals.length)d.meals=prev.meals;   // 식단은 자동저장분 유지
+  if(prev._autoFlow&&d.flow===prev.flow)d._autoFlow=1;   // 자동으로 채운 날, 손 안 댔으면 표시 유지
   snapshot('기록 저장');                                  // 저장 직전 상태를 스냅샷
+  const wasPeriod=!!prev.period;
   if(Object.keys(d).length)S.days[selDate]=d;else delete S.days[selDate];
+  // 생리 시작일을 새로 체크 → 이후 며칠 자동으로 생리 중 표시
+  let auto=0;
+  if(form.period&&!wasPeriod)auto=autoFillPeriod(selDate);
+  if(!form.period&&wasPeriod)auto=-clearAutoPeriod(selDate);
   save();renderToday();renderReport();
   const btn=$('#btnSave');btn.textContent='SAVED';btn.classList.add('flash');
   setTimeout(()=>{btn.textContent='SAVE — 기록 저장';btn.classList.remove('flash')},900);
+  if(auto>0)toast(`생리 시작일 저장 · 이후 ${auto}일을 자동으로 표시했어요`);
+  else if(auto<0)toast(`생리 시작일 해제 · 자동 표시 ${-auto}일을 지웠어요`);
 };
 
 /* 영양제 추가 */
@@ -2024,6 +2190,18 @@ $('#suppAiBtn').onclick=async()=>{
   btn.disabled=false;renderMy();renderSuppCheck();renderStatuses();
 };
 $('#snew').onkeydown=e=>{if(e.key==='Enter')$('#sadd').click()};
+
+/* 주기 설정 저장 */
+$('#cycSave').onclick=()=>{
+  const c=parseInt($('#cycLen').value,10), p=parseInt($('#perLen').value,10), l=parseInt($('#lutLen').value,10);
+  if(isNaN(c)||c<18||c>45){toast('평균 주기는 18~45일 사이로 넣어주세요');return}
+  if(isNaN(p)||p<1||p>10){toast('생리 기간은 1~10일 사이로 넣어주세요');return}
+  if(isNaN(l)||l<10||l>18){toast('황체기는 10~18일 사이로 넣어주세요');return}
+  if(l>=c){toast('황체기는 주기보다 짧아야 해요');return}
+  S.settings.cycleLen=c;S.settings.periodLen=p;S.settings.lutealLen=l;
+  save();renderCycSet();renderAll();
+  toast('주기 설정을 저장했어요');
+};
 
 /* 약 추가 */
 $$('#mdoseSeg button').forEach(b=>b.onclick=()=>{
