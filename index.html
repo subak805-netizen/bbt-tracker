@@ -166,8 +166,22 @@ textarea{width:100%;margin-top:12px;font-family:var(--mono);font-size:14px;paddi
 /* 식단 */
 .mealbtn{width:100%;border:var(--b2) solid var(--ink);background:#fff;padding:14px;font-size:14px;font-weight:800;letter-spacing:.06em}
 .mealbtn:disabled{color:var(--mut);border-color:var(--mut)}
+.mealor{text-align:center;font-size:11px;letter-spacing:.16em;color:var(--mut);font-weight:700;margin:11px 0}
+.mealtext textarea{width:100%;font-family:var(--mono);font-size:14px;font-weight:700;padding:11px;
+  border:var(--b2) solid var(--ink);background:#fff;color:var(--ink);resize:none;margin-bottom:9px}
 .mealstat{font-size:12px;font-weight:700;color:var(--mut);margin-top:10px;line-height:1.7}
 .mealstat.err{color:var(--red)}
+/* 식단 수정 폼 */
+.medit{padding:11px 13px}
+.medit label{display:block;font-size:10px;letter-spacing:.13em;color:var(--mut);font-weight:700;margin:0 0 4px}
+.medit input{width:100%;font-family:var(--mono);font-size:14px;font-weight:700;padding:9px 10px;
+  border:var(--b1) solid var(--ink);background:#fff;color:var(--ink);-webkit-appearance:none;margin-bottom:9px}
+.medit .mrow{display:flex;gap:8px}
+.medit .mrow>div{flex:1;min-width:0}
+.medit .macts{display:flex;gap:8px;margin-top:2px}
+.medit .macts button{flex:1;border:var(--b1) solid var(--ink);background:#fff;font-size:13px;font-weight:800;padding:10px}
+.medit .macts button.ok{background:var(--ink);color:var(--paper)}
+.meal .mh .edit{border:none;background:transparent;font-size:11px;font-weight:800;color:var(--mut);padding:2px 4px}
 .meal{border:var(--b2) solid var(--ink);background:#fff;margin-top:12px}
 .meal .mh{display:flex;align-items:baseline;gap:10px;padding:11px 13px;border-bottom:var(--b1) solid var(--ink);background:var(--dim)}
 .meal .mh .kc{font-family:var(--dot);font-weight:900;font-size:20px}
@@ -735,6 +749,11 @@ textarea{width:100%;margin-top:12px;font-family:var(--mono);font-size:14px;paddi
       <div class="body">
         <input type="file" id="mealFile" accept="image/*" style="display:none">
         <button class="mealbtn" id="mealBtn">밥 사진 찍어서 분석하기</button>
+        <div class="mealor">또는</div>
+        <div class="mealtext">
+          <textarea id="mealTxt" rows="2" placeholder="먹은 걸 적어주세요 — 예: 현미밥 한 공기, 된장찌개, 고등어구이"></textarea>
+          <button class="mealbtn" id="mealTxtBtn" style="background:var(--dim)">텍스트로 기록</button>
+        </div>
         <div class="mealstat" id="mealStat"></div>
         <div id="mealList"></div>
       </div>
@@ -1369,15 +1388,34 @@ function renderSuppCheck(){
     renderSuppCheck();renderStatuses();
   });
 }
+let _mealEdit=-1;   // 수정 중인 끼니 인덱스
+function mealEditForm(m,i){
+  return `<div class="meal"><div class="medit">
+    <label>메뉴 (쉼표로 구분)</label><input class="me-menu" value="${esc((m.menu||[]).join(', '))}">
+    <div class="mrow">
+      <div><label>칼로리</label><input class="me-kcal" type="number" inputmode="numeric" value="${m.kcal||0}"></div>
+      <div><label>시각</label><input class="me-time" type="time" value="${esc(m.time||'')}"></div>
+    </div>
+    <div class="mrow">
+      <div><label>탄수(g)</label><input class="me-carb" type="number" inputmode="numeric" value="${m.carb_g||0}"></div>
+      <div><label>단백(g)</label><input class="me-prot" type="number" inputmode="numeric" value="${m.protein_g||0}"></div>
+      <div><label>지방(g)</label><input class="me-fat" type="number" inputmode="numeric" value="${m.fat_g||0}"></div>
+    </div>
+    <label>메모 (선택)</label><input class="me-cmt" value="${esc(m.comment||'')}">
+    <div class="macts"><button data-mcancel>취소</button><button class="ok" data-mok="${i}">저장</button></div>
+  </div></div>`;
+}
 function renderMeals(){
   const meals=(S.days[selDate]&&S.days[selDate].meals)||[];
-  $('#mealList').innerHTML=meals.map((m,i)=>`
-    <div class="meal">
+  $('#mealList').innerHTML=meals.map((m,i)=>{
+    if(_mealEdit===i)return mealEditForm(m,i);
+    return `<div class="meal">
       <div class="mh"><span class="kc">${m.kcal||0}<span style="font-family:var(--mono);font-size:11px"> kcal</span></span>
         <span class="tt">${esc(m.time||'')}</span>
+        <button class="edit" data-mi="${i}">수정</button>
         <button class="del" data-mi="${i}">삭제</button></div>
       <div class="mb">
-        <div class="menu">${esc((m.menu||[]).join(' · '))}</div>
+        <div class="menu">${esc((m.menu||[]).join(' · '))||'<span style="color:var(--mut)">메뉴 없음</span>'}</div>
         <div class="macro">
           <div><div class="g">${m.carb_g||0}g</div><div class="l">탄수화물</div></div>
           <div><div class="g">${m.protein_g||0}g</div><div class="l">단백질</div></div>
@@ -1385,17 +1423,31 @@ function renderMeals(){
         </div>
         ${m.comment?`<div class="cmt">${esc(m.comment)}</div>`:''}
       </div>
-    </div>`).join('');
+    </div>`}).join('');
+  $$('#mealList .edit').forEach(b=>b.onclick=()=>{_mealEdit=+b.dataset.mi;renderMeals()});
   $$('#mealList .del').forEach(b=>b.onclick=()=>{
     if(!confirm('이 식단 기록을 삭제할까요?'))return;
     S.days[selDate].meals.splice(+b.dataset.mi,1);
     if(!S.days[selDate].meals.length)delete S.days[selDate].meals;
-    save();renderMeals();renderStatuses();
+    _mealEdit=-1;save();renderMeals();renderStatuses();
   });
+  const frm=$('#mealList .medit');
+  if(frm){
+    frm.querySelector('[data-mcancel]').onclick=()=>{_mealEdit=-1;renderMeals()};
+    frm.querySelector('[data-mok]').onclick=e=>{
+      const i=+e.target.dataset.mok, m=S.days[selDate].meals[i];
+      const num=sel=>{const v=parseInt(frm.querySelector(sel).value,10);return isNaN(v)||v<0?0:v};
+      m.menu=frm.querySelector('.me-menu').value.split(/[,·]/).map(s=>s.trim()).filter(Boolean);
+      m.kcal=num('.me-kcal');m.carb_g=num('.me-carb');m.protein_g=num('.me-prot');m.fat_g=num('.me-fat');
+      m.time=frm.querySelector('.me-time').value||m.time;
+      m.comment=frm.querySelector('.me-cmt').value.trim();
+      _mealEdit=-1;save();renderMeals();renderReport();toast('식단을 수정했어요');
+    };
+  }
   const hasKey=!!(S.settings.apiKey);
-  $('#mealBtn').disabled=!hasKey;
+  $('#mealBtn').disabled=!hasKey;                          // 사진은 키 필요
   $('#mealStat').className='mealstat';
-  $('#mealStat').textContent=hasKey?'':'MY 탭에서 Claude API 키를 등록하면 사용할 수 있어요.';
+  $('#mealStat').textContent=hasKey?'':'사진 분석은 MY 탭에서 API 키를 등록해야 해요. 텍스트 입력은 키 없이도 됩니다.';
 }
 function renderMedCheck(){
   const box=$('#fmed');const list=activeMeds(selDate);
@@ -1552,7 +1604,56 @@ async function analyzeMeal(b64){
   if(!block)throw new Error('분석 결과가 비어 있어요. 다시 시도해주세요.');
   return JSON.parse(block.text);
 }
+/* 텍스트로 적은 식단 → 칼로리·영양 추정 */
+async function analyzeMealText(txt){
+  const res=await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'content-type':'application/json','x-api-key':S.settings.apiKey,
+      'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+    body:JSON.stringify({
+      model:MODEL,max_tokens:2048,
+      output_config:{format:{type:'json_schema',schema:{
+        type:'object',
+        properties:{
+          menu:{type:'array',items:{type:'string'},description:'음식 이름들 (한국어)'},
+          kcal:{type:'integer',description:'총 칼로리 추정 (kcal)'},
+          carb_g:{type:'integer',description:'탄수화물 (g)'},
+          protein_g:{type:'integer',description:'단백질 (g)'},
+          fat_g:{type:'integer',description:'지방 (g)'},
+          comment:{type:'string',description:'임신 준비 관점 한 줄 코멘트'}
+        },
+        required:['menu','kcal','carb_g','protein_g','fat_g','comment'],
+        additionalProperties:false
+      }}},
+      messages:[{role:'user',content:`다음은 오늘 먹은 음식이야: "${txt}"
+메뉴를 정리하고 총 칼로리와 탄수화물·단백질·지방(g)을 추정해줘. 양이 안 적혀 있으면 1인분 기준으로.
+comment에는 임신 준비 중인 사람 관점에서 좋은 점이나 주의점(카페인, 날음식, 수은 많은 생선, 영양 균형 등)을 한국어 한두 문장으로. 확신이 없으면 보수적으로 추정해.`}]
+    })
+  });
+  if(!res.ok){
+    let msg='HTTP '+res.status;
+    try{const e=await res.json();if(e&&e.error&&e.error.message)msg=e.error.message}catch(_){}
+    if(res.status===401)msg='API 키가 올바르지 않아요. MY 탭에서 확인해주세요.';
+    if(res.status===429)msg='요청이 너무 많아요. 잠시 후 다시 시도해주세요.';
+    throw new Error(msg);
+  }
+  const data=await res.json();
+  const b=data.content.find(x=>x.type==='text');
+  if(!b)throw new Error('분석 결과가 비어 있어요. 다시 시도해주세요.');
+  return JSON.parse(b.text);
+}
 /* 사진 → 분석 → 지정한 날짜에 저장. TODAY와 LOG 양쪽에서 공용 */
+/* 분석 결과 한 끼를 그 날짜에 저장 */
+function pushMeal(date,r){
+  const now=new Date();
+  if(!S.days[date])S.days[date]={};
+  if(!S.days[date].meals)S.days[date].meals=[];
+  S.days[date].meals.push({
+    time:`${pad(now.getHours())}:${pad(now.getMinutes())}`,
+    menu:r.menu||[],kcal:r.kcal||0,carb_g:r.carb_g||0,protein_g:r.protein_g||0,fat_g:r.fat_g||0,comment:r.comment||''
+  });
+  save();
+}
 async function addMealPhoto(file,date,statEl,btnEl){
   statEl.className='mealstat';
   statEl.textContent='사진 분석 중... (10초 정도 걸려요)';
@@ -1560,14 +1661,7 @@ async function addMealPhoto(file,date,statEl,btnEl){
   try{
     const b64=await resizeToB64(file);
     const r=await analyzeMeal(b64);
-    const now=new Date();
-    if(!S.days[date])S.days[date]={};
-    if(!S.days[date].meals)S.days[date].meals=[];
-    S.days[date].meals.push({
-      time:`${pad(now.getHours())}:${pad(now.getMinutes())}`,
-      menu:r.menu,kcal:r.kcal,carb_g:r.carb_g,protein_g:r.protein_g,fat_g:r.fat_g,comment:r.comment
-    });
-    save();
+    pushMeal(date,r);
     statEl.textContent=`분석 완료 · ${r.kcal}kcal — ${date===toKey(new Date())?'오늘':date.slice(5).replace('-','/')}에 저장했어요`;
     return true;
   }catch(err){
@@ -1578,6 +1672,31 @@ async function addMealPhoto(file,date,statEl,btnEl){
     if(btnEl)btnEl.disabled=!S.settings.apiKey;
   }
 }
+/* 텍스트로 식단 기록. 키가 있으면 AI로 영양 추정, 없으면 메뉴만 저장(직접 수정 가능) */
+async function addMealText(txt,date,statEl,btnEl){
+  txt=txt.trim();
+  if(!txt){statEl.className='mealstat err';statEl.textContent='먹은 음식을 적어주세요.';return false}
+  if(!S.settings.apiKey){                                  // 키 없으면 메뉴만 저장
+    pushMeal(date,{menu:txt.split(/[,·\n]/).map(s=>s.trim()).filter(Boolean),comment:''});
+    statEl.className='mealstat';statEl.textContent='메뉴를 저장했어요. 항목의 수정에서 칼로리를 직접 넣을 수 있어요.';
+    return true;
+  }
+  statEl.className='mealstat';statEl.textContent='영양 분석 중... (5초 정도)';
+  if(btnEl)btnEl.disabled=true;
+  try{
+    const r=await analyzeMealText(txt);
+    pushMeal(date,r);
+    statEl.textContent=`분석 완료 · ${r.kcal}kcal — ${date===toKey(new Date())?'오늘':date.slice(5).replace('-','/')}에 저장했어요. 값이 다르면 수정하세요.`;
+    return true;
+  }catch(err){                                            // AI 실패해도 메뉴는 저장
+    pushMeal(date,{menu:txt.split(/[,·\n]/).map(s=>s.trim()).filter(Boolean),comment:''});
+    statEl.className='mealstat err';
+    statEl.textContent='영양 분석은 실패했지만 메뉴는 저장했어요 ('+err.message+'). 수정에서 값을 넣으세요.';
+    return true;
+  }finally{
+    if(btnEl)btnEl.disabled=false;
+  }
+}
 $('#mealBtn').onclick=()=>$('#mealFile').click();
 $('#mealFile').onchange=async e=>{
   const file=e.target.files[0];
@@ -1585,6 +1704,10 @@ $('#mealFile').onchange=async e=>{
   if(!file)return;
   await addMealPhoto(file,selDate,$('#mealStat'),$('#mealBtn'));
   renderMeals();renderStatuses();
+};
+$('#mealTxtBtn').onclick=async()=>{
+  const ok=await addMealText($('#mealTxt').value,selDate,$('#mealStat'),$('#mealTxtBtn'));
+  if(ok){$('#mealTxt').value='';renderMeals();renderStatuses()}
 };
 
 /* ---------- CHART 렌더 ---------- */
@@ -1815,14 +1938,13 @@ function renderQuickAdd(){
     const hasKey=!!S.settings.apiKey;
     box.innerHTML=`<div class="qa">
       <div class="qab">
-        <div class="row2">
-          <div><label>날짜</label><input type="date" id="qmDate"></div>
-          <div style="display:flex;align-items:flex-end">
-            <button class="mybtn" id="qmBtn" style="margin-top:0;margin-bottom:10px;background:var(--orange);color:#fff;border-color:var(--orange)">밥 사진 분석</button>
-          </div>
-        </div>
+        <label>날짜</label><input type="date" id="qmDate" style="margin-bottom:10px">
+        <button class="mybtn" id="qmBtn" style="margin-top:0;margin-bottom:9px;background:var(--orange);color:#fff;border-color:var(--orange)">밥 사진 분석</button>
         <input type="file" id="qmFile" accept="image/*" style="display:none">
-        <div class="mealstat" id="qmStat" style="margin-top:0">${hasKey?'':'MY 탭에서 Claude API 키를 등록하면 사용할 수 있어요.'}</div>
+        <div class="mealor">또는</div>
+        <textarea id="qmTxt" rows="2" style="width:100%;font-family:var(--mono);font-size:14px;font-weight:700;padding:11px;border:var(--b1) solid var(--ink);background:#fff;resize:none;margin-bottom:9px" placeholder="먹은 걸 적어주세요 — 예: 현미밥, 미역국, 계란말이"></textarea>
+        <button class="mybtn" id="qmTxtBtn" style="margin-top:0">텍스트로 기록</button>
+        <div class="mealstat" id="qmStat" style="margin-top:9px">${hasKey?'':'사진 분석은 API 키가 필요해요. 텍스트 입력은 키 없이도 됩니다.'}</div>
       </div>
     </div>`;
     $('#qmDate').value=toKey(new Date());
@@ -1834,6 +1956,11 @@ function renderQuickAdd(){
       const dt=$('#qmDate').value||toKey(new Date());
       const ok=await addMealPhoto(f,dt,$('#qmStat'),$('#qmBtn'));
       if(ok){renderLog();renderReport();if(selDate===dt){loadForm();renderToday()}}
+    };
+    $('#qmTxtBtn').onclick=async()=>{
+      const dt=$('#qmDate').value||toKey(new Date());
+      const ok=await addMealText($('#qmTxt').value,dt,$('#qmStat'),$('#qmTxtBtn'));
+      if(ok){$('#qmTxt').value='';renderLog();renderReport();if(selDate===dt){loadForm();renderToday()}}
     };
   }else box.innerHTML='';
 }
