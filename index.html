@@ -156,6 +156,17 @@ textarea{width:100%;margin-top:12px;font-family:var(--mono);font-size:14px;paddi
 .wrow .wkg{font-size:14px;font-weight:700;color:var(--mut)}
 .wrow .wbmi{flex:1;text-align:right;font-size:12px;font-weight:800;color:var(--mut)}
 .wrow .wbmi b{font-family:var(--dot);font-size:15px;color:var(--ink)}
+/* 체성분 그리드 (피쿡) */
+.bodygrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.bcell{display:flex;flex-direction:column;border:var(--b1) solid var(--ink);background:#fff;padding:7px 11px 8px;position:relative}
+.bcell .lb{font-size:10px;letter-spacing:.08em;color:var(--mut);font-weight:800}
+.bcell .u{position:absolute;right:11px;bottom:10px;font-size:11px;font-weight:700;color:var(--mut)}
+.bcell input{border:none;background:transparent;font-family:var(--dot);font-weight:900;font-size:23px;
+  color:var(--ink);padding:1px 0 0;width:100%;-webkit-appearance:none}
+.bcell input:focus{outline:none}
+.bodyauto{margin-top:10px;font-size:12px;font-weight:800;color:var(--mut);line-height:1.7}
+.bodyauto b{font-family:var(--dot);font-size:15px;color:var(--ink)}
+.bodyauto .sep{margin:0 7px;color:var(--dim)}
 
 /* 칩 */
 .chips{display:flex;flex-wrap:wrap;gap:9px}
@@ -226,6 +237,31 @@ textarea{width:100%;margin-top:12px;font-family:var(--mono);font-size:14px;paddi
 .medit .me-typeseg button{flex:1;padding:9px 0;border:none;background:#fff;font-weight:800;font-size:12px;border-left:var(--b1) solid var(--ink)}
 .medit .me-typeseg button:first-child{border-left:none}
 .medit .me-typeseg button.on{background:var(--ink);color:var(--paper)}
+/* 운동 카드 */
+.wk{border:var(--b1) solid var(--ink);background:#fff;margin-top:9px;display:flex;align-items:center;gap:9px;padding:10px 12px}
+.wk .wty{font-size:14px;font-weight:800;flex:1;min-width:0}
+.wk .wmin{font-family:var(--dot);font-weight:900;font-size:18px;flex:0 0 auto}
+.wk .wmin small{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--mut)}
+.wk .wkc{font-size:11px;font-weight:700;color:var(--mut);flex:0 0 auto}
+.wk .wint{font-size:9px;letter-spacing:.04em;font-weight:800;border:var(--b1) solid var(--ink);padding:2px 6px;flex:0 0 auto}
+.wk .wint.high{background:var(--orange);color:#fff;border-color:var(--orange)}
+.wk .wint.mid{background:var(--yellow)}
+.wk .wint.low{background:var(--dim)}
+.wk .wedit,.wk .wdel{border:none;background:transparent;font-size:11px;font-weight:700;color:var(--mut);padding:2px 3px;flex:0 0 auto}
+.wktot{display:flex;justify-content:space-between;font-size:12px;font-weight:800;color:var(--mut);margin-top:11px;padding-top:10px;border-top:var(--b1) solid var(--ink)}
+.wktot b{font-family:var(--dot);font-size:16px;color:var(--ink)}
+.wkedit{border:var(--b2) solid var(--ink);background:#fff;margin-top:9px;padding:13px}
+.wkedit label{font-size:10px;letter-spacing:.1em;color:var(--mut);font-weight:800;display:block;margin:9px 0 4px}
+.wkedit label:first-child{margin-top:0}
+.wkedit input{width:100%;border:var(--b1) solid var(--ink);padding:9px 11px;font-family:var(--mono);font-weight:700;font-size:14px;background:#fff;-webkit-appearance:none}
+.wkrow{display:flex;gap:9px}.wkrow>div{flex:1}
+.wk-intseg{display:flex;gap:0;border:var(--b1) solid var(--ink);margin-top:4px}
+.wk-intseg button{flex:1;padding:9px 0;border:none;border-left:var(--b1) solid var(--ink);background:#fff;font-weight:800;font-size:12px}
+.wk-intseg button:first-child{border-left:none}
+.wk-intseg button.on{background:var(--ink);color:var(--paper)}
+.wkacts{display:flex;gap:8px;margin-top:12px}
+.wkacts button{flex:1;padding:11px;border:var(--b1) solid var(--ink);background:#fff;font-weight:800}
+.wkacts button.ok{background:var(--ink);color:var(--paper)}
 
 .save{width:100%;margin:16px 0 0;padding:17px;border:var(--b2) solid var(--ink);
   background:var(--ink);color:var(--paper);font-size:15px;font-weight:800;letter-spacing:.22em}
@@ -511,6 +547,38 @@ textarea{width:100%;margin-top:12px;font-family:var(--mono);font-size:14px;paddi
 .rexh{font-size:11px;letter-spacing:.1em;font-weight:800;color:var(--mut);margin-bottom:6px}
 .rext{font-size:13px;font-weight:700;line-height:1.7}
 .rexd{font-size:10.5px;font-weight:700;color:var(--mut);margin-top:7px}
+/* 주간 효과 카드 */
+.wkspan{font-size:10px;letter-spacing:.08em;color:var(--mut);font-weight:800;margin:0 0 8px}
+.wkgrid{display:flex;flex-direction:column;gap:6px}
+.wkc{display:flex;align-items:baseline;gap:9px;font-size:12px;font-weight:800}
+.wkc .l{width:58px;flex:0 0 auto;color:var(--mut);font-size:11px}
+.wkc .v{flex:1;font-family:var(--mono);color:var(--ink)}
+.wkc .d{font-family:var(--dot);font-size:15px;flex:0 0 auto;color:var(--mut)}
+.wkc .d.good{color:var(--olive)}
+.wkc .d.bad{color:var(--wine)}
+.wkrow2{display:flex;gap:9px;margin-top:12px}
+.wkrow2>div{flex:1;border:var(--b1) solid var(--ink);padding:9px 11px;background:#fff}
+.wkrow2 .k{font-size:10px;letter-spacing:.1em;color:var(--mut);font-weight:800}
+.wkrow2 .v2{font-family:var(--dot);font-weight:900;font-size:22px;margin-top:2px}
+.wkrow2 .v2 small{font-family:var(--mono);font-size:11px;color:var(--mut);font-weight:700}
+.wkrow2 .s{font-size:10.5px;color:var(--mut);font-weight:700;margin-top:1px}
+.wkbal{margin-top:11px;border:var(--b2) solid var(--ink);padding:11px 12px;background:var(--panel)}
+.wkbal .bh{font-size:10.5px;letter-spacing:.1em;font-weight:800;color:var(--mut)}
+.wkbal .bl{font-size:11.5px;font-weight:700;color:var(--mut);margin-top:6px;line-height:1.6}
+.wkbal .bl small{font-size:10px}
+.wkbal .bnet{font-size:13px;font-weight:800;margin-top:6px;color:var(--ink)}
+.wkbal .bnet b{font-family:var(--dot);font-size:16px}
+.wkbal.def{border-color:var(--olive)}
+.wkbal.def .bnet b{color:var(--olive)}
+.wkbal.sur .bnet b{color:var(--orange)}
+.wkbal .ar{color:var(--mut)}
+.wkai{margin-top:12px;border-left:3px solid var(--yellow);padding:2px 0 2px 12px}
+.wktips{margin:8px 0 0 16px;padding:0;font-size:12px;color:var(--mut);font-weight:700;line-height:1.7}
+.wktips li{margin-bottom:2px}
+.wkdisc{font-size:10px;color:var(--mut);font-weight:600;margin-top:12px;line-height:1.6;opacity:.85}
+.rcomp{margin-top:11px;font-size:12px;font-weight:800;color:var(--mut);line-height:1.8}
+.rcomp b{font-family:var(--dot);font-size:15px;color:var(--ink)}
+.rcomp .sep{margin:0 7px;color:var(--dim)}
 
 /* 증상 카드 */
 .rtags{display:flex;flex-wrap:wrap;gap:7px}
@@ -610,8 +678,14 @@ textarea{width:100%;margin-top:12px;font-family:var(--mono);font-size:14px;paddi
 
     <div class="rcard" id="rbodycard">
       <div class="ch"><span class="sw" style="background:var(--olive)"></span>
-        <span class="ko">몸무게 · BMI</span><span class="en" style="text-align:right" id="rbmicnt"></span></div>
+        <span class="ko">체성분 · BMI</span><span class="en" style="text-align:right" id="rbmicnt"></span></div>
       <div class="cb" id="rbodybox"></div>
+    </div>
+
+    <div class="rcard" id="rweekcard">
+      <div class="ch"><span class="sw" style="background:var(--yellow)"></span>
+        <span class="ko">이번 주 효과</span><span class="en" style="text-align:right" id="rweekcnt"></span></div>
+      <div class="cb" id="rweekbox"></div>
     </div>
 
     <div class="rcard">
@@ -708,12 +782,14 @@ textarea{width:100%;margin-top:12px;font-family:var(--mono);font-size:14px;paddi
         <div class="cond" id="fcond">
           <button data-v="1">1</button><button data-v="2">2</button><button data-v="3">3</button><button data-v="4">4</button><button data-v="5">5</button>
         </div>
-        <div class="grouplab">오늘 몸무게 (선택)</div>
-        <div class="wrow">
-          <input id="fweight" type="text" inputmode="decimal" maxlength="5" placeholder="예: 54.5">
-          <span class="wkg">kg</span>
-          <span class="wbmi" id="fbmi"></span>
+        <div class="grouplab">오늘 체성분 (선택 · 피쿡)</div>
+        <div class="bodygrid">
+          <label class="bcell"><span class="lb">체중</span><input id="fweight" type="text" inputmode="decimal" maxlength="5" placeholder="54.5"><span class="u">kg</span></label>
+          <label class="bcell"><span class="lb">체지방률</span><input id="ffat" type="text" inputmode="decimal" maxlength="4" placeholder="26.0"><span class="u">%</span></label>
+          <label class="bcell"><span class="lb">근육량</span><input id="fmuscle" type="text" inputmode="decimal" maxlength="4" placeholder="22.0"><span class="u">kg</span></label>
+          <label class="bcell"><span class="lb">기초대사</span><input id="fbmr" type="text" inputmode="numeric" maxlength="5" placeholder="1300"><span class="u">kcal</span></label>
         </div>
+        <div class="bodyauto" id="fbmi"></div>
         <textarea rows="2" id="fmemo" placeholder="메모 — 오늘 몸 상태를 자유롭게"></textarea>
       </div>
     </div>
@@ -819,7 +895,7 @@ textarea{width:100%;margin-top:12px;font-family:var(--mono);font-size:14px;paddi
       </div>
     </div>
 
-    <div class="sec last" id="s10">
+    <div class="sec" id="s10">
       <div class="head" data-tg>
         <span class="idx">10</span>
         <span class="ttl"><span class="en">HOSPITAL</span><span class="ko">병원 방문</span></span>
@@ -841,6 +917,22 @@ textarea{width:100%;margin-top:12px;font-family:var(--mono);font-size:14px;paddi
           <div class="f"><label>다음 예약일 (선택)</label><input type="date" id="fhnext"></div>
         </div>
         <div class="myhint" style="margin-top:10px">다음 예약일을 넣으면 REPORT 화면에 D-day로 알려드려요.</div>
+      </div>
+    </div>
+
+    <div class="sec last" id="sEx">
+      <div class="head" data-tg>
+        <span class="idx">11</span>
+        <span class="ttl"><span class="en">EXERCISE — AI 분석</span><span class="ko">운동</span></span>
+        <span class="st" id="stEx">미기록</span><span class="arrow">▾</span>
+      </div>
+      <div class="body">
+        <div class="mealtext">
+          <textarea id="exTxt" rows="2" placeholder="한 운동을 적어주세요 — 예: 빠르게 걷기 30분, 요가 20분"></textarea>
+          <button class="mealbtn" id="exTxtBtn">운동 기록하고 AI 분석</button>
+        </div>
+        <div class="mealstat" id="exLogStat"></div>
+        <div id="exList"></div>
       </div>
     </div>
 
@@ -1122,6 +1214,10 @@ function guessMealType(time){
 }
 function mealType(m){ return MEAL_TYPES[m.type]?m.type:guessMealType(m.time); }
 function nowHM(){ const n=new Date(); return pad(n.getHours())+':'+pad(n.getMinutes()); }
+/* 체성분(피쿡)·운동·칼로리 수지 */
+const ACTIVITY=1.3;              // 기초대사 대비 일상활동 계수(가벼운 활동) — 유지칼로리 추정용, 추정치
+const KCAL_PER_KG_FAT=7700;      // 체지방 1kg ≈ 7700kcal (예상 감량 계산용)
+function fatMassOf(w,fat){ return (w&&fat)?+(w*fat/100).toFixed(1):null; }   // 체지방량 kg = 체중×체지방률
 const RULES=[
   [/철분|iron/i,'fasting','비타민C와 함께 · 칼슘·커피와 2시간 간격'],
   [/유산균|프로바이오|probio/i,'fasting','위산이 적을 때 생존율이 높아요'],
@@ -1417,6 +1513,9 @@ function loadForm(){
     cond:d.condition?d.condition.score:0,
     memo:d.condition?d.condition.memo||'':'',
     weight:d.weight||null,
+    fat:d.body&&d.body.fat!=null?d.body.fat:null,        // 체지방률 %
+    muscle:d.body&&d.body.muscle!=null?d.body.muscle:null, // 근육량 kg
+    bmr:d.body&&d.body.bmr!=null?d.body.bmr:null,         // 기초대사량 kcal
     ovres:d.ovulation?d.ovulation.result:'',
     ovratio:d.ovulation&&d.ovulation.ratio!=null?d.ovulation.ratio:null,
     preg:d.pregnancy?d.pregnancy.result:'',
@@ -1471,6 +1570,8 @@ function renderForm(){
   $$('#fcond button').forEach(b=>b.classList.toggle('on',+b.dataset.v===form.cond));
   const wi=$('#fweight');
   if(document.activeElement!==wi)wi.value=form.weight!=null?form.weight:'';
+  const setBc=(sel,v)=>{const el=$(sel);if(el&&document.activeElement!==el)el.value=v!=null?v:''};
+  setBc('#ffat',form.fat); setBc('#fmuscle',form.muscle); setBc('#fbmr',form.bmr);
   renderBmiHint();
   $('#fmemo').value=form.memo;
   $$('#fovres .chip').forEach(b=>b.classList.toggle('on',b.dataset.v===form.ovres));
@@ -1486,6 +1587,7 @@ function renderForm(){
   $$('#fpain .chip').forEach(b=>b.classList.toggle('on',form.pains.includes(b.dataset.v)));
   $$('#femo .chip').forEach(b=>b.classList.toggle('on',form.emos.includes(b.dataset.v)));
   renderMeals();
+  renderWorkouts();
   renderStatuses();
 }
 function renderSuppCheck(){
@@ -1624,14 +1726,17 @@ function sectionStates(){
   const mTaken=meds.reduce((a,m)=>a+Math.min(form.meds[m.id]||0,m.dose||1),0);
   const symN=(form.dis?1:0)+form.pains.length+form.emos.length;
   const mealN=((S.days[selDate]&&S.days[selDate].meals)||[]).length;
+  const wks=(S.days[selDate]&&S.days[selDate].workouts)||[];
+  const wkMin=wks.reduce((a,w)=>a+(w.min||0),0);
+  const bodyExtra=(form.fat!=null||form.muscle!=null||form.bmr!=null);
   const FLOW_KO={spotting:'점상',light:'적음',medium:'보통',heavy:'많음'};
   const pd=[];if(form.period)pd.push('시작일');if(form.flow)pd.push(FLOW_KO[form.flow]);
   if(form.cramp)pd.push('통증'+form.cramp);
   return{
     s1:{done:tempTouched,st:tempTouched?(+form.temp).toFixed(2)+' · '+form.time:'미기록',core:1},
     s8:{done:pd.length>0,st:pd.length?pd.join(' · '):'미기록',core:0},
-    s2:{done:form.cond>0||form.weight!=null,
-        st:(form.cond>0?form.cond+'/5':'')+(form.weight!=null?(form.cond>0?' · ':'')+form.weight+'kg':'')||'미기록',core:1},
+    s2:{done:form.cond>0||form.weight!=null||bodyExtra,
+        st:([form.cond>0?form.cond+'/5':'',form.weight!=null?form.weight+'kg':'',bodyExtra&&form.weight==null?'체성분':''].filter(Boolean).join(' · '))||'미기록',core:1},
     s3:{done:!!form.ovres,st:form.ovres?({negative:'음성',positive:'양성',peak:'피크'})[form.ovres]:'미기록',core:1},
     s4:{done:!!form.preg,st:form.preg?({none:'한 줄',faint:'미세선',strong:'두 줄'})[form.preg]:'미기록',core:1},
     s5:{done:takenTotal>0,st:sup.length?takenTotal+'/'+doseTotal:'미등록',core:1},
@@ -1639,6 +1744,7 @@ function sectionStates(){
     s6:{done:symN>0,st:symN>0?symN+'개 선택':'미기록',core:1},
     s7:{done:mealN>0,st:mealN>0?mealN+'끼 기록':'미기록',core:1},
     s10:{done:!!(form.htype||form.hname),st:form.hname?esc(form.hname):form.htype?form.htype:'미기록',core:0},
+    sEx:{done:wks.length>0,st:wks.length?wks.length+'개 · '+wkMin+'분':'미기록',core:0},
   };
 }
 function renderStatuses(){
@@ -1862,6 +1968,156 @@ $('#mealFile').onchange=async e=>{
 $('#mealTxtBtn').onclick=async()=>{
   const ok=await addMealText($('#mealTxt').value,selDate,$('#mealStat'),$('#mealTxtBtn'));
   if(ok){$('#mealTxt').value='';renderMeals();renderStatuses()}
+};
+
+/* ===== 운동 기록 (글 → AI 분석) ===== */
+const WK_INT={low:'가벼움',mid:'보통',high:'힘듦'};
+function curWeight(){ return form.weight || (latestWeight()&&latestWeight().w) || null; }
+/* 글로 적은 운동 → 종류·분·소모칼로리·강도 (Claude API) */
+async function analyzeWorkoutText(txt){
+  const w=curWeight();
+  const res=await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'content-type':'application/json','x-api-key':S.settings.apiKey,
+      'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+    body:JSON.stringify({
+      model:MODEL,max_tokens:1536,
+      output_config:{format:{type:'json_schema',schema:{
+        type:'object',
+        properties:{
+          workouts:{type:'array',description:'각 운동 하나씩',items:{type:'object',properties:{
+            type:{type:'string',description:'운동 종류 (한국어, 예: 빠르게 걷기, 요가, 근력운동)'},
+            min:{type:'integer',description:'운동 시간(분). 안 적혀 있으면 종류로 추정'},
+            kcal:{type:'integer',description:'소모 칼로리 추정(kcal). 체중과 운동 강도·시간으로 계산'},
+            intensity:{type:'string',enum:['low','mid','high'],description:'강도: low(가벼움)/mid(보통)/high(힘듦)'}
+          },required:['type','min','kcal','intensity'],additionalProperties:false}}
+        },
+        required:['workouts'],
+        additionalProperties:false
+      }}},
+      messages:[{role:'user',content:`다음은 오늘 한 운동이야: "${txt}"
+각 운동을 종류·시간(분)·소모칼로리·강도로 정리해줘. 여러 운동이면 각각 나눠서.
+${w?`이 사람 체중은 약 ${w}kg이야. 체중·운동 강도·시간을 반영해 소모칼로리를 추정해줘.`:'체중 정보가 없으니 평균 성인 기준으로 추정해줘.'}
+시간이 안 적혀 있으면 운동 종류로 합리적으로 추정해. 확신이 없으면 보수적으로.`}]
+    })
+  });
+  if(!res.ok){
+    let msg='HTTP '+res.status;
+    try{const e=await res.json();if(e&&e.error&&e.error.message)msg=e.error.message}catch(_){}
+    if(res.status===401)msg='API 키가 올바르지 않아요. MY 탭에서 확인해주세요.';
+    if(res.status===429)msg='요청이 너무 많아요. 잠시 후 다시 시도해주세요.';
+    throw new Error(msg);
+  }
+  const data=await res.json();
+  const b=data.content.find(x=>x.type==='text');
+  if(!b)throw new Error('분석 결과가 비어 있어요. 다시 시도해주세요.');
+  return JSON.parse(b.text);
+}
+/* 키 없을 때 간단 파싱: "빠르게 걷기 30분, 요가 20분" → [{type,min}] */
+function parseWorkoutsFallback(txt){
+  return txt.split(/[,·\n]/).map(s=>s.trim()).filter(Boolean).map(s=>{
+    const m=s.match(/(\d+)\s*분|(\d+)\s*min/i);
+    const min=m?parseInt(m[1]||m[2],10):0;
+    const type=s.replace(/\d+\s*(분|min)/i,'').replace(/\s+/g,' ').trim()||'운동';
+    return {type,min,kcal:0,intensity:'mid'};
+  });
+}
+function pushWorkouts(date,arr){
+  if(!arr||!arr.length)return;
+  if(!S.days[date])S.days[date]={};
+  if(!S.days[date].workouts)S.days[date].workouts=[];
+  arr.forEach(w=>S.days[date].workouts.push({
+    type:(w.type||'운동').toString().trim().slice(0,40),
+    min:Math.max(0,parseInt(w.min,10)||0),
+    kcal:Math.max(0,parseInt(w.kcal,10)||0),
+    intensity:['low','mid','high'].includes(w.intensity)?w.intensity:'mid'
+  }));
+  save();
+}
+async function addWorkoutText(txt,date,statEl,btnEl){
+  txt=txt.trim();
+  if(!txt){statEl.className='mealstat err';statEl.textContent='한 운동을 적어주세요.';return false}
+  if(!S.settings.apiKey){                                  // 키 없으면 간단 파싱만
+    pushWorkouts(date,parseWorkoutsFallback(txt));
+    statEl.className='mealstat';statEl.textContent='운동을 저장했어요. 수정에서 소모칼로리를 직접 넣을 수 있어요.';
+    return true;
+  }
+  statEl.className='mealstat';statEl.textContent='운동 분석 중... (5초 정도)';
+  if(btnEl)btnEl.disabled=true;
+  try{
+    const r=await analyzeWorkoutText(txt);
+    pushWorkouts(date,r.workouts);
+    const tot=(r.workouts||[]).reduce((a,w)=>a+(w.kcal||0),0);
+    statEl.textContent=`분석 완료 · ${(r.workouts||[]).length}개 운동 · 약 ${tot}kcal 소모 — ${date===toKey(new Date())?'오늘':date.slice(5).replace('-','/')}에 저장했어요.`;
+    return true;
+  }catch(err){                                            // AI 실패해도 저장
+    pushWorkouts(date,parseWorkoutsFallback(txt));
+    statEl.className='mealstat err';
+    statEl.textContent='AI 분석은 실패했지만 운동은 저장했어요 ('+err.message+'). 수정에서 값을 넣으세요.';
+    return true;
+  }finally{
+    if(btnEl)btnEl.disabled=false;
+  }
+}
+let _wkEdit=-1;
+function workoutEditForm(w,i){
+  return `<div class="wk-e"><div class="wkedit" data-wi="${i}">
+    <label>종류</label><input class="wk-type" value="${esc(w.type||'')}">
+    <div class="wkrow">
+      <div><label>시간(분)</label><input class="wk-min" type="number" inputmode="numeric" value="${w.min||0}"></div>
+      <div><label>소모칼로리</label><input class="wk-kcal" type="number" inputmode="numeric" value="${w.kcal||0}"></div>
+    </div>
+    <label>강도</label>
+    <div class="wk-intseg">${['low','mid','high'].map(k=>`<button type="button" data-int="${k}" class="${k===(w.intensity||'mid')?'on':''}">${WK_INT[k]}</button>`).join('')}</div>
+    <div class="wkacts"><button data-wcancel>취소</button><button class="ok" data-wok="${i}">저장</button></div>
+  </div></div>`;
+}
+function renderWorkouts(){
+  const box=$('#exList'); if(!box)return;
+  const ws=(S.days[selDate]&&S.days[selDate].workouts)||[];
+  if(!ws.length){ box.innerHTML=''; return; }
+  let html=ws.map((w,i)=>{
+    if(_wkEdit===i)return workoutEditForm(w,i);
+    return `<div class="wk">
+      <span class="wty">${esc(w.type||'운동')}</span>
+      <span class="wint ${w.intensity||'mid'}">${WK_INT[w.intensity]||'보통'}</span>
+      <span class="wmin">${w.min||0}<small>분</small></span>
+      <span class="wkc">${w.kcal||0}kcal</span>
+      <button class="wedit" data-wi="${i}">수정</button>
+      <button class="wdel" data-wi="${i}">삭제</button>
+    </div>`;
+  }).join('');
+  const totMin=ws.reduce((a,w)=>a+(w.min||0),0), totKc=ws.reduce((a,w)=>a+(w.kcal||0),0);
+  html+=`<div class="wktot"><span>오늘 운동 ${ws.length}개</span><span>총 <b>${totMin}</b>분 · 소모 <b>${totKc}</b>kcal</span></div>`;
+  box.innerHTML=html;
+  $$('#exList .wedit').forEach(b=>b.onclick=()=>{_wkEdit=+b.dataset.wi;renderWorkouts()});
+  $$('#exList .wdel').forEach(b=>b.onclick=()=>{
+    if(!confirm('이 운동 기록을 삭제할까요?'))return;
+    S.days[selDate].workouts.splice(+b.dataset.wi,1);
+    if(!S.days[selDate].workouts.length)delete S.days[selDate].workouts;
+    _wkEdit=-1;save();renderWorkouts();renderStatuses();
+  });
+  const frm=$('#exList .wkedit');
+  if(frm){
+    let pickedInt=null;
+    frm.querySelectorAll('.wk-intseg button').forEach(b=>b.onclick=()=>{
+      pickedInt=b.dataset.int;
+      frm.querySelectorAll('.wk-intseg button').forEach(x=>x.classList.toggle('on',x===b));
+    });
+    frm.querySelector('[data-wcancel]').onclick=()=>{_wkEdit=-1;renderWorkouts()};
+    frm.querySelector('[data-wok]').onclick=e=>{
+      const i=+e.target.dataset.wok, w=S.days[selDate].workouts[i];
+      const num=sel=>{const v=parseInt(frm.querySelector(sel).value,10);return isNaN(v)||v<0?0:v};
+      w.type=frm.querySelector('.wk-type').value.trim()||'운동';
+      w.min=num('.wk-min'); w.kcal=num('.wk-kcal');
+      w.intensity=pickedInt||w.intensity||'mid';
+      _wkEdit=-1;save();renderWorkouts();renderStatuses();renderReport();toast('운동을 수정했어요');
+    };
+  }
+}
+$('#exTxtBtn').onclick=async()=>{
+  const ok=await addWorkoutText($('#exTxt').value,selDate,$('#exLogStat'),$('#exTxtBtn'));
+  if(ok){$('#exTxt').value='';renderWorkouts();renderStatuses()}
 };
 
 /* ---------- CHART 렌더 ---------- */
@@ -2538,6 +2794,13 @@ function latestWeight(){
   const ks=days().filter(k=>S.days[k].weight).sort();
   return ks.length?{date:ks[ks.length-1],w:S.days[ks[ks.length-1]].weight}:null;
 }
+/* 체성분 측정 기록(날짜 오름차순) — 체중 또는 body(체지방률·근육량·기초대사)가 있는 날 */
+function bodyMeasurements(){
+  return days().filter(k=>{const d=S.days[k];return d.weight!=null||(d.body&&Object.keys(d.body).length)})
+    .sort()
+    .map(k=>{const d=S.days[k];return Object.assign({date:k,w:d.weight!=null?d.weight:null},d.body||{})});
+}
+function latestBody(){ const ms=bodyMeasurements(); return ms.length?ms[ms.length-1]:null; }
 function nextAppt(){
   const today=toKey(new Date());
   let best=null;
@@ -2687,6 +2950,7 @@ function renderReport(){
 
   // 몸무게 · BMI · 운동
   renderRBody();
+  renderWeekly();
 
   // 증상
   const yb=$('#rsymbox');
@@ -2731,6 +2995,16 @@ function renderRBody(){
     else h+=`<div class="rmenu">MY 탭에 키를 넣으면 BMI가 계산돼요.</div>`;
   }else{
     h+=`<div class="rmenu">키 ${S.settings.height}cm 등록됨 · TODAY 몸 상태에서 몸무게를 기록해보세요.</div>`;
+  }
+  // 최근 체성분 (피쿡)
+  const lb=latestBody();
+  if(lb&&(lb.fat!=null||lb.muscle!=null||lb.bmr!=null)){
+    const parts=[];
+    if(lb.fat!=null)parts.push(`체지방 <b>${lb.fat}</b>%`);
+    const fm=fatMassOf(lb.w,lb.fat); if(fm!=null)parts.push(`체지방량 <b>${fm}</b>kg`);
+    if(lb.muscle!=null)parts.push(`근육 <b>${lb.muscle}</b>kg`);
+    if(lb.bmr!=null)parts.push(`기초대사 <b>${lb.bmr}</b>`);
+    h+=`<div class="rcomp">${parts.join('<span class="sep">·</span>')}</div>`;
   }
   // 운동 추천
   const ex=S.settings.exercise;
@@ -2789,6 +3063,152 @@ ${healthContext()?'- '+healthContext():''}
   if(!res.ok){
     let msg='HTTP '+res.status;
     try{const e=await res.json();if(e?.error?.message)msg=e.error.message}catch(_){}
+    if(res.status===401)msg='API 키가 올바르지 않아요';
+    throw new Error(msg);
+  }
+  const data=await res.json();
+  const bl=data.content.find(x=>x.type==='text');
+  if(!bl)throw new Error('분석 결과가 비었어요');
+  return JSON.parse(bl.text);
+}
+
+/* ===== 주간 효과 리포트 ===== */
+function weekKey(dateKey){ const d=parseKey(dateKey); const wd=(d.getDay()+6)%7; return addDays(dateKey,-wd); } // 이번 주 월요일
+function weeklyStats(){
+  const today=toKey(new Date()), start=addDays(today,-6);
+  const keys=days().filter(k=>k>=start&&k<=today).sort();
+  let intakeSum=0,mealDays=0;
+  keys.forEach(k=>{const ms=S.days[k].meals;if(ms&&ms.length){mealDays++;intakeSum+=ms.reduce((a,m)=>a+(m.kcal||0),0);}});
+  const avgIntake=mealDays?Math.round(intakeSum/mealDays):null;
+  let exMin=0,exKcal=0,exDays=0;const types=new Set();
+  keys.forEach(k=>{const ws=S.days[k].workouts;if(ws&&ws.length){exDays++;ws.forEach(w=>{exMin+=w.min||0;exKcal+=w.kcal||0;if(w.type)types.add(w.type);});}});
+  const ms=bodyMeasurements(); let comp=null;
+  const dl=(x,y)=>(x!=null&&y!=null)?+(y-x).toFixed(1):null;
+  if(ms.length>=2){
+    const a=ms[ms.length-2], b=ms[ms.length-1];
+    comp={from:a.date,to:b.date,wFrom:a.w,wTo:b.w,wD:dl(a.w,b.w),
+      fatFrom:a.fat,fatTo:b.fat,fatD:dl(a.fat,b.fat),
+      musFrom:a.muscle,musTo:b.muscle,musD:dl(a.muscle,b.muscle),
+      fmFrom:fatMassOf(a.w,a.fat),fmTo:fatMassOf(b.w,b.fat)};
+    comp.fmD=dl(comp.fmFrom,comp.fmTo);
+  }else if(ms.length===1){comp={single:ms[0]};}
+  const lb=latestBody(), bmr=lb&&lb.bmr!=null?lb.bmr:null;
+  let energy=null;
+  if(bmr&&avgIntake!=null){
+    const maintenance=Math.round(bmr*ACTIVITY), exPerDay=Math.round(exKcal/7);
+    const netDaily=avgIntake-(maintenance+exPerDay), weeklyNet=netDaily*7;
+    energy={maintenance,exPerDay,netDaily,weeklyNet,expFatKg:+(weeklyNet/KCAL_PER_KG_FAT).toFixed(2)};
+  }
+  return{start,today,mealDays,avgIntake,exMin,exKcal,exDays,typeCount:types.size,comp,bmr,energy,wk:weekKey(today)};
+}
+function renderWeekly(){
+  const box=$('#rweekbox'), cnt=$('#rweekcnt'); if(!box)return;
+  const s=weeklyStats();
+  cnt.textContent=s.exDays?`운동 ${s.exDays}일`:'';
+  if(!(s.mealDays||s.exDays||s.comp)){
+    box.innerHTML=`<div class="rmenu">운동·체성분(피쿡)·식단을 며칠 기록하면 여기서 <b>효과</b>를 분석해드려요.<br>몸 상태 탭에서 체지방률·근육량·기초대사를, 운동 탭에서 오늘 운동을 적어보세요.</div>`;
+    return;
+  }
+  let h='';
+  if(s.comp&&!s.comp.single){
+    const c=s.comp;
+    const chip=(lab,from,to,d,unit,goodDown)=>{
+      if(d==null||from==null||to==null)return '';
+      const cls=d===0?'':((goodDown?d<0:d>0)?'good':'bad'), sign=d>0?'+':'';
+      return `<div class="wkc"><span class="l">${lab}</span><span class="v">${from}→${to}${unit}</span><span class="d ${cls}">${sign}${d}${unit}</span></div>`;
+    };
+    h+=`<div class="wkspan">${c.from.slice(5).replace('-','/')} → ${c.to.slice(5).replace('-','/')} 체성분 변화</div><div class="wkgrid">`;
+    h+=chip('체지방률',c.fatFrom,c.fatTo,c.fatD,'%',true);
+    h+=chip('근육량',c.musFrom,c.musTo,c.musD,'kg',false);
+    h+=chip('체중',c.wFrom,c.wTo,c.wD,'kg',true);
+    h+=chip('체지방량',c.fmFrom,c.fmTo,c.fmD,'kg',true);
+    h+=`</div>`;
+  }else if(s.comp&&s.comp.single){
+    h+=`<div class="rmenu">체성분 측정 1회 — <b>추세</b>를 보려면 며칠 뒤 한 번 더 재서 넣어주세요.</div>`;
+  }else{
+    h+=`<div class="rmenu">체성분(체지방률·근육량)을 2번 이상 넣으면 변화를 추적해요.</div>`;
+  }
+  h+=`<div class="wkrow2">
+    <div><div class="k">식단</div><div class="v2">${s.avgIntake!=null?s.avgIntake+'<small>kcal/일</small>':'—'}</div><div class="s">${s.mealDays}일 기록</div></div>
+    <div><div class="k">운동</div><div class="v2">${s.exDays}<small>일</small></div><div class="s">${s.exMin}분 · ${s.exKcal}kcal</div></div>
+  </div>`;
+  if(s.energy){
+    const e=s.energy, deficit=e.weeklyNet<0;
+    h+=`<div class="wkbal ${deficit?'def':'sur'}">
+      <div class="bh">칼로리 수지 <b class="aib">추정</b></div>
+      <div class="bl">유지 ~${e.maintenance}<small>kcal</small> + 운동 ~${e.exPerDay} · 섭취 ${s.avgIntake} <span class="ar">→</span> 하루 ${e.netDaily>0?'+':''}${e.netDaily}kcal</div>
+      <div class="bnet">주간 ${e.weeklyNet>0?'+':''}${e.weeklyNet}kcal · 예상 체지방 <b>${e.expFatKg>0?'+':''}${e.expFatKg}kg</b></div>
+    </div>`;
+  }else if(!s.bmr){
+    h+=`<div class="rmenu" style="margin-top:9px">기초대사량(BMR)을 넣으면 <b>칼로리 수지·예상 체지방 변화</b>까지 계산해요.</div>`;
+  }
+  const wk=S.settings.weekly, fresh=wk&&wk.week===s.wk;
+  if(fresh&&wk.comment){
+    const lab=wk.status==='good'?'잘 가고 있어요':wk.status==='adjust'?'조정이 필요해요':'무난해요';
+    h+=`<div class="wkai"><div class="rexh">AI 효과 분석 <b class="aib">AI</b> · ${lab}</div>
+      <div class="rext">${esc(wk.comment)}</div>
+      ${(wk.tips&&wk.tips.length)?'<ul class="wktips">'+wk.tips.map(t=>`<li>${esc(t)}</li>`).join('')+'</ul>':''}</div>`;
+  }
+  if(S.settings.apiKey){
+    h+=`<button class="mybtn" id="wkBtn" style="margin-top:11px">${fresh&&wk.comment?'효과 분석 다시 받기':'AI 효과 분석 받기'}</button><div class="mealstat" id="wkStat"></div>`;
+  }else{
+    h+=`<div class="rmenu" style="margin-top:9px">MY 탭에 API 키를 등록하면 이 숫자들로 <b>효과 코멘트</b>를 받을 수 있어요.</div>`;
+  }
+  h+=`<div class="wkdisc">소모칼로리·유지칼로리·예상 변화는 추정치예요. 감량이 목표가 아니라 임신 준비를 위한 건강 상태 점검용입니다.</div>`;
+  box.innerHTML=h;
+  const btn=$('#wkBtn');
+  if(btn)btn.onclick=async()=>{
+    const st=$('#wkStat');btn.disabled=true;st.className='mealstat';st.textContent='이번 주 효과를 분석하는 중...';
+    try{
+      const r=await analyzeWeekly(s);
+      S.settings.weekly={week:s.wk,status:r.status,comment:r.comment,tips:r.tips||[],at:toKey(new Date())};save();
+      renderWeekly();
+    }catch(e){st.className='mealstat err';st.textContent='분석 실패: '+e.message;btn.disabled=false}
+  };
+}
+async function analyzeWeekly(s){
+  const c=s.comp&&!s.comp.single?s.comp:null, lines=[];
+  if(c){
+    if(c.fatD!=null)lines.push(`체지방률 ${c.fatFrom}%→${c.fatTo}% (${c.fatD>0?'+':''}${c.fatD})`);
+    if(c.musD!=null)lines.push(`근육량 ${c.musFrom}→${c.musTo}kg (${c.musD>0?'+':''}${c.musD})`);
+    if(c.wD!=null)lines.push(`체중 ${c.wFrom}→${c.wTo}kg (${c.wD>0?'+':''}${c.wD})`);
+    if(c.fmD!=null)lines.push(`체지방량 ${c.fmFrom}→${c.fmTo}kg (${c.fmD>0?'+':''}${c.fmD})`);
+  }
+  const e=s.energy;
+  const prompt=`임신을 준비 중인 사람의 이번 주 운동·식단 효과를 봐줘. 최근 한 주 데이터야.
+[체성분 변화 ${c?'('+c.from+'~'+c.to+')':''}]
+${lines.length?lines.join('\n'):'체성분 측정이 부족함(2회 미만)'}
+[식단] 하루 평균 섭취 ${s.avgIntake!=null?s.avgIntake+'kcal':'기록 부족'} (${s.mealDays}일 기록)
+[운동] ${s.exDays}일 · 총 ${s.exMin}분 · 소모 ${s.exKcal}kcal · 종류 ${s.typeCount}가지
+${e?`[칼로리 수지(추정)] 유지 ${e.maintenance}kcal/일 + 운동 ${e.exPerDay}kcal/일, 섭취 ${s.avgIntake}kcal/일 → 하루 ${e.netDaily}kcal, 주간 ${e.weeklyNet}kcal → 계산상 예상 체지방 변화 ${e.expFatKg}kg`:'[칼로리 수지] 기초대사량이 없어 계산 못 함'}
+${healthContext()?'[건강] '+healthContext():''}
+
+계산상 '예상 체지방 변화'와 실제 체성분(체지방·근육) 변화를 비교해서 운동·식단이 효과가 있는지 판단해줘.
+- status: good(잘 가고 있음) / ok(무난하거나 데이터 부족) / adjust(조정 필요) 중 하나
+- comment: 한국어 2~3문장. 예상 대비 실제가 어떤지, 근육·체지방 방향 중심으로. 근육 증가량은 정밀 예측이 어려우니 추세로만 언급.
+- tips: 구체적 조정 팁 1~3개(짧게, 배열)
+주의: 임신 준비가 목적이야. 과도한 감량·굶기·무리한 운동은 절대 권하지 마. 데이터가 부족하면 단정하지 말고 더 기록하도록 안내해. 진단·처방은 하지 마.`;
+  const res=await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'content-type':'application/json','x-api-key':S.settings.apiKey,
+      'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+    body:JSON.stringify({
+      model:MODEL,max_tokens:1024,
+      output_config:{format:{type:'json_schema',schema:{
+        type:'object',
+        properties:{
+          status:{type:'string',enum:['good','ok','adjust']},
+          comment:{type:'string',description:'한국어 2~3문장 효과 코멘트'},
+          tips:{type:'array',items:{type:'string'},description:'조정 팁 1~3개'}
+        },
+        required:['status','comment','tips'],additionalProperties:false
+      }}},
+      messages:[{role:'user',content:prompt}]
+    })
+  });
+  if(!res.ok){
+    let msg='HTTP '+res.status;
+    try{const er=await res.json();if(er?.error?.message)msg=er.error.message}catch(_){}
     if(res.status===401)msg='API 키가 올바르지 않아요';
     throw new Error(msg);
   }
@@ -3004,11 +3424,15 @@ $('#tmrReset').onclick=()=>{
 /* 몸무게 입력 + BMI 즉시 표시 */
 function renderBmiHint(){
   const el=$('#fbmi');if(!el)return;
+  const parts=[];
   const b=bmiOf(form.weight);
-  if(!S.settings.height){el.innerHTML=form.weight?'<span style="color:var(--orange)">MY 탭에 키를 넣으면 BMI가 나와요</span>':'';return}
-  if(b==null){el.innerHTML='';return}
-  const c=bmiCat(b);
-  el.innerHTML=`BMI <b>${b.toFixed(1)}</b> · ${c.label}`;
+  if(b!=null){ const c=bmiCat(b); parts.push(`BMI <b>${b.toFixed(1)}</b> ${c.label}`); }
+  else if(form.weight&&!S.settings.height) parts.push('<span style="color:var(--orange)">MY 탭에 키를 넣으면 BMI</span>');
+  const fm=fatMassOf(form.weight,form.fat);
+  if(fm!=null)parts.push(`체지방량 <b>${fm}</b>kg`);
+  if(form.muscle!=null)parts.push(`근육 <b>${form.muscle}</b>kg`);
+  if(form.bmr!=null)parts.push(`기초대사 <b>${form.bmr}</b>kcal`);
+  el.innerHTML=parts.join('<span class="sep">·</span>');
 }
 $('#fweight').onfocus=e=>e.target.select();
 $('#fweight').oninput=e=>{
@@ -3026,6 +3450,26 @@ $('#fweight').onblur=e=>{
   form.weight=+n.toFixed(1);renderForm();
 };
 $('#fweight').onkeydown=e=>{if(e.key==='Enter')e.target.blur()};
+/* 체성분 3칸 — 체지방률·근육량·기초대사 */
+[['#ffat','fat',0,60],['#fmuscle','muscle',5,80],['#fbmr','bmr',600,4000]].forEach(([sel,key,lo,hi])=>{
+  const el=$(sel);if(!el)return;
+  el.onfocus=e=>e.target.select();
+  el.oninput=e=>{
+    let v=e.target.value.replace(/[^0-9.]/g,'');
+    const p=v.split('.');if(p.length>2)v=p[0]+'.'+p[1];
+    if(v!==e.target.value)e.target.value=v;
+    const n=parseFloat(v);
+    form[key]=isNaN(n)?null:n;
+    renderBmiHint();renderStatuses();
+  };
+  el.onblur=e=>{
+    let n=parseFloat(e.target.value);
+    if(isNaN(n)){form[key]=null;renderForm();return}
+    if(n<lo||n>hi){n=Math.min(hi,Math.max(lo,n));toast('값을 범위 안으로 조정했어요')}
+    form[key]=key==='bmr'?Math.round(n):+n.toFixed(1);renderForm();
+  };
+  el.onkeydown=e=>{if(e.key==='Enter')e.target.blur()};
+});
 
 $('#fdate').onchange=e=>{selDate=e.target.value;loadForm();renderToday()};
 $('#ftime').onchange=e=>{form.time=e.target.value;tempTouched=true;renderStatuses()};
@@ -3077,6 +3521,11 @@ function buildDay(date){
   if(form.cramp)d.cramp=form.cramp;
   if(form.cond>0||form.memo)d.condition={score:form.cond,memo:form.memo};
   if(form.weight!=null)d.weight=form.weight;
+  const body={};                                          // 체성분(피쿡) — 있는 값만
+  if(form.fat!=null)body.fat=form.fat;
+  if(form.muscle!=null)body.muscle=form.muscle;
+  if(form.bmr!=null)body.bmr=form.bmr;
+  if(Object.keys(body).length)d.body=body;
   if(form.ovres)d.ovulation=Object.assign({result:form.ovres},form.ovratio!=null?{ratio:form.ovratio}:{});
   if(form.preg)d.pregnancy={result:form.preg};
   const checked={};S.settings.supplements.forEach(s=>{if(form.supp[s.id])checked[s.id]=form.supp[s.id]});
@@ -3096,6 +3545,7 @@ function buildDay(date){
   if(form.emos.length)sym.emotions=[...form.emos];
   if(Object.keys(sym).length)d.symptoms=sym;
   if(prev.meals&&prev.meals.length)d.meals=prev.meals;   // 식단은 자동저장분 유지
+  if(prev.workouts&&prev.workouts.length)d.workouts=prev.workouts;   // 운동도 자동저장분 유지
   if(prev._autoFlow&&d.flow===prev.flow)d._autoFlow=1;   // 자동으로 채운 날, 손 안 댔으면 표시 유지
   return d;
 }

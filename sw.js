@@ -1,5 +1,5 @@
 /* BODY.LOG — 오프라인 캐시 (네트워크 우선, 실패 시 캐시) */
-const CACHE = 'bodylog-v4';
+const CACHE = 'bodylog-v5';
 const ASSETS = ['./', './index.html', './manifest.webmanifest', './icon-180.png', './icon-512.png'];
 
 self.addEventListener('install', e => {
