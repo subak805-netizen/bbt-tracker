@@ -356,10 +356,15 @@ textarea{width:100%;margin-top:12px;font-family:var(--mono);font-size:14px;paddi
 .log .empty{padding:30px 16px;text-align:center;font-size:13px;color:var(--mut);font-weight:700;line-height:1.8}
 
 /* MY 탭 */
-.mycard{border:var(--b2) solid var(--ink);background:var(--panel);margin-bottom:20px}
-.mycard .mh{padding:13px 14px;border-bottom:var(--b1) solid var(--ink);display:flex;justify-content:space-between;align-items:center}
+.mycard{border:var(--b2) solid var(--ink);background:var(--panel);margin-bottom:14px}
+.mycard .mh{padding:13px 14px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;user-select:none}
+.mycard.open .mh{border-bottom:var(--b1) solid var(--ink)}
 .mycard .mh .ko{font-size:16px;font-weight:800}
-.mycard .mb{padding:14px}
+.mycard .mh .cap{flex:1;text-align:right}
+.mycard .mh::after{content:'▾';font-size:11px;font-weight:800;color:var(--mut);margin-left:10px;flex:0 0 auto;transition:transform .15s}
+.mycard.open .mh::after{transform:rotate(180deg)}
+.mycard .mb{padding:14px;display:none}
+.mycard.open .mb{display:block}
 .slist .srow{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:var(--b1) solid var(--dim)}
 .slist .srow:last-child{border-bottom:none}
 .slist .snm{flex:1;font-size:15px;font-weight:800;min-width:0}
@@ -411,6 +416,7 @@ textarea{width:100%;margin-top:12px;font-family:var(--mono);font-size:14px;paddi
 .calnav{display:flex;align-items:center;border:var(--b2) solid var(--ink);background:var(--panel)}
 .calnav button{border:none;background:transparent;font-size:17px;font-weight:800;padding:11px 16px}
 .calnav button+button{border-left:var(--b1) solid var(--ink)}
+.calnav button:disabled{opacity:.26;cursor:default}
 .calnav .mlab{flex:1;text-align:center;font-family:var(--dot);font-weight:900;font-size:17px}
 .caldow{display:flex;border:var(--b2) solid var(--ink);border-top:none;background:var(--dim)}
 .caldow div{flex:1;text-align:center;padding:6px 0;font-size:9.5px;letter-spacing:.1em;font-weight:800;color:var(--mut)}
@@ -506,6 +512,12 @@ textarea{width:100%;margin-top:12px;font-family:var(--mono);font-size:14px;paddi
 .rcard .ch .ko{font-size:13.5px;font-weight:800}
 .rcard .cb{padding:13px}
 .rcard .none{font-size:12.5px;color:var(--mut);font-weight:700;padding:4px 0}
+/* REPORT 상세 카드 접기/펴기 (핵심 카드엔 .rcard.pin — 항상 열림) */
+.rcard.col .ch{cursor:pointer;user-select:none}
+.rcard.col .ch::after{content:'▾';font-size:11px;font-weight:800;color:var(--mut);flex:0 0 auto;transition:transform .15s}
+.rcard.col.open .ch::after{transform:rotate(180deg)}
+.rcard.col .cb{display:none}
+.rcard.col.open .cb{display:block}
 
 /* 체온 카드 */
 .rtemp{display:flex;align-items:center;gap:12px}
@@ -579,6 +591,14 @@ textarea{width:100%;margin-top:12px;font-family:var(--mono);font-size:14px;paddi
 .rcomp{margin-top:11px;font-size:12px;font-weight:800;color:var(--mut);line-height:1.8}
 .rcomp b{font-family:var(--dot);font-size:15px;color:var(--ink)}
 .rcomp .sep{margin:0 7px;color:var(--dim)}
+/* 수면 */
+.sleepinfo{margin-top:10px;font-size:12.5px;font-weight:800;color:var(--mut);line-height:1.6}
+.sleepinfo b{font-family:var(--dot);font-size:15px;color:var(--ink)}
+.sleepinfo .warn{display:flex;gap:7px;margin-top:7px;color:var(--orange);font-size:11.5px;font-weight:800;
+  border:var(--b1) solid var(--orange);background:#fff;padding:7px 9px;line-height:1.5}
+.rtemp-warn{margin-top:9px;font-size:11.5px;font-weight:800;color:var(--orange);border:var(--b1) solid var(--orange);background:#fff;padding:7px 9px;line-height:1.5}
+.rsleep{margin-top:10px;font-size:12px;font-weight:800;color:var(--mut)}
+.rsleep b{font-family:var(--dot);font-size:15px;color:var(--ink)}
 
 /* 증상 카드 */
 .rtags{display:flex;flex-wrap:wrap;gap:7px}
@@ -742,6 +762,12 @@ textarea{width:100%;margin-top:12px;font-family:var(--mono);font-size:14px;paddi
           <div class="f"><label>DATE</label><input type="date" id="fdate"></div>
           <div class="f"><label>TIME</label><input type="time" id="ftime"></div>
         </div>
+        <div class="grouplab">수면 (선택) — 체온 신뢰도에 참고돼요</div>
+        <div class="trow">
+          <div class="f"><label>잠든 시각</label><input type="time" id="fbed"></div>
+          <div class="f"><label>일어난 시각</label><input type="time" id="fwake"></div>
+        </div>
+        <div class="sleepinfo" id="fsleep"></div>
       </div>
     </div>
 
@@ -1218,6 +1244,26 @@ function nowHM(){ const n=new Date(); return pad(n.getHours())+':'+pad(n.getMinu
 const ACTIVITY=1.3;              // 기초대사 대비 일상활동 계수(가벼운 활동) — 유지칼로리 추정용, 추정치
 const KCAL_PER_KG_FAT=7700;      // 체지방 1kg ≈ 7700kcal (예상 감량 계산용)
 function fatMassOf(w,fat){ return (w&&fat)?+(w*fat/100).toFixed(1):null; }   // 체지방량 kg = 체중×체지방률
+/* 수면 — 잠든/일어난 시각 → 수면시간, 체온 신뢰도 참고(계산 자체는 안 바꿈, 표시만) */
+function hmToMin(t){ if(!t||!/^\d\d?:\d\d$/.test(t))return null; const [h,m]=t.split(':').map(Number); return h*60+m; }
+function sleepDurMin(bed,wake){ const b=hmToMin(bed),w=hmToMin(wake); if(b==null||w==null)return null; let d=w-b; if(d<0)d+=1440; return d; } // 자정 넘김 처리
+function durHM(min){ if(min==null)return ''; const h=Math.floor(min/60),m=min%60; return ((h?h+'시간':'')+(m?(h?' ':'')+m+'분':''))||'0분'; }
+function usualWakeMin(exceptDate){   // 최근 기상 시각 평균(분) — 3회 이상 있어야
+  const ws=days().filter(k=>k!==exceptDate&&S.days[k].sleep&&S.days[k].sleep.wake)
+    .map(k=>hmToMin(S.days[k].sleep.wake)).filter(v=>v!=null);
+  if(ws.length<3)return null;
+  const last=ws.slice(-14);
+  return last.reduce((a,b)=>a+b,0)/last.length;
+}
+function sleepReliability(date,bed,wake){   // {ok, warn} — 체온 신뢰도 참고용
+  if(!bed||!wake)return{ok:true,warn:''};
+  const dur=sleepDurMin(bed,wake);
+  if(dur!=null&&dur<240)return{ok:false,warn:`수면이 ${durHM(dur)}으로 짧아요 — 이 체온은 참고만 하세요 (기초체온은 3~4시간 이상 자고 재야 정확)`};
+  const avg=usualWakeMin(date), wk=hmToMin(wake);
+  if(avg!=null&&wk!=null&&Math.abs(wk-avg)>90)
+    return{ok:false,warn:'기상 시각이 평소와 많이 달라요 — 같은 시각에 재야 정확해서 이 체온은 신뢰도가 낮을 수 있어요'};
+  return{ok:true,warn:''};
+}
 const RULES=[
   [/철분|iron/i,'fasting','비타민C와 함께 · 칼슘·커피와 2시간 간격'],
   [/유산균|프로바이오|probio/i,'fasting','위산이 적을 때 생존율이 높아요'],
@@ -1516,6 +1562,8 @@ function loadForm(){
     fat:d.body&&d.body.fat!=null?d.body.fat:null,        // 체지방률 %
     muscle:d.body&&d.body.muscle!=null?d.body.muscle:null, // 근육량 kg
     bmr:d.body&&d.body.bmr!=null?d.body.bmr:null,         // 기초대사량 kcal
+    bed:d.sleep?d.sleep.bed||'':'',                       // 잠든 시각
+    wake:d.sleep?d.sleep.wake||'':'',                     // 일어난 시각
     ovres:d.ovulation?d.ovulation.result:'',
     ovratio:d.ovulation&&d.ovulation.ratio!=null?d.ovulation.ratio:null,
     preg:d.pregnancy?d.pregnancy.result:'',
@@ -1573,6 +1621,7 @@ function renderForm(){
   const setBc=(sel,v)=>{const el=$(sel);if(el&&document.activeElement!==el)el.value=v!=null?v:''};
   setBc('#ffat',form.fat); setBc('#fmuscle',form.muscle); setBc('#fbmr',form.bmr);
   renderBmiHint();
+  renderSleep();
   $('#fmemo').value=form.memo;
   $$('#fovres .chip').forEach(b=>b.classList.toggle('on',b.dataset.v===form.ovres));
   const oi=$('#oinput');
@@ -2178,29 +2227,27 @@ function renderStats(){
 }
 
 /* ---------- LOG 렌더 ---------- */
-let logView='all', logQ='', logMonth=null;   // logMonth=null 이면 전체
-/* 그 달의 기록만 남김 */
+let logView='all', logQ='';
+let logMonth=(()=>{const d=new Date();return{y:d.getFullYear(),m:d.getMonth()}})();  // 항상 특정 달(전체기간 없음)
+/* 그 달의 기록만 남김 — 검색 중엔 전 기간에서 */
 function byMonth(ks){
-  if(!logMonth)return ks;
+  if(logQ.trim())return ks;                    // 검색은 달 상관없이 전체에서
   const p=`${logMonth.y}-${pad(logMonth.m+1)}`;
   return ks.filter(k=>k.startsWith(p));
 }
 function renderLogMonth(){
-  $('#logMonth').textContent=logMonth?`${logMonth.y}. ${MON_KO[logMonth.m]}`:'전체 기간';
+  const now=new Date(), atNow=logMonth.y===now.getFullYear()&&logMonth.m===now.getMonth();
+  $('#logMonth').textContent=logQ.trim()?'검색 · 전체 기간':`${logMonth.y}. ${MON_KO[logMonth.m]}`;
+  $('#logPrev').disabled=!!logQ.trim();
+  $('#logNext').disabled=!!logQ.trim()||atNow;   // 이번 달이 마지막(미래 불가)
 }
 function shiftMonth(dir){
-  if(!logMonth){                               // 전체 → 가장 최근 기록이 있는 달부터
-    const ks=days();
-    const base=ks.length?parseKey(ks[ks.length-1]):new Date();
-    logMonth={y:base.getFullYear(),m:base.getMonth()};
-  }else{
-    logMonth.m+=dir;
-    if(logMonth.m<0){logMonth.m=11;logMonth.y--}
-    if(logMonth.m>11){logMonth.m=0;logMonth.y++}
-    // 미래로 너무 가면 전체로 되돌림
-    const now=new Date();
-    if(logMonth.y>now.getFullYear()||(logMonth.y===now.getFullYear()&&logMonth.m>now.getMonth()))logMonth=null;
-  }
+  if(logQ.trim())return;
+  const now=new Date();
+  let y=logMonth.y, m=logMonth.m+dir;
+  if(m<0){m=11;y--} if(m>11){m=0;y++}
+  if(y>now.getFullYear()||(y===now.getFullYear()&&m>now.getMonth()))return;  // 미래로는 못 감
+  logMonth={y,m};
   renderLogMonth();renderLog();
 }
 /* 그날 기록을 검색용 텍스트 한 줄로 */
@@ -2375,6 +2422,7 @@ function renderQuickAdd(){
   }else box.innerHTML='';
 }
 function renderLog(){
+  renderLogMonth();                              // 달 라벨·이동 버튼 상태 항상 최신화
   $('#loglist').style.display=logView==='all'?'block':'none';
   $('#hosplist').style.display=logView==='hosp'?'block':'none';
   $('#meallist').style.display=logView==='meal'?'block':'none';
@@ -2869,6 +2917,15 @@ function renderReport(){
 
   // 체온
   const tb=$('#rtempbox');
+  let sleepHtml='';
+  if(d.sleep&&(d.sleep.bed||d.sleep.wake)){
+    const dur=sleepDurMin(d.sleep.bed,d.sleep.wake);
+    if(dur!=null)sleepHtml+=`<div class="rsleep">수면 <b>${durHM(dur)}</b> · ${d.sleep.bed||'—'}~${d.sleep.wake||'—'}</div>`;
+    if(d.temp){
+      const rel=sleepReliability(today,d.sleep.bed,d.sleep.wake);
+      if(!rel.ok)sleepHtml+=`<div class="rtemp-warn">! ${rel.warn}</div>`;
+    }
+  }
   if(d.temp){
     const cyc=cycleEntriesFor(today);
     const lows=cyc.filter(e=>!an.ovulation||e.date<an.ovulation).map(e=>e.temp);
@@ -2877,9 +2934,9 @@ function renderReport(){
     tb.innerHTML=`<div class="rtemp">
       <div class="big">${d.temp.value.toFixed(2)}<small> °C</small></div>
       <div class="side">측정 ${esc(d.temp.time||'—')}<br>${base?`저온기 평균 ${base.toFixed(2)} 대비 <b style="color:${diff>=0.1?'var(--orange)':'var(--olive)'}">${diff>=0?'+':''}${diff.toFixed(2)}</b>`:'저온기 평균 계산 전'}</div>
-    </div><div class="rspark" id="rspark"></div>`;
+    </div>${sleepHtml}<div class="rspark" id="rspark"></div>`;
     renderSpark();
-  }else tb.innerHTML='<div class="none">오늘 체온이 아직 기록되지 않았어요.</div>';
+  }else tb.innerHTML='<div class="none">오늘 체온이 아직 기록되지 않았어요.</div>'+sleepHtml;
 
   // 영양제
   $('#rsuppcnt').textContent=sup.length?taken+'/'+doseTotal:'';
@@ -3315,17 +3372,27 @@ $$('#logSeg button').forEach(b=>b.onclick=()=>{
     :logView==='meal'?'검색 — 메뉴·코멘트':'검색 — 병원·증상·메모·식단';
   renderLog();
 });
-$('#logQ').oninput=e=>{logQ=e.target.value;renderLog()};
-$('#logQX').onclick=()=>{logQ='';$('#logQ').value='';renderLog();$('#logQ').focus()};
+$('#logQ').oninput=e=>{logQ=e.target.value;renderLogMonth();renderLog()};
+$('#logQX').onclick=()=>{logQ='';$('#logQ').value='';renderLogMonth();renderLog();$('#logQ').focus()};
 $('#logPrev').onclick=()=>shiftMonth(-1);
 $('#logNext').onclick=()=>shiftMonth(1);
-$('#logMonth').onclick=()=>{logMonth=null;renderLogMonth();renderLog()};   // 눌러서 전체로
+$('#logMonth').onclick=()=>{const d=new Date();logMonth={y:d.getFullYear(),m:d.getMonth()};renderLogMonth();renderLog()};   // 눌러서 이번 달로
 $('#calPrev').onclick=()=>{calMonth.m--;if(calMonth.m<0){calMonth.m=11;calMonth.y--}renderCalendar()};
 $('#calNext').onclick=()=>{calMonth.m++;if(calMonth.m>11){calMonth.m=0;calMonth.y++}renderCalendar()};
 
 /* ---------- 이벤트 ---------- */
 $$('.nav a').forEach(a=>a.onclick=()=>showTab(a.dataset.tab));
 $$('[data-tg]').forEach(h=>h.onclick=()=>h.parentElement.classList.toggle('open'));
+/* MY 설정 카드 접기/펴기 — 전부 접힘으로 시작 */
+$$('#scr-my .mycard').forEach(card=>{
+  card.querySelector('.mh').onclick=()=>card.classList.toggle('open');
+});
+/* REPORT 상세 카드 접기/펴기 — 첫 카드(기초체온)는 핵심이라 항상 열림, 나머지는 접힘 시작 */
+$$('#scr-report .rcard').forEach((card,i)=>{
+  if(i===0)return;
+  card.classList.add('col');
+  card.querySelector('.ch').onclick=()=>card.classList.toggle('open');
+});
 const T_MIN=35.00,T_MAX=38.00;
 $('#tminus').onclick=()=>{$('#tinput').blur();form.temp=Math.max(T_MIN,+(+form.temp-0.01).toFixed(2));tempTouched=true;renderForm()};
 $('#tplus').onclick=()=>{$('#tinput').blur();form.temp=Math.min(T_MAX,+(+form.temp+0.01).toFixed(2));tempTouched=true;renderForm()};
@@ -3422,6 +3489,19 @@ $('#tmrReset').onclick=()=>{
 };
 
 /* 몸무게 입력 + BMI 즉시 표시 */
+function renderSleep(){
+  const bi=$('#fbed'), wi=$('#fwake'), box=$('#fsleep');
+  if(!bi||!wi||!box)return;
+  if(document.activeElement!==bi)bi.value=form.bed||'';
+  if(document.activeElement!==wi)wi.value=form.wake||form.time||'';   // 안 넣으면 측정 시각을 기본으로
+  if(!form.bed&&!form.wake){box.innerHTML='';return}
+  const wake=form.wake||form.time;
+  const dur=sleepDurMin(form.bed,wake);
+  let h=dur!=null?`수면 <b>${durHM(dur)}</b>`:'일어난 시각까지 넣으면 수면 시간이 나와요';
+  const rel=sleepReliability(selDate,form.bed,wake);
+  if(!rel.ok)h+=`<div class="warn"><span>!</span><span>${rel.warn}</span></div>`;
+  box.innerHTML=h;
+}
 function renderBmiHint(){
   const el=$('#fbmi');if(!el)return;
   const parts=[];
@@ -3472,7 +3552,9 @@ $('#fweight').onkeydown=e=>{if(e.key==='Enter')e.target.blur()};
 });
 
 $('#fdate').onchange=e=>{selDate=e.target.value;loadForm();renderToday()};
-$('#ftime').onchange=e=>{form.time=e.target.value;tempTouched=true;renderStatuses()};
+$('#ftime').onchange=e=>{form.time=e.target.value;tempTouched=true;renderSleep();renderStatuses()};
+$('#fbed').onchange=e=>{form.bed=e.target.value;renderSleep();renderStatuses()};
+$('#fwake').onchange=e=>{form.wake=e.target.value;renderSleep();renderStatuses()};
 $('#fperiod').onclick=()=>{form.period=!form.period;$('#fperiod').classList.toggle('on');};
 $$('#fcond button').forEach(b=>b.onclick=()=>{form.cond=form.cond===+b.dataset.v?0:+b.dataset.v;renderForm()});
 $('#fmemo').oninput=e=>form.memo=e.target.value;
@@ -3526,6 +3608,11 @@ function buildDay(date){
   if(form.muscle!=null)body.muscle=form.muscle;
   if(form.bmr!=null)body.bmr=form.bmr;
   if(Object.keys(body).length)d.body=body;
+  const sleep={};                                        // 수면 — 잠든 시각만 넣으면 기상=측정시각
+  if(form.bed)sleep.bed=form.bed;
+  if(form.wake)sleep.wake=form.wake;
+  else if(form.bed)sleep.wake=form.time;
+  if(Object.keys(sleep).length)d.sleep=sleep;
   if(form.ovres)d.ovulation=Object.assign({result:form.ovres},form.ovratio!=null?{ratio:form.ovratio}:{});
   if(form.preg)d.pregnancy={result:form.preg};
   const checked={};S.settings.supplements.forEach(s=>{if(form.supp[s.id])checked[s.id]=form.supp[s.id]});
