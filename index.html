@@ -237,6 +237,8 @@ textarea{width:100%;margin-top:12px;font-family:var(--mono);font-size:14px;paddi
 .medit .me-typeseg button{flex:1;padding:9px 0;border:none;background:#fff;font-weight:800;font-size:12px;border-left:var(--b1) solid var(--ink)}
 .medit .me-typeseg button:first-child{border-left:none}
 .medit .me-typeseg button.on{background:var(--ink);color:var(--paper)}
+.medit .me-recalc{width:100%;margin-top:13px;padding:11px;border:var(--b1) solid var(--olive);
+  background:#fff;color:var(--olive);font-weight:800;font-size:12.5px}
 /* 운동 카드 */
 .wk{border:var(--b1) solid var(--ink);background:#fff;margin-top:9px;display:flex;align-items:center;gap:9px;padding:10px 12px}
 .wk .wty{font-size:14px;font-weight:800;flex:1;min-width:0}
@@ -839,6 +841,11 @@ textarea{width:100%;margin-top:12px;font-family:var(--mono);font-size:14px;paddi
           <div class="v sm"><input id="oinput" type="text" inputmode="decimal" maxlength="4" placeholder="—" aria-label="T/C 수치"></div>
           <button id="oplus" style="height:56px;width:50px">+</button>
         </div>
+        <div class="grouplab">사진으로 판독 (선택)</div>
+        <input type="file" id="ovFile" accept="image/*" style="display:none">
+        <button class="mealbtn" id="ovBtn">배테기 사진 찍어서 분석하기</button>
+        <div class="mealstat" id="ovStat"></div>
+        <div class="myhint" style="margin-top:8px"><b>판독 보조</b>예요. 빛·각도에 따라 달라질 수 있으니 검사지 설명서의 <b>판독 시간</b>을 지키고, 결과는 직접 한 번 더 확인해주세요.</div>
       </div>
     </div>
 
@@ -854,6 +861,11 @@ textarea{width:100%;margin-top:12px;font-family:var(--mono);font-size:14px;paddi
           <button class="chip" data-v="faint">미세 시약선</button>
           <button class="chip" data-v="strong">진한 두 줄</button>
         </div>
+        <div class="grouplab">사진으로 판독 (선택)</div>
+        <input type="file" id="pregFile" accept="image/*" style="display:none">
+        <button class="mealbtn" id="pregBtn">임테기 사진 찍어서 분석하기</button>
+        <div class="mealstat" id="pregStat"></div>
+        <div class="myhint" style="margin-top:8px"><b>판독 보조</b>예요. 미세선은 빛·각도·판독 시간에 크게 좌우돼요. 결과가 나오면 <b>의료기관에서 확인</b>해주세요.</div>
       </div>
     </div>
 
@@ -1452,6 +1464,8 @@ function loadStore(){
       ['pains','emotions'].forEach(f=>{if(d.symptoms[f]&&!d.symptoms[f].length)delete d.symptoms[f]});
       if(!Object.keys(d.symptoms).length)delete d.symptoms;
     }
+    // 재계산 중에 앱이 꺼졌으면 남은 표시 정리 ('계산 중'이 영구히 뜨는 것 방지)
+    if(d.meals)d.meals.forEach(m=>{delete m.recalcing});
   }
   return s;
 }
@@ -1580,6 +1594,7 @@ function loadForm(){
     emos:d.symptoms?[...(d.symptoms.emotions||[])]:[],
   };
   tempTouched=!!d.temp;
+  ['#ovStat','#pregStat'].forEach(s=>{const el=$(s);if(el){el.className='mealstat';el.textContent=''}}); // 날짜 바뀌면 이전 판독 문구 지움
 }
 /* 생리 시작일을 체크하면 설정한 일수만큼 자동으로 '생리 중'으로 채움.
    이미 뭔가 적어둔 날은 절대 건드리지 않고, 자동으로 채운 날엔 _autoFlow 표시를 남겨
@@ -1622,6 +1637,7 @@ function renderForm(){
   setBc('#ffat',form.fat); setBc('#fmuscle',form.muscle); setBc('#fbmr',form.bmr);
   renderBmiHint();
   renderSleep();
+  renderTestBtns();
   $('#fmemo').value=form.memo;
   $$('#fovres .chip').forEach(b=>b.classList.toggle('on',b.dataset.v===form.ovres));
   const oi=$('#oinput');
@@ -1682,14 +1698,31 @@ function mealEditForm(m,i){
       <div><label>단백(g)</label><input class="me-prot" type="number" inputmode="numeric" value="${m.protein_g||0}"></div>
       <div><label>지방(g)</label><input class="me-fat" type="number" inputmode="numeric" value="${m.fat_g||0}"></div>
     </div>
+    <button type="button" class="me-recalc">고친 메뉴로 AI 다시 계산</button>
     <label>메모 (선택)</label><input class="me-cmt" value="${esc(m.comment||'')}">
     <div class="macts"><button data-mcancel>취소</button><button class="ok" data-mok="${i}">저장</button></div>
   </div></div>`;
 }
+/* 고친 메뉴로 칼로리·탄단지 다시 계산 (저장 시 자동 / 버튼 수동 공용) */
+async function recalcMeal(date,i,menuArr,keepComment){
+  const meals=(S.days[date]||{}).meals; if(!meals||!meals[i])return;
+  const m=meals[i];
+  m.recalcing=1; save(); renderMeals();
+  try{
+    const r=await analyzeMealText(menuArr.join(', '));
+    m.kcal=r.kcal||0; m.carb_g=r.carb_g||0; m.protein_g=r.protein_g||0; m.fat_g=r.fat_g||0;
+    if(!keepComment&&r.comment)m.comment=r.comment;     // 내가 쓴 메모는 안 덮어씀
+    delete m.recalcing; save(); renderMeals(); renderReport(); renderStatuses();
+    toast(`칼로리를 다시 계산했어요 · ${m.kcal}kcal`);
+  }catch(e){
+    delete m.recalcing; save(); renderMeals();
+    toast('칼로리 재계산 실패: '+e.message+' — 직접 넣어주세요');
+  }
+}
 function mealCard(m,i){
   const ty=mealType(m);
   return `<div class="meal">
-      <div class="mh"><span class="kc">${m.kcal||0}<span style="font-family:var(--mono);font-size:11px"> kcal</span></span>
+      <div class="mh"><span class="kc">${m.recalcing?'···':(m.kcal||0)}<span style="font-family:var(--mono);font-size:11px"> kcal</span></span>
         <span class="mtype ${ty}">${MEAL_TYPES[ty]}</span>
         <span class="tt">${esc(m.time||'')}</span>
         <button class="edit" data-mi="${i}">수정</button>
@@ -1701,7 +1734,7 @@ function mealCard(m,i){
           <div><div class="g">${m.protein_g||0}g</div><div class="l">단백질</div></div>
           <div><div class="g">${m.fat_g||0}g</div><div class="l">지방</div></div>
         </div>
-        ${m.comment?`<div class="cmt">${esc(m.comment)}</div>`:''}
+        ${m.recalcing?'<div class="cmt" style="color:var(--orange)">고친 메뉴로 칼로리를 다시 계산하는 중...</div>':(m.comment?`<div class="cmt">${esc(m.comment)}</div>`:'')}
       </div>
     </div>`;
 }
@@ -1732,15 +1765,39 @@ function renderMeals(){
       frm.querySelectorAll('.me-typeseg button').forEach(x=>x.classList.toggle('on',x===b));
     });
     frm.querySelector('[data-mcancel]').onclick=()=>{_mealEdit=-1;renderMeals()};
+    const menuOf=()=>frm.querySelector('.me-menu').value.split(/[,·]/).map(s=>s.trim()).filter(Boolean);
+    /* 폼의 텍스트 수정분을 먼저 반영 (칼로리류 제외) */
+    const applyText=m=>{
+      m.menu=menuOf();
+      m.time=frm.querySelector('.me-time').value||m.time;
+      m.comment=frm.querySelector('.me-cmt').value.trim();
+      m.type=pickedType||mealType(m);
+    };
+    frm.querySelector('.me-recalc').onclick=()=>{                 // 수동: 지금 메뉴로 다시 계산
+      const i=+frm.querySelector('[data-mok]').dataset.mok, m=S.days[selDate].meals[i];
+      const menu=menuOf();
+      if(!menu.length){toast('메뉴를 먼저 적어주세요');return}
+      if(!S.settings.apiKey){toast('MY 탭에서 API 키를 등록하면 다시 계산할 수 있어요');return}
+      applyText(m);
+      const date=selDate;
+      _mealEdit=-1;save();
+      recalcMeal(date,i,menu,!!m.comment);
+    };
     frm.querySelector('[data-mok]').onclick=e=>{
       const i=+e.target.dataset.mok, m=S.days[selDate].meals[i];
       const num=sel=>{const v=parseInt(frm.querySelector(sel).value,10);return isNaN(v)||v<0?0:v};
-      m.menu=frm.querySelector('.me-menu').value.split(/[,·]/).map(s=>s.trim()).filter(Boolean);
-      m.kcal=num('.me-kcal');m.carb_g=num('.me-carb');m.protein_g=num('.me-prot');m.fat_g=num('.me-fat');
-      m.time=frm.querySelector('.me-time').value||m.time;
-      m.comment=frm.querySelector('.me-cmt').value.trim();
-      m.type=pickedType||mealType(m);                      // 안 누르면 현재(추정) 끼니 그대로 확정
-      _mealEdit=-1;save();renderMeals();renderReport();toast('식단을 수정했어요');
+      const beforeMenu=(m.menu||[]).join(', '), beforeKcal=m.kcal||0;   // 원래 값 스냅샷
+      const newMenu=menuOf(), newKcal=num('.me-kcal');
+      const menuChanged=newMenu.join(', ')!==beforeMenu;
+      const kcalTouched=newKcal!==beforeKcal;              // 칼로리를 직접 고쳤으면 그 값 존중
+      applyText(m);
+      m.kcal=newKcal;m.carb_g=num('.me-carb');m.protein_g=num('.me-prot');m.fat_g=num('.me-fat');
+      const date=selDate;
+      const wantRecalc=menuChanged&&!kcalTouched&&newMenu.length&&!!S.settings.apiKey;
+      _mealEdit=-1;save();renderMeals();renderReport();
+      if(wantRecalc)recalcMeal(date,i,newMenu,!!m.comment);   // 메뉴 고쳤으면 칼로리 자동 재계산
+      else if(menuChanged&&!kcalTouched&&!S.settings.apiKey)toast('수정했어요 · API 키가 없어 칼로리는 직접 넣어주세요');
+      else toast('식단을 수정했어요');
     };
   }
   const hasKey=!!(S.settings.apiKey);
@@ -2018,6 +2075,131 @@ $('#mealTxtBtn').onclick=async()=>{
   const ok=await addMealText($('#mealTxt').value,selDate,$('#mealStat'),$('#mealTxtBtn'));
   if(ok){$('#mealTxt').value='';renderMeals();renderStatuses()}
 };
+
+/* ===== 배테기·임테기 사진 판독 (보조 도구 — 단정하지 않음) ===== */
+const OV_KO={negative:'음성',positive:'양성',peak:'피크'};
+const PTEST_KO={none:'한 줄',faint:'미세 시약선',strong:'진한 두 줄'};   // ※ PREG_KO는 약 안전성용이라 이름 분리
+const CONF_KO={high:'높음',mid:'보통',low:'낮음'};
+/* 조사 '로/으로' — 받침 없거나 ㄹ이면 '로' (예: 피크로 / 한 줄로 / 양성으로) */
+function ro(w){
+  const c=(w||'').slice(-1).charCodeAt(0)-0xAC00;
+  if(isNaN(c)||c<0||c>11171)return '로';
+  const jong=c%28;
+  return (jong===0||jong===8)?'로':'으로';
+}
+function testApi(schema,b64,prompt){
+  return fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'content-type':'application/json','x-api-key':S.settings.apiKey,
+      'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+    body:JSON.stringify({
+      model:MODEL,max_tokens:1024,
+      output_config:{format:{type:'json_schema',schema}},
+      messages:[{role:'user',content:[
+        {type:'image',source:{type:'base64',media_type:'image/jpeg',data:b64}},
+        {type:'text',text:prompt}
+      ]}]
+    })
+  }).then(async res=>{
+    if(!res.ok){
+      let msg='HTTP '+res.status;
+      try{const e=await res.json();if(e&&e.error&&e.error.message)msg=e.error.message}catch(_){}
+      if(res.status===401)msg='API 키가 올바르지 않아요. MY 탭에서 확인해주세요.';
+      if(res.status===429)msg='요청이 너무 많아요. 잠시 후 다시 시도해주세요.';
+      throw new Error(msg);
+    }
+    const data=await res.json();
+    const b=data.content.find(x=>x.type==='text');
+    if(!b)throw new Error('판독 결과가 비어 있어요.');
+    return JSON.parse(b.text);
+  });
+}
+function analyzeOvTest(b64){
+  return testApi({
+    type:'object',
+    properties:{
+      result:{type:'string',enum:['negative','positive','peak','unclear'],description:'판독 결과'},
+      ratio:{type:'number',description:'T선 진하기 ÷ C선 진하기 추정값 (0~2)'},
+      confidence:{type:'string',enum:['high','mid','low'],description:'사진 품질·선명도 기준 확신도'},
+      note:{type:'string',description:'사진 상태나 주의점 한 문장 (한국어)'}
+    },
+    required:['result','ratio','confidence','note'],additionalProperties:false
+  },b64,`이 배란테스트기(LH 검사지) 사진을 읽어줘. C선(대조선)과 T선(검사선)의 진하기를 비교해:
+- T선이 C선보다 뚜렷하게 흐리면 negative
+- T선이 C선과 비슷하게 진하면 positive
+- T선이 C선보다 더 진하면 peak
+- 선이 잘 안 보이거나 사진이 흐리거나 검사지가 아니면 unclear
+ratio는 T선÷C선 진하기 추정값(0~2).
+사진이 흐리거나 빛 반사·그림자·각도가 나쁘면 confidence를 low로 하고 note에 다시 찍는 방법을 짧게 적어줘.
+너는 판독을 돕는 보조 도구야. 단정하지 말고 애매하면 unclear/low로 해. 의학적 진단은 하지 마.`);
+}
+function analyzePregTest(b64){
+  return testApi({
+    type:'object',
+    properties:{
+      result:{type:'string',enum:['none','faint','strong','unclear'],description:'판독 결과'},
+      confidence:{type:'string',enum:['high','mid','low'],description:'사진 품질·선명도 기준 확신도'},
+      note:{type:'string',description:'사진 상태나 주의점 한 문장 (한국어)'}
+    },
+    required:['result','confidence','note'],additionalProperties:false
+  },b64,`이 임신테스트기(hCG 검사지) 사진을 읽어줘.
+- C선만 보이면 none (한 줄)
+- T선이 아주 흐릿하게라도 보이면 faint
+- T선이 뚜렷하게 보이면 strong
+- 선이 잘 안 보이거나 사진이 흐리거나 검사지가 아니면 unclear
+미세선은 빛·각도·그림자에 따라 있어 보이거나 없어 보일 수 있어. 조금이라도 애매하면 confidence를 low로 하고, note에 다시 찍는 방법이나 판독 시간(보통 5~10분, 그 뒤 생긴 선은 증발선일 수 있음)을 짧게 알려줘.
+너는 판독을 돕는 보조 도구야. 임신 여부를 단정하거나 진단하지 마. 애매하면 unclear/low로 해.`);
+}
+async function readTestPhoto(kind,file,statEl,btnEl){
+  statEl.className='mealstat';
+  statEl.textContent='사진 판독 중... (10초 정도 걸려요)';
+  if(btnEl)btnEl.disabled=true;
+  try{
+    const b64=await resizeToB64(file);                 // 사진은 저장 안 하고 판독에만 씀
+    const r=kind==='ov'?await analyzeOvTest(b64):await analyzePregTest(b64);
+    const conf=CONF_KO[r.confidence]||'보통';
+    if(r.result==='unclear'){
+      statEl.className='mealstat err';
+      statEl.innerHTML=`판독이 어려워요 — ${esc(r.note||'선이 잘 안 보여요')}<br>밝은 곳에서 검사지를 평평하게 놓고 다시 찍어보거나, 위 버튼으로 직접 넣어주세요.`;
+      return true;
+    }
+    const tail=(r.confidence==='low'?' — 애매해요, 직접 한 번 더 확인해주세요':'')
+      +(r.note?`<br><span style="opacity:.85">${esc(r.note)}</span>`:'')
+      +`<br><span style="opacity:.85">다르면 위 버튼으로 고치면 돼요.</span>`;
+    if(kind==='ov'){
+      form.ovres=r.result;
+      if(typeof r.ratio==='number'&&isFinite(r.ratio)&&r.ratio>=0&&r.ratio<=2)form.ovratio=+r.ratio.toFixed(1);
+      renderForm();
+      statEl.innerHTML=`<b>${OV_KO[r.result]}</b>${ro(OV_KO[r.result])} 읽었어요 (T/C 약 ${r.ratio}) · 확신도 ${conf}`+tail;
+    }else{
+      form.preg=r.result;
+      renderForm();
+      const care=(r.result==='faint'||r.result==='strong')
+        ? `<br><b style="color:var(--orange)">임신 여부는 의료기관에서 확인해주세요.</b>` : '';
+      statEl.innerHTML=`<b>${PTEST_KO[r.result]}</b>${ro(PTEST_KO[r.result])} 읽었어요 · 확신도 ${conf}`+tail+care;
+    }
+    renderStatuses();
+    return true;
+  }catch(err){
+    statEl.className='mealstat err';
+    statEl.textContent='판독 실패: '+err.message+' — 위 버튼으로 직접 넣어주세요.';
+    return false;
+  }finally{
+    if(btnEl)btnEl.disabled=!S.settings.apiKey;
+  }
+}
+function renderTestBtns(){
+  const hasKey=!!S.settings.apiKey;
+  [['#ovBtn','#ovStat'],['#pregBtn','#pregStat']].forEach(([bs,ss])=>{
+    const btn=$(bs), st=$(ss); if(!btn||!st)return;
+    btn.disabled=!hasKey;
+    if(!hasKey){st.className='mealstat';st.textContent='사진 판독은 MY 탭에서 API 키를 등록해야 해요. 결과 버튼으로는 그냥 기록할 수 있어요.'}
+  });
+}
+$('#ovBtn').onclick=()=>$('#ovFile').click();
+$('#ovFile').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(f)await readTestPhoto('ov',f,$('#ovStat'),$('#ovBtn'))};
+$('#pregBtn').onclick=()=>$('#pregFile').click();
+$('#pregFile').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(f)await readTestPhoto('preg',f,$('#pregStat'),$('#pregBtn'))};
 
 /* ===== 운동 기록 (글 → AI 분석) ===== */
 const WK_INT={low:'가벼움',mid:'보통',high:'힘듦'};
